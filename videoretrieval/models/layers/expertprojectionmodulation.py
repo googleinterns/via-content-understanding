@@ -23,8 +23,8 @@ class ExpertProjectionModulationLayer(tf.keras.layers.Layer):
 
 	The expert projection modulation takes two inputs: first, the temporally
 	aggregated expert feature vector, and second, the attention vector for that
-	feature. The output of this layer is the feature vector multipled
-	element-wise with the sigmoid activiations of the attention vector.
+	feature. The output of this layer is the feature vector multiplied
+	element-wise with the sigmoid activations of the attention vector.
     """
     def __init__(self):
         super(ExpertProjectionModulationLayer, self).__init__()

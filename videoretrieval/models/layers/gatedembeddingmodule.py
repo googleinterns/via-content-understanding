@@ -21,7 +21,7 @@ import tensorflow as tf
 class GatedEmbeddingModule(tf.keras.layers.Layer):
     """An implementation of the gating embeding module.
 
-    The gated embedding module acts takes one tensor (Z_0) of dimension
+    The gated embedding module takes one tensor (Z_0) of dimension
     input_dimension as input and returns a tensor of output_dimension.
 
     The equations that define the gated embedding module are as follows.
@@ -34,8 +34,8 @@ class GatedEmbeddingModule(tf.keras.layers.Layer):
     represent in linear_layer_one and linear_layer_two.
 
     Attributes:
-        linear_layer_one: a Dense layer that encapuslates W_1 * Z_0 + B_1.
-        linear_layer_two a Dense layer that encapuslates W_2 * Z_1 + B_2.
+        linear_layer_one: a Dense layer that performs W_1 * Z_0 + B_1.
+        linear_layer_two: a Dense layer that performs W_2 * Z_1 + B_2.
 
     """
     def __init__(self, input_dimension, output_dimension):
