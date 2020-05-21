@@ -21,22 +21,22 @@ import tensorflow as tf
 class ExpertProjectionModulationLayer(tf.keras.layers.Layer):
     """An implementation of the expert projection modulation layer.
 
-	The expert projection modulation takes two inputs: first, the temporally
-	aggregated expert feature vector, and second, the attention vector for that
-	feature. The output of this layer is the feature vector multiplied
-	element-wise with the sigmoid activations of the attention vector.
+    The expert projection modulation takes two inputs: first, the temporally
+    aggregated expert feature vector, and second, the attention vector for that
+    feature. The output of this layer is the feature vector multiplied
+    element-wise with the sigmoid activations of the attention vector.
     """
     def __init__(self):
         super(ExpertProjectionModulationLayer, self).__init__()
 
     def call(self, inputs):
-    	"""Forward pass on the expert projection modulation layer.
+        """Forward pass on the expert projection modulation layer.
 
-		Parameters:
-			inputs: an array of exactly two elements. The first element should
-				be the feature vector, and the second should be the attention
-				vector.
-    	"""
+        Parameters:
+            inputs: an array of exactly two elements. The first element should
+                be the feature vector, and the second should be the attention
+                vector.
+        """
         assert len(inputs) == 2
 
         feature_vector, attention_vector = inputs
