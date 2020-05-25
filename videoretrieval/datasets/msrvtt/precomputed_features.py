@@ -20,7 +20,7 @@ from helper import file_downloader
 from . import constants
 
 features_to_extract = {
-    "data/MSRVTT/structured-symlinks/aggregated_audio_feats/Audio_MSRVTT_new.pickle"
+    "aggregated_audio_feats/Audio_MSRVTT_new.pickle"
     "data/MSRVTT/structured-symlinks/aggregated_face_feats/facefeats-avg.pickle"
     "data/MSRVTT/structured-symlinks/aggregated_i3d_25fps_256px_stride25_offset0_inner_stride1/i3d-avg.pickle"
     "data/MSRVTT/structured-symlinks/aggregated_imagenet_25fps_256px_stride1_offset0/resnext101_32x48d-avg.pickle"

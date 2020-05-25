@@ -18,6 +18,10 @@ Defines class to download/load/preprocess MSRVTT dataset.
 from base.base_dataset import BaseVideoDataset
 
 from . import metadata
+from . import features_loader
+
+import cache
+
 import os
 
 class MSRVTTDataset(BaseVideoDataset):
@@ -38,4 +42,13 @@ class MSRVTTDataset(BaseVideoDataset):
 
         dataset_metadata = metadata.download_and_load_metadata()
 
-    
+    def download_and_cache_precomputed_features(self):
+        """Downloads and caches precomputed features."""
+
+        features = features_loader.download_and_load_precomputed_features()
+
+        for expert, computed_features in features:
+            cache.cache_features_by_expert_and_dataset(
+                dataset=self,
+                expert=expert,
+                features=computed_features)

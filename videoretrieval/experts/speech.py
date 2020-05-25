@@ -12,14 +12,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-Functions to download, extract, and process precomputed features.
+Class for managing Speech experts.
 """
 
+from base import BaseExpert
 
-def load_features_from_tar(features_to_path, tar_path):
-    """Loads features from a tar on disk
+class SpeechExpert(BaseExpert):
+    """Implementation of the Speech expert class."""
 
-    parameters:
-        features_to_path: a dict from features to path"""
-
+    @property
+    def name(self):
+        return "speech"
     
+    @property
+    def embedding_shape(self):
+        return (29, 300)
