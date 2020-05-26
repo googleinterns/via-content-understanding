@@ -47,3 +47,21 @@ class BaseVideoDataset(AbstractClass):
     def download_and_cache_precomputed_features(self):
         """Downloads and caches precomputed features for the given dataset."""
         pass
+
+    @property
+    @abstractmethod
+    def video_captions():
+        """Returns a dict of that maps from video_id to a list of captions."""
+        pass
+
+    @property
+    @abstractmethod
+    def train_valid_test_ids(self):
+        """Returns a tuple of sets providing ids for the dataset splits.
+
+        Returns: a tuple of sets, where the first set contains the ids for the 
+        train data, the second for the validation data, and the third for the
+        test data."""
+
+        pass
+    

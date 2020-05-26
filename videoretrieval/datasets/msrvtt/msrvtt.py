@@ -50,3 +50,25 @@ class MSRVTTDataset(BaseVideoDataset):
             self, constants.features_tar_url, constants.features_tar_path,
             constants.expert_to_features
         )
+
+    @property
+    def video_captions(self):
+        video_metadata = metadata.load_metadata()
+
+        video_id_to_captions = {}
+        
+        for split in video_metadata.values():
+            for data in split:
+                video_id_to_captions[data["video_id"]] = data["captions"]
+
+        return video_id_to_captions
+
+    @property
+    def train_valid_test_ids(self):
+        video_metadata = metadata.load_metadata()
+
+        train_ids = set(video_metadata["train"].keys())
+        valid_ids = set(video_metadata["validation"].keys())
+        test_ids = set(video_metadata["test"].keys())
+
+        return train_ids, valid_ids, test_ids 

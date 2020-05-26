@@ -12,9 +12,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-__init__ for base package.
 """
 
-from .base_dataset import BaseVideoDataset
-from .base_expert import BaseExpert
-from .base_language_model import BaseLanguageModel
+def build_dataset_from_cached_features(dataset, experts, language_model):
+	train_ids, valid_ids, test_ids = dataset.train_valid_test_ids
+
+	train_data = []
+	valid_data = []
+	test_data = []
+
+	for video_id, caption in dataset.video_captions:
+		if video_id in train_ids:
+

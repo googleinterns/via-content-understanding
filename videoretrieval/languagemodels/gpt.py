@@ -12,9 +12,20 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-__init__ for base package.
+Functions to download, extract, and process precomputed features.
 """
 
-from .base_dataset import BaseVideoDataset
-from .base_expert import BaseExpert
-from .base_language_model import BaseLanguageModel
+from base import BaseLanguageModel
+from transformers import TFOpenAIGPTModel, OpenAIGPTTokenizer
+
+class OpenAIGPTModel(BaseLanguageModel):
+
+    def __init__(self):
+        self.model = TFOpenAIGPTModel.from_pretrained("openai-gpt")
+        self.tokenizer = OpenAIGPTTokenizer.from_pretrained("openai-gpt")
+
+    def encode(self, text):
+        self.tokenizer.encode(text)
+
+    def forward(self, ids):
+        return self.model([ids])
