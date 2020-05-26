@@ -23,6 +23,11 @@ class BaseLanguageModel(AbstractClass):
     def __call__(self, text):
         return self.forward(self.encode(text))
 
+   	@property
+    @abstractmethod
+    def name(self):
+    	pass
+
     @abstractmethod
     def encode(self, text):
         pass
@@ -30,3 +35,4 @@ class BaseLanguageModel(AbstractClass):
     @abstractmethod
     def forward(self, ids):
         pass
+

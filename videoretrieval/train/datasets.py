@@ -17,10 +17,10 @@ limitations under the License.
 def build_dataset_from_cached_features(dataset, experts, language_model):
 	train_ids, valid_ids, test_ids = dataset.train_valid_test_ids
 
-	train_data = []
+	train_data = {}
 	valid_data = []
 	test_data = []
 
 	for video_id, caption in dataset.video_captions:
 		if video_id in train_ids:
-
+			train_data.append()
