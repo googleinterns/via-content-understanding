@@ -27,6 +27,8 @@ def download_features_tar(features_tar_url, features_tar_path):
         features_tar_path: the path the tar should be saved to.
     """
 
+    features_tar_path.parent.mkdir(parents=True, exist_ok=True)
+
     file_downloader.download_by_url(
         features_tar_url,
         features_tar_path
@@ -52,8 +54,8 @@ def map_features_to_dict(features, dataset, expert):
             features = features.todict()
         except AttributeError:
             raise NotImplementedError(
-                f"Type of cached features for {dataset.dataset_name} {expert.name}" + \
-                "unknown")
+                f"Type of cached features for {dataset.dataset_name}" + \
+                "{expert.name} unknown")
 
     return features
 
