@@ -18,14 +18,15 @@ import tarfile
 def generate_files_from_tar(tar_path, files_to_extract):
     """Extracts files from the given tar to the disk.
 
-
-    parameters:
+    Arguments:
         tar_path: the path to the tar file
-        files_to_extract: a list of tuples, where the first element is the
-            path of the file inside the dar, and the second element is the path
-            we'll export the file to.
+        files_to_extract: a list of files paths (as strings) to extract from the
+            tar.
 
-        """
+    Returns: a generator that returns a file-like object for each file in
+        files_to_extract.
+
+    """
 
     tarfile_object = tarfile.open(tar_path)
 
