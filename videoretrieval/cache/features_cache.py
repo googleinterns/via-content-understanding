@@ -23,6 +23,18 @@ base_features_path = Path("./downloaded_data/features_cache/")
 
 
 def get_cache_path(dataset, expert):
+    """Gets the file path to cache embeddings from an expert.
+
+    Arguments:
+        dataset: a BaseDataset class for the dataset that the embeddings are
+            for.
+        expert: a BaseExpert class for the expert that the embeddings are from.
+
+    Returns:
+        A pathlib object that specifies the file location where the cache will
+            be placed.    
+    """
+
     path_directory = base_features_path / dataset.dataset_name
 
     path_directory.mkdir(parents=True, exist_ok=True)
@@ -31,6 +43,17 @@ def get_cache_path(dataset, expert):
 
 
 def cache_features_by_expert_and_dataset(dataset, expert, features):
+    """Caches the given feature embeddings for the dataset/expert.
+
+    Arguments:
+        dataset: a BaseDataset class for the dataset that the embeddings are
+            for.
+        expert: a BaseExpert calss for the expert that the embeddings are from.
+        features: the computed features/embeddings to be cached.
+
+    Returns: None
+    """
+
     file_path = get_cache_path(dataset, expert)
 
     with open(file_path, "wb") as file:
@@ -38,7 +61,21 @@ def cache_features_by_expert_and_dataset(dataset, expert, features):
 
 
 def get_cached_features_by_expert_and_dataset(dataset, expert):
+    """Returns the cached feature embeddings for the dataset/expert.
+
+    Arguments:
+        dataset: a BaseDataset class for the dataset that the embeddings are
+            for.
+        expert: a BaseExpert class for the expert that the embeddings are from.
+    
+    Returns: The previously cached features for the given dataset/expert.
+        Returns None if there is no value cached.
+    """
+
     file_path = get_cache_path(dataset, expert)
+
+    if not file_path.exists():
+        return None
 
     with open(file_path, "rb") as file:
         cached_features = picle.load(file)
