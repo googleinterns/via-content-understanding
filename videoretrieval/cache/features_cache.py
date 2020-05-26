@@ -23,24 +23,24 @@ base_features_path = Path("./downloaded_data/features_cache/")
 
 
 def get_cache_path(dataset, expert):
-    path_directory = base_features_path / dataset.name
+    path_directory = base_features_path / dataset.dataset_name
 
     path_directory.mkdir(parents=True, exist_ok=True)
 
-    return path_directory / expert.name + ".pkl"
+    return path_directory / (expert.name + ".pkl")
 
 
 def cache_features_by_expert_and_dataset(dataset, expert, features):
     file_path = get_cache_path(dataset, expert)
 
     with open(file_path, "wb") as file:
-        pickle.dump(file)
+        pickle.dump(features, file)
 
 
 def get_cached_features_by_expert_and_dataset(dataset, expert):
     file_path = get_cache_path(dataset, expert)
 
-    with open(file_path, "rb") as file
+    with open(file_path, "rb") as file:
         cached_features = picle.load(file)
 
     return cached_features

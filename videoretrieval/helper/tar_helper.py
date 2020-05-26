@@ -13,21 +13,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 """
-import tarfile
+import tarfile 
 
-def extract_files_from_tar(tar_path, tar_path_to_file_path):
-	"""Extracts files from the given tar to the disk.
+def generate_files_from_tar(tar_path, files_to_extract):
+    """Extracts files from the given tar to the disk.
 
 
-	parameters:
-		tar_path: the path to the tar file
-		tar_path_to_file_path: a list of tuples, where the first element is the
-			path of the file inside the dar, and the second element is the path
-			we'll export the file to.
+    parameters:
+        tar_path: the path to the tar file
+        files_to_extract: a list of tuples, where the first element is the
+            path of the file inside the dar, and the second element is the path
+            we'll export the file to.
 
-		"""
+        """
 
-	tarfile_object = tarfile.open(tar_path)
+    tarfile_object = tarfile.open(tar_path)
 
-	for path_inside_tar, export_path in tar_path_to_file_path:
-		tarfile_object(path_inside_tar, path=export_path)
+    for path_inside_tar in files_to_extract:
+        yield tarfile_object.extractfile(path_inside_tar)

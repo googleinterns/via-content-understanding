@@ -21,12 +21,10 @@ class ResNext101(BaseExpert):
     """Implementation of the ResNext expert class."""
 
     @property
-    @abstractmethod
     def name(self):
         return "resnext"
     
     @property
-    @abstractmethod
     def embedding_shape(self):
         return (1024,)
 
@@ -34,11 +32,9 @@ class SeNet154(BaseExpert):
     """Implementation of the SeNet expert class."""
 
     @property
-    @abstractmethod
     def name(self):
         return "senet"
     
     @property
-    @abstractmethod
     def embedding_shape(self):
         return (1024,)

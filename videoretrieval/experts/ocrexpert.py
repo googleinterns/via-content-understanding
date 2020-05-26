@@ -21,11 +21,9 @@ class OCRExpert(BaseExpert):
     """Implementation of the OCR expert class."""
 
     @property
-    @abstractmethod
     def name(self):
         return "ocr"
     
     @property
-    @abstractmethod
     def embedding_shape(self):
         return (5, 300)

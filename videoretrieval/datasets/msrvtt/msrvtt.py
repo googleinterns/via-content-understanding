@@ -15,10 +15,11 @@ limitations under the License.
 Defines class to download/load/preprocess MSRVTT dataset.
 """
 
-from base.base_dataset import BaseVideoDataset
+from base import BaseVideoDataset
 
 from . import metadata
-from . import features_loader
+from helper import precomputed_features
+from . import constants
 
 import cache
 
@@ -45,10 +46,7 @@ class MSRVTTDataset(BaseVideoDataset):
     def download_and_cache_precomputed_features(self):
         """Downloads and caches precomputed features."""
 
-        features = features_loader.download_and_load_precomputed_features()
-
-        for expert, computed_features in features:
-            cache.cache_features_by_expert_and_dataset(
-                dataset=self,
-                expert=expert,
-                features=computed_features)
+        precomputed_features.download_and_cache_precomputed_features(
+            self, constants.features_tar_url, constants.features_tar_path,
+            constants.expert_to_features
+        )

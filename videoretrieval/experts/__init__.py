@@ -15,7 +15,7 @@ limitations under the License.
 __init__.py for experts package. Imports and initializes expert models.
 """
 
-from .action import I3D, R2p1D
+from .action import I3D, R2P1D
 from .objects import ResNext101, SeNet154
 from .speech import SpeechExpert
 from .ocrexpert import OCRExpert
