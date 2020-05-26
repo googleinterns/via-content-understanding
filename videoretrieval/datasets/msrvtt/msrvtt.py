@@ -21,8 +21,6 @@ from . import metadata
 from helper import precomputed_features
 from . import constants
 
-import cache
-
 import os
 
 class MSRVTTDataset(BaseVideoDataset):

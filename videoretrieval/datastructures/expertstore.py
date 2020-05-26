@@ -12,12 +12,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-Implementation of a datastructure used by the authors of the paper.
+Implementation of a data structure used by the authors of the paper.
 """
 
 
 class ExpertStore:
-    """An implemenation of an ExpertStore datastructure.
+    """An implemenation of an ExpertStore data structure.
 
     Certain pickle files that contain precomputed features require a class
     called ExpertStore: this class is a thin wrapper for that class.
