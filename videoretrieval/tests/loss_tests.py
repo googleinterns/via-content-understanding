@@ -21,10 +21,12 @@ import tensorflow as tf
 from metrics.loss import bidirectional_max_margin_ranking_loss
 
 class TestBidirectionalMaxMarginRankingLoss(unittest.TestCase):
+    """Tests bidirectional max margin ranking loss"""
 
-    maximum_error = 1e-6
+    error = 1e-5
 
     def test_perfect_embeddings(self):
+        """Tests a perfect mini batch of embeddings."""
         mock_video_embeddings = tf.Variable([
             [-1.0, 0.0, 0.0],
             [0.0, 0.0, -1.0],
@@ -40,14 +42,15 @@ class TestBidirectionalMaxMarginRankingLoss(unittest.TestCase):
         loss = bidirectional_max_margin_ranking_loss(mock_video_embeddings,
             mock_text_embeddings, 1.0)
 
-        self.assertTrue(abs(loss.numpy() - 0.0) < maximum_error)
+        self.assertTrue(abs(loss.numpy() - 0.0) < self.error)
 
         loss = bidirectional_max_margin_ranking_loss(mock_video_embeddings,
             mock_text_embeddings, 100.0)
 
-        self.assertTrue(abs(loss.numpy() - 99.0) < maximum_error)
+        self.assertTrue(abs(loss.numpy() - 132.0) < self.error)
 
     def test_good_embeddings(self):
+        """Tests a good minibatch of embeddings."""
         mock_video_embeddings = tf.Variable([
             [-0.9938837 ,  0.11043153],
             [-0.70710677,  0.70710677],
@@ -63,7 +66,30 @@ class TestBidirectionalMaxMarginRankingLoss(unittest.TestCase):
         loss = bidirectional_max_margin_ranking_loss(mock_video_embeddings,
             mock_text_embeddings, 1.0)
 
-        expected_values = 1.3446574823723898
+        expected_value = 0.6779908
 
-        self.assertTrue(abs(loss.numpy() - expected_values) < maximum_error)
+        self.assertTrue(abs(loss.numpy() - expected_value) < self.error)
 
+    def test_bad_embeddings(self):
+        """Tests a bad mini batch of embeddings."""
+
+        mock_video_embeddings = tf.Variable([
+            [0.25, 0.25],
+            [1.0, 1.0],
+            [0.6, 0.5],
+            [0.9, 0.8],
+        ])
+
+        mock_text_embeddings = tf.Variable([
+            [-1.0, 0.0],
+            [0, 1.0],
+            [-1.0, 1.0],
+            [0.7, 0.6],
+        ])
+
+        loss = bidirectional_max_margin_ranking_loss(mock_video_embeddings,
+            mock_text_embeddings, 1.5)
+
+        expected_value = 1.815000005
+
+        self.assertTrue(abs(loss.numpy() - expected_value) < self.error)
