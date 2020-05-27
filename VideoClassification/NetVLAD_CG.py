@@ -14,7 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 import tensorflow as tf
-from tensorflow.addons.tensorflow_addons.layers import netvlad
+import tensorflow.addons.tensorflow_addons.layers.netvlad
+import youtube-8m.model_utils as utils
 
 #6. Create train function
 #7. Create data load function
@@ -158,7 +159,7 @@ class VideoClassifier(tf.keras.Model):
 		ValueError: If the batch sizes of the audio_input_shape and video_input_shape do not match.
 		ValueError: If the number of samples of the audio_input_shape and video_input_shape do not match.
 	"""
-	def __init__(self, num_clusters, video_input_shape, audio_input_shape):
+	def __init__(self, num_clusters, video_input_shape, audio_input_shape, iterations, random_frames, num_classes, num_mixtures):
 		if num_clusters % 2 != 0:
 			raise ValueError("num_clusters must be divisible by 2.")
 		batch_size = video_input_shape[0]
@@ -166,6 +167,14 @@ class VideoClassifier(tf.keras.Model):
 			raise ValueError("audio_input_shape[0] must equal video_input_shape[0]. Batch sizes must equal.")
 		if audio_input_shape[1] != video_input_shape[1]:
 			raise ValueError("audio_input_shape[1] must equal video_input_shape[1]. Number of samples must equal.")
+
+		self.num_frames = video_input_shape[1]
+		self.iterations = iterations
+		self.random_frames = random_frames
+		self.num_classes = num_classes
+		self.num_mixtures = num_mixtures
+
+		self.video_feature_dim = video_input_shape[2]
 
 		self.video_vlad = NetVLAD(num_clusters)
 		self.audio_vlad = NetVLAD(num_clusters/2)
@@ -181,19 +190,27 @@ class VideoClassifier(tf.keras.Model):
 
         self.first_cg = ContextGating()
 
-        self.moe = MOELogistic()
+        self.moe = MOELogistic(self.first_cg.compute_output_shape(), self.num_classes, self.num_mixtures)
 
         self.second_cg = ContextGating()
 
-    def call(self, video_input, audio_input):
+    def call(self, model_input):
     	"""Perform one forward pass of the model.
 
     	Args:
-    		video_input: input video features of shape [batch_size, num_samples, video_feature_dim].
-    		audio_input: input audio features of shape [batch_size, num_samples, audio_feature_dim].
+    		model_input: input features of shape [batch_size, max_frames, video_feature_dim + audio_feature_dim].
     	Returns:
     		A tensor with shape [batch_size, num_classes].
     	"""
+    	num_frames = tf.cast(tf.expand_dims(num_frames, 1), tf.float32)
+    	if self.random_frames:
+      		model_input = utils.SampleRandomFrames(model_input, self.num_frames, self.iterations)
+    	else:
+      		model_input = utils.SampleRandomSequence(model_input, self.num_frames, self.iterations)
+      	
+      	video_input = model_input[:,:,:self.video_feature_dim]
+      	audio_input = model_input[:,:,self.video_feature_dim:]
+
     	video_vlad_out = self.video_vlad(video_input)
     	audio_vlad_out = self.audio_vlad(audio_input)
 
