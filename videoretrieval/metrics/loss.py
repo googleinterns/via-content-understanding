@@ -27,6 +27,9 @@ def bidirectional_max_margin_ranking_loss(video_embeddings, text_embeddings, m):
         text_embeddings: a tensor of dimension (batch size x embedding space
             size) where the ith element is the embedding for the ith caption in
             the batch
+        m: a hyper parameter
+
+    Returns: a tensor with one element, the loss
     """
 
     batch_size = video_embeddings.shape[0]
