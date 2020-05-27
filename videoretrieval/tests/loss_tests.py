@@ -21,12 +21,12 @@ import tensorflow as tf
 from metrics.loss import bidirectional_max_margin_ranking_loss
 
 class TestBidirectionalMaxMarginRankingLoss(unittest.TestCase):
-    """Tests bidirectional max margin ranking loss"""
+    """Tests bidirectional max margin ranking loss."""
 
     error = 1e-5
 
     def test_perfect_embeddings(self):
-        """Tests a perfect mini batch of embeddings."""
+        """Tests a mini batch of perfect embeddings."""
         mock_video_embeddings = tf.Variable([
             [-1.0, 0.0, 0.0],
             [0.0, 0.0, -1.0],
@@ -50,7 +50,7 @@ class TestBidirectionalMaxMarginRankingLoss(unittest.TestCase):
         self.assertTrue(abs(loss.numpy() - 132.0) < self.error)
 
     def test_good_embeddings(self):
-        """Tests a good minibatch of embeddings."""
+        """Tests a minibatch of good embeddings."""
         mock_video_embeddings = tf.Variable([
             [-0.9938837 ,  0.11043153],
             [-0.70710677,  0.70710677],
@@ -71,7 +71,7 @@ class TestBidirectionalMaxMarginRankingLoss(unittest.TestCase):
         self.assertTrue(abs(loss.numpy() - expected_value) < self.error)
 
     def test_bad_embeddings(self):
-        """Tests a bad mini batch of embeddings."""
+        """Tests a mini batch of bad embeddings."""
 
         mock_video_embeddings = tf.Variable([
             [0.25, 0.25],
