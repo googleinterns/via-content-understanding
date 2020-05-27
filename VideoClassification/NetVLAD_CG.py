@@ -17,10 +17,6 @@ import tensorflow as tf
 import tensorflow.addons.tensorflow_addons.layers.netvlad
 import youtube-8m.model_utils as utils
 
-#6. Create train function
-#7. Create data load function
-#8. Implement correct logging procedure
-
 class ContextGating(tf.keras.layers.Layer):
 	"""Implements the Context Gating Layer from https://arxiv.org/abs/1706.06905
 
