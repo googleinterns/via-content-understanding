@@ -20,19 +20,25 @@ from abc import abstractmethod
 
 class BaseLanguageModel(AbstractClass):
 
-    def __call__(self, text):
-        return self.forward(self.encode(text))
+    def __call__(self, ids):
+        return self.forward(ids)
 
-   	@property
+    @property
     @abstractmethod
     def name(self):
-    	pass
-
-    @abstractmethod
-    def encode(self, text):
         pass
+
+    @property
+    @abstractmethod
+    def batch_size(self):
+        pass
+    
 
     @abstractmethod
     def forward(self, ids):
+        pass
+
+    @abstractmethod
+    def encode(self, text):
         pass
 

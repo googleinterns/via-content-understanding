@@ -17,6 +17,7 @@ Defines a base class for datasets.
 from abc import ABC as AbstractClass
 from abc import abstractmethod
 import pathlib
+import tensorflow as tf
 
 class BaseVideoDataset(AbstractClass):
     """Base class for video datasets."""
@@ -64,4 +65,57 @@ class BaseVideoDataset(AbstractClass):
         test data."""
 
         pass
+
+    def build_generator(self, data):
+        for example in data:
+            yield example
+
+    def build_id_caption_pair_generator_dataset(self, data):
+        generator = lambda: self.build_generator(data)
+
+        return tf.data.Dataset.from_generator(generator, (tf.string, tf.string))
     
+    @property
+    def id_caption_pair_datasets(self):
+        train_ids, valid_ids, test_ids = self.train_valid_test_ids
+
+        train_data = []
+        valid_data = []
+        test_data = []
+
+        self.num_of_train_examples = len(train_ids)
+        self.num_of_valid_examples = len(valid_ids)
+        self.num_of_test_examples = len(test_ids)
+
+        for video_id, caption in self.video_captions:
+            if video_id in train_ids:
+                train_data.append((video_id, caption))
+            elif video_id in valid_ids:
+                valid_data.append((video_id, caption))
+            elif video_id in test_ids:
+                test_data.append((video_id, caption))
+            else:
+                print(f"Orphan pair: id: {video_id}, caption: {hash(caption)}")
+
+        train_dataset = self.build_id_caption_pair_generator_dataset(train_data)
+        valid_dataset = self.build_id_caption_pair_generator_dataset(valid_data)
+        test_dataset = self.build_id_caption_pair_generator_dataset(test_data)
+
+        return (
+            (train_dataset, "train"), 
+            (valid_dataset, "valid"), 
+            (test_dataset, "test")
+        )
+
+    def num_of_examples_by_split(self, split_name):
+        if "num_of_train_examples" not in dir(self):
+            _ = self.id_caption_pair_datasets
+
+        if split_name == "train":
+            return self.num_of_train_examples
+        elif split_name == "valid":
+            return self.num_of_valid_examples
+        elif split_name == "test":
+            return self.num_of_test_examples
+        else:
+            raise ValueError("Illegal split name")

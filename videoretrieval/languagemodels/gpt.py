@@ -20,12 +20,36 @@ from transformers import TFOpenAIGPTModel, OpenAIGPTTokenizer
 
 class OpenAIGPTModel(BaseLanguageModel):
 
+    max_input_length = 324
+    _batch_size = 4096
+
     def __init__(self):
         self.model = TFOpenAIGPTModel.from_pretrained("openai-gpt")
         self.tokenizer = OpenAIGPTTokenizer.from_pretrained("openai-gpt")
 
+    @property
+    def name(self):
+        return "openai_gpt"
+
+    @property
+    def batch_size(self):
+        return self._batch_size
+
+    @property
+    def encoded_shape(self):
+        return (324,)
+
+    def pad_tokens(self, tokens):
+        if len(tokens) >= self.max_input_length:
+            return tokens[:self.max_input_length]
+        else:
+            return tokens + [0] * (self.max_input_length - len(tokens))
+
     def encode(self, text):
-        self.tokenizer.encode(text)
+        tokens = self.tokenizer.tokenize(text)
+        padded_tokens = self.pad_tokens(tokens)
+
+        return self.tokenizer.convert_tokens_to_ids(padded_tokens)
 
     def forward(self, ids):
-        return self.model([ids])
+        return self.model(ids)

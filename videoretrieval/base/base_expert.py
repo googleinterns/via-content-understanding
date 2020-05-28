@@ -29,3 +29,8 @@ class BaseExpert(AbstractClass):
 	@abstractmethod
 	def embedding_shape(self):
 		pass
+
+	@property
+	def encoded_shape(self):
+		pass
+	
