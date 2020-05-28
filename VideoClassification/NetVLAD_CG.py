@@ -15,7 +15,7 @@ limitations under the License.
 """
 import tensorflow as tf
 import tensorflow.addons.tensorflow_addons.layers.netvlad
-import youtube-8m.model_utils as utils
+import model_utils as utils
 
 class ContextGating(tf.keras.layers.Layer):
 	"""Implements the Context Gating Layer from https://arxiv.org/abs/1706.06905
