@@ -19,7 +19,7 @@ import math
 from pathlib import Path
 import glob
 
-embeddings_per_file = 1000
+embeddings_per_file = 10
 
 decoding_schema = {
     "video_id": tf.io.FixedLenFeature([], tf.string),
@@ -60,11 +60,10 @@ def seralize_to_protobuf_wrapper(*args):
     return tf.py_function(seralize_to_protobuf, args, tf.string)
 
 def write_dataset(dataset, records_directory, dataset_size):
-    num_shards = math.ceil(dataset_size / embeddings_per_file)
-
-    for shard_index in range(num_shards):
-        shard = dataset.shard(num_shards=num_shards, index=shard_index)
+    for shard_index, batch in enumerate(dataset.batch(embeddings_per_file)):
         file_path = records_directory / (f"lm_{shard_index}.tfrecord")
+
+        shard = tf.data.Dataset.from_tensor_slices(batch)
 
         writer = tf.data.experimental.TFRecordWriter(str(file_path))
         writer.write(shard)
@@ -97,9 +96,7 @@ def unseralize_data(seralized_item):
     return (example["video_id"], contextual_embeddings)
 
 def get_cached_language_model_embeddings(source_dataset, language_model, split):
-    record_files = get_cached_records(source, split)
+    record_files = get_cached_records(source_dataset, language_model, split)
 
-    ds = tf.data.TFRecordDataset(record_files)
-    ds.map(unseralize_data, num_parallel_calls=tf.data.experimental.AUTOTUNE)
-
-    return ds
+    return (tf.data.TFRecordDataset(record_files)
+        .map(unseralize_data, num_parallel_calls=tf.data.experimental.AUTOTUNE))
