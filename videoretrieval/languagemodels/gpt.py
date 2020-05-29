@@ -21,7 +21,7 @@ from transformers import TFOpenAIGPTModel, OpenAIGPTTokenizer
 class OpenAIGPTModel(BaseLanguageModel):
 
     max_input_length = 324
-    _batch_size = 2
+    _batch_size = 1024
 
     def __init__(self):
         self.model = TFOpenAIGPTModel.from_pretrained("openai-gpt")

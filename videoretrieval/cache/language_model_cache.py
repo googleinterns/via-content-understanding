@@ -19,7 +19,7 @@ import math
 from pathlib import Path
 import glob
 
-embeddings_per_file = 10
+embeddings_per_file = 2000
 
 decoding_schema = {
     "video_id": tf.io.FixedLenFeature([], tf.string),
