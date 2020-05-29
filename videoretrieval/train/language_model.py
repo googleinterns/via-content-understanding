@@ -20,20 +20,20 @@ from cache import cache_language_model_embeddings
 
 def get_encode_function(language_model):
     def encode_text(text):
-        result = language_model.encode(str(text.numpy()))
+        result = language_model.encode(text.numpy().decode("utf-8"))
         return [result]
 
     def wrapper(video_id, text):
         result = tf.py_function(encode_text, [text], tf.int64)
         result.set_shape(language_model.encoded_shape)
 
-        return video_id, result
+        return video_id, result, text
 
     return wrapper
 
 def get_language_model_inference_function(language_model):
-    def wrapper(video_id, ids):
-        return video_id, language_model(ids)
+    def wrapper(video_id, ids, text):
+        return video_id, language_model(ids), text
 
     return wrapper
 
