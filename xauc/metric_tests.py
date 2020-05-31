@@ -31,7 +31,20 @@ class TestCrossAUCMetrics(unittest.TestCase):
 
     maximum_error = 1e-6
 
-    def assert_metric_values(self, metric, target_score, arg_a, arg_b):
+    def verify_metrics_match(self, expected, calculated):
+        self.assertTrue(
+            abs(expected.xauc - calculated.xauc) < self.maximum_error)
+
+        self.assertTrue(
+            abs(expected.xauc0 - calculated.xauc0) < self.maximum_error)
+
+        self.assertTrue(
+            abs(expected.xauc1 - calculated.xauc1) < self.maximum_error)
+
+    def verify_metrics(
+        self, protected_positive_scores, protected_negative_scores,
+        expected_protected_metrics, other_positive_scores, other_negative_scores,
+        expected_other_metrics):
         """Asserts that calculated metrics are equal to the target score.
 
         Note: this method assumes that for arg_a and arg_b, 1 is the desired 
@@ -44,63 +57,31 @@ class TestCrossAUCMetrics(unittest.TestCase):
             arg_a: a vector that's the first parameter of metric.
             arg_b: a vector that's the second parameter of metric.
         """
-        calculated_score = metric(
-            arg_a, arg_b, desired_label=1, undesired_label=0)
+        protected_metrics, other_metrics = metrics.calculate_xauc_metrics(
+            protected_positive_scores, protected_positive_scores,
+            other_positive_scores, other_negative_scores, 1, 0)
 
-        self.assertTrue(
-            abs(target_score - calculated_score) <= self.maximum_error)
+        self.verify_metrics_match(protected_metrics, expected_protected_metrics)
+        self.verify_metrics_match(other_metrics, expected_other_metrics)
+    
+    def test_biased_scores(self):
+        """Tests calculating xAUC scores for biased scores."""
+        protected_positive_scores = np.array([0.75, 0.64, 0.46])
+        protected_negative_scores = np.array([0.33, 0.21, 0.10])
 
-        inverse_arg_a = 1 - arg_a
-        inverse_arg_b = 1 - arg_b
+        other_positive_scores = np.array([0.83, 0.81, 0.61, 0.58])
+        other_negative_scores = np.array([0.74, 0.41, 0.49, 0.44])
 
-        calculated_score = metric(inverse_arg_a, inverse_arg_b,
-            desired_label=0, undesired_label=1)
+        expected_protected_metrics = metrics.xAUCMetrics(
+            xauc=9/12, xauc0=1, xauc1=17/28)
 
-        self.assertTrue(
-            abs(target_score - calculated_score) <= self.maximum_error)
+        expected_other_metrics = metrics.xAUCMetrics(
+            xauc=1.0, xauc0=22/28, xauc1=26/28)
 
-    def verify_all_metrics(self, target_score, arg_a, arg_b):
-        """Calls assert_metric_values on all metrics defined in metrics.py."""
-        # All of the xAUC metrics do the same computation, which is why all of
-        # these function calls are the same.
-
-        for metric in [metrics.x_auc, metrics.x_auc_0, metrics.x_auc_1]:
-                self.assert_metric_values(metric, target_score, arg_a, arg_b)
-
-    def test_high_xauc_score(self):
-        """Tests calculating a high xAUC score with both label arrangements."""
-        target_score = 15/16
-
-        scores_a = np.array([0.9, 0.8, 0.7, 0.4])
-        scores_b = np.array([0.5, 0.3, 0.2, 0.1])
-
-        self.verify_all_metrics(target_score, scores_a, scores_b)
-
-    def test_low_xauc_score(self):
-        """Tests calculating a low xAUC score with both label arrangements."""
-        target_score = 7/16
-
-        scores_a = np.array([0.8, 0.7, 0.4, 0.2])
-        scores_b = np.array([0.9, 0.6, 0.5, 0.3])
-
-        self.verify_all_metrics(target_score, scores_a, scores_b)
-
-    def test_different_input_sizes(self):
-        """Tests calculating an xAUC score with different sizes inputs."""
-        target_score = 12/15
-
-        scores_a = np.array([0.8, 0.7, 0.6, 0.5, 0.4])
-        scores_b = np.array([0.55, 0.45, 0.35])
-
-        self.verify_all_metrics(target_score, scores_a, scores_b)
-
-        target_score = 11/12
-
-        scores_a = np.array([0.9, 0.8])
-        scores_b = np.array([0.85, 0.6, 0.6, 0.6, 0.6, 0.6])
-
-        self.verify_all_metrics(target_score, scores_a, scores_b)
-
+        self.verify_metrics(protected_positive_scores,
+            protected_negative_scores, expected_protected_metrics,
+            other_positive_scores, other_negative_scores,
+            expected_other_metrics)
 
 if __name__ == "__main__":
     unittest.main()

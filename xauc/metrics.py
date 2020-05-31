@@ -19,6 +19,7 @@ variants, xAUC_0 and xAUC_1.
     limitations under the License.
 """
 import probability
+import numpy as np
 
 class xAUCMetrics:
     """A wrapper class for xauc, xauc0, and xauc1 metrics."""
@@ -38,8 +39,8 @@ class ClassScores:
         self.undesired = scores_undesired_outcome 
 
 def compute_class_xauc(
-    probability_calculator
-    class_scores
+    probability_calculator,
+    class_scores,
     other_scores,
     all_scores):
     """Compute and return the xauc metrics for a given class.
@@ -60,7 +61,7 @@ def compute_class_xauc(
         all_scores.preferred, class_scores.undesired)
 
     xauc1 = probability_calculator.probability_preferred_ranked_above_undesired(
-        class_scores.preferred, all_scores)
+        class_scores.preferred, all_scores.undesired)
 
     return xAUCMetrics(xauc=xauc, xauc0=xauc, xauc1=xauc1)
 
@@ -77,12 +78,12 @@ def calculate_xauc_metrics(
         preferred_outcome_label, undesired_label)
 
     all_scores_preferred_outcome = \
-        protected_class_scores_preferred_outcome +\
-        other_class_scores_preferred_outcome
+        np.concatenate((protected_class_scores_preferred_outcome, 
+            other_class_scores_preferred_outcome))
 
     all_scores_undesired_outcome = \
-        protected_class_scores_undesired_outcome +\
-        other_class_scores_undesired_outcome
+        np.concatenate((protected_class_scores_undesired_outcome,
+            other_class_scores_undesired_outcome))
 
     protected_class_scores = ClassScores(
         protected_class_scores_preferred_outcome,
