@@ -12,9 +12,20 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-__init__.py for datasets package
+Implementation of a data structure used by the authors of the paper.
 """
 
-from .msrvtt import MSRVTTDataset
 
-msrvtt_dataset = MSRVTTDataset()
+class ExpertStore:
+    """An implemenation of an ExpertStore data structure.
+
+    Certain pickle files that contain precomputed features require a class
+    called ExpertStore: this class is a thin wrapper for that class.
+    """
+    
+    keymap = None
+    keys = None
+    store = None
+
+    def todict(self):
+        return {key: self.store[index] for (key, index) in self.keymap.items()}

@@ -12,9 +12,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-__init__.py for datasets package
+__init__.py for the cache package.
 """
 
-from .msrvtt import MSRVTTDataset
-
-msrvtt_dataset = MSRVTTDataset()
+from .features_cache import cache_features_by_expert_and_dataset, \
+	get_cached_features_by_expert_and_dataset 

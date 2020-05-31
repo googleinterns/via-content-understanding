@@ -42,3 +42,8 @@ class BaseVideoDataset(AbstractClass):
     def download_dataset(self):
         """Downloads the dataset."""
         pass
+
+    @abstractmethod
+    def download_and_cache_precomputed_features(self):
+        """Downloads and caches precomputed features for the given dataset."""
+        pass

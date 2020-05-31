@@ -1,5 +1,4 @@
-"""Copyright 2020 Google LLC
-
+""" Copyright 2020 Google LLC
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -12,9 +11,24 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-__init__.py for datasets package
+Defines a base class for experts.
 """
 
-from .msrvtt import MSRVTTDataset
+from abc import ABC as AbstractClass
+from abc import abstractmethod
+import pathlib
 
-msrvtt_dataset = MSRVTTDataset()
+class BaseExpert(AbstractClass):
+	"""Base class for expert models."""
+
+	@property
+	@abstractmethod
+	def name(self):
+		"""A short name for the expert: e.g., slowfast."""
+		pass
+	
+	@property
+	@abstractmethod
+	def embedding_shape(self):
+		"""The shape of the embedding outputted by the expert."""
+		pass
