@@ -21,55 +21,52 @@ from sklearn import metrics
 
 from labels import validate_labels
 
-def prob_ranked_corectly(scores_a, scores_b, label_a, label_b):
-    """Returns the probability that the scores with be ranked correctly.
+class ProbabilityCalculator:
 
-    This function uses sklearn's AUC function to calculate the probability that
-    scores_a and scores_b are ranked appropriately relative to each other.
+    def __init__(self, preferred_outcome_label, undesired_outcome_label):
+        """Initializes an instance of ProbabilityCalculator with a   
 
-    The scores vector we input to the AUC function is just the concatenation of
-    scores_a and scores_b, while the labels vector we input to the AUC function
-    is label_a for the first len(scores_a) items and label_b for the rest of the
-    vector. The resulting probability is the return value.
+        Arguments:
+            preferred_outcome_label:
+            undesired_outcome_label: 
+        """
+        validate_labels(preferred_outcome_label, undesired_outcome_label)
 
-    Args:
-        scores_a: a vector of scores with ground truth label label_a
-        scores_b: a vector of scores with ground truth label label_b
-        label_a: the label for scores in scores_a
-        label_b: the label for scores in scores_b
-    """
-    scores = np.concatenate((scores_a, scores_b))
-    labels = np.zeros_like(scores)
-    labels[:len(scores_a)] = label_a
-    labels[len(scores_a):] = label_b
+        self.preferred_outcome_label = preferred_outcome_label
+        self.undesired_outcome_label = undesired_outcome_label
 
-    probability = metrics.roc_auc_score(labels, scores)
+    def probability_preferred_ranked_above_undesired(
+        self, preferred_scores, undesired_scores):
+        """Return the probability that preferred scores are above undesired ones.
 
-    return probability
+        This method uses sklearn's AUC function to calculate the probability
+        that a score in preferred_scores is more preferred with 
+        respect to the labels self.preferred_outcome_label and the label 
+        self.undesired_outcome_label than a score in undesired_score. 
+
+        The scores vector inputted to the AUC function is the concatenation of
+        preferred_scores and undesired_scores, while the labels vector inputted
+        is self.preferred_outcome_label for the first len(preferred_scores)
+        items and self.undesired_outcome_label for the rest of the
+        vector. The value returned by the AUC function is the return value.
 
 
-def prob_scores_desired_ranked_above_scores_undesired(scores_desired,
-    scores_undesired, label_desired, label_undesired):
-    """Returns the probability of ranking desired scores over undesired ones.
+        Arguments:
+            self: an instance of ProbabilityCalculator.
+            preferred_scores: scores of items with a ground truth label of a
+                preferred outcome.
+            undesired_scores: scores of items with a ground truth label of an
+                undesired outcome. 
+        """
 
-    This function confirms the labels are valid and then uses area under the
-    curve function to compute the probability that items in scores_desired are
-    ranked more desired than items in scores_undesired, according to
-    label_desired and label_undesired.
+        scores = np.concatenate((preferred_scores, undesired_scores))
+        labels = np.zeros_like(scores)
 
-    Args:
-        scores_desired: a vector of scores with a "desired" label.
-        scores_undesired: a vector of scores with an "undesired" label.
-        label_desired: the "desired" label. Should be 0 or 1.
-        label_undesired: the "undesired" label. Should be 0 or 1.
+        preferred_scores_length = len(preferred_scores)
 
-    Raises:
-        ValueError: raised if the labels are the same or not in {0, 1}.
+        labels[:preferred_scores_length] = self.preferred_outcome_label
+        labels[preferred_scores_length:] = self.undesired_outcome_label
 
-    """
-    validate_labels(label_desired, label_undesired)
+        probability = metrics.roc_auc_score(labels, scores)
 
-    probability = prob_ranked_corectly(scores_desired, scores_undesired,
-        label_desired, label_undesired)
-
-    return probability
+        return probability

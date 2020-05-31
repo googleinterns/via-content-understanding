@@ -18,90 +18,94 @@ variants, xAUC_0 and xAUC_1.
     See the License for the specific language governing permissions and
     limitations under the License.
 """
-import numpy as np
-from sklearn import metrics
-
 import probability
 
+class xAUCMetrics:
+    """A wrapper class for xauc, xauc0, and xauc1 metrics."""
 
-def x_auc(scores_a_desired, scores_b_undesired, desired_label, undesired_label):
-    """Returns the Cross-Area Under Curve (xAUC) metric of the given scores.
+    def __init__(self, xauc, xauc0, xauc1):
+        """Initalize the xAUC metrics class."""
+        self.xauc = xauc
+        self.xauc0 = xauc0
+        self.xauc1 = xauc1
 
-    The xAUC metric is defined as the probability "desired" examples in class a
-    (the vector scores_a_desired) are ranked "more desired" than "undesired"
-    examples in class b (the vector scores_b_undesired). This function uses the
-    functions in probability.py to compute the xAUC metric.
+class ClassScores:
+    """A wrapper class for wrapping preferred/undesired scores of one class."""
 
-    Args:
-        scores_a_desired: a vector of scores for examples in class a that have a
-            desired ground truth label.
-        scores_b_undesired: a vector of scores for examples in class b that have
-          an undesired ground truth label.
-        desired_label: labels for examples that are "desired". Should be 0 or 1.
-        undesired_label: labels for examples that are "undesired". Should be 0
-            or 1.
+    def __init__(self, scores_preferred_outcome, scores_undesired_outcome):
+        """Initalize the ClassScores wrapper class."""
+        self.preferred = scores_preferred_outcome
+        self.undesired = scores_undesired_outcome 
 
-    Raises:
-        ValueError: raised if the labels are the same or not in {0, 1}.
-    """
+def compute_class_xauc(
+    probability_calculator
+    class_scores
+    other_scores,
+    all_scores):
+    """Compute and return the xauc metrics for a given class.
 
-    return probability.prob_scores_desired_ranked_above_scores_undesired(
-        scores_a_desired, scores_b_undesired, desired_label, undesired_label)
+    Arguments:
+        probability_calculator: an instance of the ProbabilityCalculator class
+            used to calculate the metrics, initalized with the labels that the
+            data has.
+        class_scores: an instance of the ClassScores class
+
+    Returns: an instance of xAUCMetrics that contains the xAUC, xAUC 0 and 
+        xAUC 1 metrics for the given class.
+    """    
+    xauc = probability_calculator.probability_preferred_ranked_above_undesired(
+        class_scores.preferred, other_scores.undesired)
+
+    xauc0 = probability_calculator.probability_preferred_ranked_above_undesired(
+        all_scores.preferred, class_scores.undesired)
+
+    xauc1 = probability_calculator.probability_preferred_ranked_above_undesired(
+        class_scores.preferred, all_scores)
+
+    return xAUCMetrics(xauc=xauc, xauc0=xauc, xauc1=xauc1)
 
 
-def x_auc_1(scores_g_desired, scores_all_classes_undesired, desired_label,
+def calculate_xauc_metrics(
+    protected_class_scores_preferred_outcome,
+    protected_class_scores_undesired_outcome,
+    other_class_scores_preferred_outcome,
+    other_class_scores_undesired_outcome,
+    preferred_outcome_label,
     undesired_label):
-    """Returns the xAUC1 metric of the given scores.
 
-    The xAUC1 metric is defined as the probability "desired" examples in an 
-    arbitrary class g (the vector scores_g_desired) are ranked "more desired"
-    than "undesired" examples in any class (the vector
-    scores_all_classes_undesired). This function uses the functions in
-    probability.py to compute the xAUC1 metric.
+    probability_calculator = probability.ProbabilityCalculator(
+        preferred_outcome_label, undesired_label)
 
-    Args:
-        scores_g_desired: a vector of scores for examples in an arbitrary class
-            that have a desired ground truth label.
-        scores_all_classes_undesired: a vector of scores for examples of all
-            classes with an undesired ground truth label.
-        desired_label: the label for examples that are "desired". Should be 0 or
-            1.
-        undesired_label: the label for examples that are "undesired". Should be
-            0 or 1.
+    all_scores_preferred_outcome = \
+        protected_class_scores_preferred_outcome +\
+        other_class_scores_preferred_outcome
 
-    Raises:
-        ValueError: raised if the labels are the same, not in {0, 1}.
-    """
+    all_scores_undesired_outcome = \
+        protected_class_scores_undesired_outcome +\
+        other_class_scores_undesired_outcome
 
-    return probability.prob_scores_desired_ranked_above_scores_undesired(
-        scores_g_desired, scores_all_classes_undesired, desired_label,
-        undesired_label)
+    protected_class_scores = ClassScores(
+        protected_class_scores_preferred_outcome,
+        protected_class_scores_undesired_outcome)
 
+    other_class_scores = ClassScores(
+        other_class_scores_preferred_outcome, 
+        other_class_scores_undesired_outcome)
 
-def x_auc_0(scores_all_classes_desired, scores_g_undesired, desired_label,
-    undesired_label):
-    """Returns the xAUC0 metric of the given scores.
+    all_scores = ClassScores(
+        all_scores_preferred_outcome,
+        all_scores_undesired_outcome)
 
-    The xAUC0 metric is defined as the probability "desired" examples in any
-    class (the vector scores_all_classes_desired) are ranked "more desired" than
-    "undesired" examples in an arbitrary class g (the vector
-    scores_g_undesired). This function uses the functions in probability.py to
-    compute the xAUC0 metric.
+    protected_class_xauc_scores = compute_class_xauc(
+        probability_calculator,
+        protected_class_scores,
+        other_class_scores,
+        all_scores)
 
-    Args:
-        scores_all_classes_desired: a vector of scores for examples of all
-            classes with a desired ground truth label.
-        scores_g_undesired: a vector of scores for examples in an 
-            arbitrary class that have an undesired ground truth label.
-        desired_label: the label for examples that are "desired". Should be 0 or
-            1.
-        undesired_label: the label for examples that are "undesired". Should be
-            0 or 1.
+    other_class_xauc_scores = compute_class_xauc(
+        probability_calculator,
+        other_class_scores,
+        protected_class_scores,
+        all_scores)
 
-    Raises:
-        ValueError: raised if the labels are the same, not in {0, 1}.
-    """
-
-    return probability.prob_scores_desired_ranked_above_scores_undesired(
-        scores_all_classes_desired, scores_g_undesired, desired_label, 
-        undesired_label)
+    return protected_class_xauc_scores, other_class_xauc_scores
