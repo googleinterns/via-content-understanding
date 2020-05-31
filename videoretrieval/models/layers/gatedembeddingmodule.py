@@ -35,7 +35,8 @@ class GatedEmbeddingModule(tf.keras.layers.Layer):
 
     Attributes:
         linear_layer_one: a Dense layer that performs W_1 * Z_0 + B_1.
-        linear_layer_two: a Dense layer that performs W_2 * Z_1 + B_2.
+        linear_layer_two: a Dense layer that performs W_2 * Z_1 + B_2 and 
+            applies a sigmoid.
 
     """
     def __init__(self, input_dimension, output_dimension):
