@@ -27,7 +27,7 @@ class GatedEmbeddingModule(tf.keras.layers.Layer):
     The equations that define the gated embedding module are as follows.
 
     Z_1 = W_1 * Z_0 + B_1
-    Z_2 = Z_1 element wise multiplication by Sigmoid(W_2 * Z_1 + B_2)
+    Z_2 = multiply(Z_1, Sigmoid(W_2 * Z_1 + B_2))
     Output = Z_2 / norm(Z_2)
 
     There are four trainable variables, W_1, B_1, W_2, and B_2, which we can
