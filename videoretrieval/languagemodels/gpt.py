@@ -21,7 +21,7 @@ from transformers import TFOpenAIGPTModel, OpenAIGPTTokenizer
 class OpenAIGPTModel(BaseLanguageModel):
 
     max_input_length = 324
-    _batch_size = 1024
+    _batch_size = 48
 
     def __init__(self):
         self.model = TFOpenAIGPTModel.from_pretrained("openai-gpt")
@@ -52,4 +52,4 @@ class OpenAIGPTModel(BaseLanguageModel):
         return self.tokenizer.convert_tokens_to_ids(padded_tokens)
 
     def forward(self, ids):
-        return self.model(ids)
+        return self.model.test_on_batch(ids)
