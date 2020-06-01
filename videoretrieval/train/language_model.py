@@ -32,8 +32,12 @@ def get_encode_function(language_model):
     return wrapper
 
 def get_language_model_inference_function(language_model):
+    def inference(ids):
+        return language_model(ids)
+
     def wrapper(video_id, ids, text):
-        return video_id, language_model(ids), text
+        contextual_embeddings = tf.py_function(inference, [ids], tf.float32)
+        return video_id, contextual_embeddings, text
 
     return wrapper
 
