@@ -30,7 +30,7 @@ def train(epochs=100, lr=0.01, num_clusters=100, batch_size=1024, iterations=Non
 	reader = reader_utils.get_reader()
 
 	unused_video_id, model_input_raw, labels_batch, num_frames = (
-      get_input_data_tensors(
+      reader_utils.get_input_data_tensors(
           reader,
           FLAGS.train_data_pattern,
           batch_size=batch_size,
