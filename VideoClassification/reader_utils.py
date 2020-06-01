@@ -25,24 +25,18 @@ def get_input_data_tensors(reader,
   Raises:
     IOError: If no files matching the given pattern were found.
   """
-  with tf.name_scope("train_input"):
-    files = gfile.Glob(data_pattern)
-    if not files:
-      raise IOError("Unable to find training files. data_pattern='" +
-                    data_pattern + "'.")
-    filename_queue = tf.train.string_input_producer(files,
-                                                    num_epochs=num_epochs,
-                                                    shuffle=True)
-    training_data = [
-        reader.prepare_reader(filename_queue) for _ in range(num_readers)
-    ]
+  
+  files = gfile.Glob(data_pattern)
+  if not files:
+    raise IOError("Unable to find training files. data_pattern='" +
+                  data_pattern + "'.")
+  filename_data = tf.data.Dataset.from_tensor_slices(files)
 
-    return tf.train.shuffle_batch_join(training_data,
-                                       batch_size=batch_size,
-                                       capacity=batch_size * 5,
-                                       min_after_dequeue=batch_size,
-                                       allow_smaller_final_batch=True,
-                                       enqueue_many=True)
+  filename_queue = filename_data.shuffle(tf.shape(filename_data, out_type=tf.int64)[0]).repeat(num_epochs)
+
+  output = filename_queue.interleave(lambda x: reader.prepare_reader(x)).shuffle(batch_size).batch(batch_size)
+
+  return output
 
 def get_reader(feature_names='rgb,audio', feature_sizes='1024,128', segment_labels=False):
   # Convert feature_names and feature_sizes to lists of values.
