@@ -73,6 +73,7 @@ class OpenAIGPTModel(BaseLanguageModel):
 
         Parameters:
             ids: a batched tensor of ids returned by the method encode.
+
         Returns: a tensor of contextual embeddings.
         """
 
