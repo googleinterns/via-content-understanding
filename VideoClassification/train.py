@@ -11,7 +11,7 @@ NUM_EXAMPLES = 3844
 
 if __name__ == "__main__":
   # Dataset flags.
-  flags.DEFINE_string("train_dir", "/tmp/yt8m_model/",
+  flags.DEFINE_string("train_dir", "~/data/train/train*.tfrecord",
                       "The directory to save the model files in.")
   flags.DEFINE_string(
       "train_data_pattern", "",
@@ -23,7 +23,7 @@ if __name__ == "__main__":
                        "How many threads to use for reading input files.")
 
 
-def train(epochs=100, lr=0.01, num_clusters=100, batch_size=1024, iterations=None, random_frames=True, num_mixtures=2):
+def train(epochs=100, lr=0.01, num_clusters=100, batch_size=1024, iterations=None, random_frames=True, num_mixtures=2, num_readers):
 	steps_per_epoch = NUM_EXAMPLES / epochs
 
 	#Set up Reader and Preprocess Data
