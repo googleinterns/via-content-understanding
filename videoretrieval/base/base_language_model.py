@@ -44,6 +44,7 @@ class BaseLanguageModel(AbstractClass):
 
         Parameters:
             ids: a batched tensor of ids returned by the method encode.
+
         Returns: a tensor of contextual embeddings.
         """
         pass
@@ -53,7 +54,7 @@ class BaseLanguageModel(AbstractClass):
         """Encode the given text as ids to be passed into the model.
 
         Parameters:
-            text: a string to encode as ids
+            text: a string to encode as ids.
 
         Returns:
             A python list of ids zero padded to the appropriate size. 
