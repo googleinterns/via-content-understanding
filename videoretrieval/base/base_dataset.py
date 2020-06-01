@@ -52,7 +52,7 @@ class BaseVideoDataset(AbstractClass):
     @property
     @abstractmethod
     def video_captions():
-        """Returns a dict of that maps from video_id to a list of captions."""
+        """Returns a dict of that maps from video id to a list of captions."""
         pass
 
     @property
@@ -83,7 +83,7 @@ class BaseVideoDataset(AbstractClass):
 
         Returns: a tuple of three tuples, where the first element of each tuple
         is the tf.data.Dataset of video id caption pairs, and the second element
-        is the name of the split as a string. In the three tuples, the first
+        is the name of the split as a string. In the retured tuple, the first
         element is the data for the train split, followed by the valid and test
         sets.
         """ 
