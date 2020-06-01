@@ -37,7 +37,7 @@ class ProbabilityCalculator:
 
     def probability_preferred_ranked_above_undesired(
         self, preferred_scores, undesired_scores):
-        """Return the probability that preferred scores are above undesired ones.
+        """Find the probability that preferred scores are above undesired ones.
 
         This method uses sklearn's AUC function to calculate the probability
         that a score in preferred_scores is more preferred with 
