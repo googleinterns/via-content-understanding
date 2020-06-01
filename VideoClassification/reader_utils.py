@@ -25,12 +25,13 @@ def get_input_data_tensors(reader,
   Raises:
     IOError: If no files matching the given pattern were found.
   """
-  files = gfile.Glob(data_pattern)
+  files = gfile.glob(data_pattern)
   if not files:
     raise IOError("Unable to find training files. data_pattern='" +
                   data_pattern + "'.")
   filename_data = tf.data.Dataset.from_tensor_slices(files)
-
+  print(files)
+  assert False
   filename_queue = filename_data.shuffle(tf.shape(filename_data, out_type=tf.int64)[0]).repeat(num_epochs)
 
   output = filename_queue.interleave(lambda x: reader.prepare_reader(x)).shuffle(batch_size).batch(batch_size)
