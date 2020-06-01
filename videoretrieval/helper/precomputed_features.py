@@ -27,6 +27,8 @@ def download_features_tar(features_tar_url, features_tar_path):
         features_tar_path: the path the tar should be saved to.
     """
 
+    features_tar_path.parent.mkdir(parents=True, exist_ok=True)
+
     file_downloader.download_by_url(
         features_tar_url,
         features_tar_path
@@ -40,23 +42,34 @@ def verify_features_dimensioality(features, expert):
     """Checks that the dimensionality of the embeddings matches expectations."""
 
     feature_shape = next(iter(list(features.values()))).shape
-    print(f"{expert.name}: {expert.embedding_shape} | {feature_shape}")
-    return
-    
-    assert feature_shape == expert.embedding_shape
+
+    if expert.embedding_shape != feature_shape:
+        print(f"{expert.name}: {expert.embedding_shape} | {feature_shape}")
 
 def map_features_to_dict(features, dataset, expert):
+    """Returns features as a dictionary."""
+
     if type(features) != dict:
         try:
             features = features.todict()
         except AttributeError:
             raise NotImplementedError(
-                f"Type of cached features for {dataset.dataset_name} {expert.name}" + \
-                "unknown")
+                f"Type of cached features for {dataset.dataset_name}" + \
+                "{expert.name} unknown")
 
     return features
 
 def cache_features(dataset, expert_to_features, features_tar_path):
+    """Caches features for a given dataset and tar of features.
+
+    Arguments:
+        dataset: a BaseDataset class for the dataset that the embeddings are
+            for.
+        expert_to_features: a dict that maps from experts to the path (inside
+            the tar) of the file with the embeddings.
+        features_tar_path: the path to the tar with the embeddings.
+    """
+
     experts = []
     paths = []
 
@@ -79,6 +92,16 @@ def cache_features(dataset, expert_to_features, features_tar_path):
         
 def download_and_cache_precomputed_features(dataset, features_tar_url,
     features_tar_path, expert_to_features):
-    
+    """Downloads and caches precomputed features.
+
+    Arguments:
+        dataset: a BaseDataset class for the dataset that the embeddings are
+            for.
+        features_tar_url: the url of the features tar.
+        features_tar_path: the path to download the tar to.
+        expert_to_features: a dict that maps from experts to the path (inside
+            the tar) of the file with the embeddings.
+    """
+
     download_features_tar(features_tar_url, features_tar_path)
     cache_features(dataset, expert_to_features, features_tar_path)

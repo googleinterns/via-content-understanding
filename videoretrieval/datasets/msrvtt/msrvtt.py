@@ -23,8 +23,6 @@ from . import constants
 
 import cache
 
-import os
-
 class MSRVTTDataset(BaseVideoDataset):
     """An implementation of BaseVideoDataset for the MSR-VTT dataset."""
 

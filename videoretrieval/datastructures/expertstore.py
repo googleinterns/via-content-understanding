@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-Implementation of a datastructure used by the authors of the paper.
+Implementation of a data structure used by the authors of the paper.
 """
 
 
