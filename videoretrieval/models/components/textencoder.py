@@ -1,4 +1,4 @@
-"""Implementation of the video encoder.
+"""Implementation of the text encoder.
 
 Copyright 2020 Google LLC
 
@@ -15,6 +15,5 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from .expertprojectionmodulation import ExpertProjectionModulationLayer
-from .gatedembeddingmodule import GatedEmbeddingModule
-from .temporalaggregation import TemporalAggregationLayer
+class TextEncoder(tf.keras.Model):
+	pass
