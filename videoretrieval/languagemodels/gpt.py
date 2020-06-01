@@ -52,4 +52,4 @@ class OpenAIGPTModel(BaseLanguageModel):
         return self.tokenizer.convert_tokens_to_ids(padded_tokens)
 
     def forward(self, ids):
-        return self.model.test_on_batch(ids)
+        return self.model(ids)
