@@ -83,7 +83,7 @@ def cache_language_model_embeddings(dataset, source_dataset, language_model,
     Arguments:
         dataset: a tf.data Dataset to be cached where the first element is the
             video is as a string tensor, the second is the contextual embeddings
-            as a float32 tensor, and the third is teh raw caption text as a
+            as a float32 tensor, and the third is the raw caption text as a
             string tensor.
         source_dataset: an implementation of BaseDataset for the dataset to be
             loaded.
@@ -107,9 +107,9 @@ def cache_language_model_embeddings(dataset, source_dataset, language_model,
         source_dataset.num_of_examples_by_split(split))
 
 def get_cached_records(source_dataset, language_model, split):
-    """Get a list of files that contain cached data for a specific dataset/
+    """Get a list of files that contain cached data.
 
-    Paraemters:
+    Parameters:
         source_dataset: an implementation of BaseDataset that the cached
             embeddings were generated from. 
         language_model: an implementation of BaseLanguage model that the
