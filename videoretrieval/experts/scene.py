@@ -12,9 +12,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-__init__.py for datasets package
+Class for managing scene experts.
 """
 
-from .msrvtt import MSRVTTDataset
+from base import BaseExpert
 
-msrvtt_dataset = MSRVTTDataset()
+class DenseNet161(BaseExpert):
+    """Implementation of the DenseNet expert class."""
+
+    @property
+    def name(self):
+        return "densenet"
+    
+    @property
+    def embedding_shape(self):
+        return (1, 2208)

@@ -12,9 +12,29 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-__init__.py for datasets package
+Class for managing object detector experts.
 """
 
-from .msrvtt import MSRVTTDataset
+from base import BaseExpert
 
-msrvtt_dataset = MSRVTTDataset()
+class ResNext101(BaseExpert):
+    """Implementation of the ResNext expert class."""
+
+    @property
+    def name(self):
+        return "resnext"
+    
+    @property
+    def embedding_shape(self):
+        return (1024,)
+
+class SeNet154(BaseExpert):
+    """Implementation of the SeNet expert class."""
+
+    @property
+    def name(self):
+        return "senet"
+    
+    @property
+    def embedding_shape(self):
+        return (1024,)
