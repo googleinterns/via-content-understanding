@@ -33,6 +33,7 @@ class BaseExpert(AbstractClass):
 		pass
 
 	@property
+	@abstractmethod
 	def encoded_shape(self):
 		"""The shape of the embedding outputted by the expert."""
 		pass

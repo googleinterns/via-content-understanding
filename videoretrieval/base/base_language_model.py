@@ -19,26 +19,44 @@ from abc import ABC as AbstractClass
 from abc import abstractmethod
 
 class BaseLanguageModel(AbstractClass):
+    """Base class for language models."""
 
     def __call__(self, ids):
+        """Does a forward pass on the language model."""
         return self.forward(ids)
 
     @property
     @abstractmethod
     def name(self):
+        """A short name for a language model, ie: gpt."""
         pass
 
     @property
     @abstractmethod
     def batch_size(self):
+        """The batch size used when inferencing with this model."""
         pass
     
 
     @abstractmethod
     def forward(self, ids):
+        """A forward pass on the model.
+
+        Parameters:
+            ids: a batched tensor of ids returned by the method encode.
+        Returns: a tensor of contextual embeddings.
+        """
         pass
 
     @abstractmethod
     def encode(self, text):
+        """Encode the given text as ids to be passed into the model.
+
+        Parameters:
+            text: a string to encode as ids
+
+        Returns:
+            A python list of ids zero padded to the appropriate size. 
+        """
         pass
 

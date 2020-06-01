@@ -51,6 +51,7 @@ class MSRVTTDataset(BaseVideoDataset):
 
     @property
     def video_captions(self):
+        """Returns a dict of that maps from video_id to a list of captions."""
         video_metadata = metadata.load_metadata()
 
         id_caption_pairs = []
@@ -64,6 +65,11 @@ class MSRVTTDataset(BaseVideoDataset):
 
     @property
     def train_valid_test_ids(self):
+        """Returns a tuple of sets providing ids for the dataset splits.
+
+        Returns: a tuple of sets, where the first set contains the ids for the 
+        train data, the second for the validation data, and the third for the
+        test data."""
         video_metadata = metadata.load_metadata()
 
         train_ids = {data["video_id"] for data in video_metadata["train"]}

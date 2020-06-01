@@ -67,16 +67,27 @@ class BaseVideoDataset(AbstractClass):
         pass
 
     def build_generator(self, data):
+        """Builds a generator that yields each element from data.""" 
         for example in data:
             yield example
 
     def build_id_caption_pair_generator_dataset(self, data):
+        """Builds a tf.data Dataset out of id caption pairs in data."""
         generator = lambda: self.build_generator(data)
 
         return tf.data.Dataset.from_generator(generator, (tf.string, tf.string))
     
     @property
     def id_caption_pair_datasets(self):
+        """Get id caption pair datasets for each split in dataset.
+
+        Returns: a tuple of three tuples, where the first element of each tuple
+        is the tf.data.Dataset of video id caption pairs, and the second element
+        is the name of the split as a string. In the three tuples, the first
+        element is the data for the train split, followed by the valid and test
+        sets.
+        """ 
+
         train_ids, valid_ids, test_ids = self.train_valid_test_ids
 
         train_data = []
@@ -108,6 +119,7 @@ class BaseVideoDataset(AbstractClass):
         )
 
     def num_of_examples_by_split(self, split_name):
+        """Get the number of examples in the given split in this dataset."""
         if "num_of_train_examples" not in dir(self):
             _ = self.id_caption_pair_datasets
 

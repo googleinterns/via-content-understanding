@@ -17,7 +17,7 @@ Implementation of a data structure used by the authors of the paper.
 
 
 class ExpertStore:
-    """An implemenation of an ExpertStore datastructure.
+    """An implemenation of an ExpertStore data structure.
 
     Certain pickle files that contain precomputed features require a class
     called ExpertStore: this class is a thin wrapper for that class.
