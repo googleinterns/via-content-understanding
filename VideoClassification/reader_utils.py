@@ -25,6 +25,7 @@ def get_input_data_tensors(reader,
   Raises:
     IOError: If no files matching the given pattern were found.
   """
+  print(data_pattern)
   files = gfile.glob(data_pattern)
   if not files:
     raise IOError("Unable to find training files. data_pattern='" +
