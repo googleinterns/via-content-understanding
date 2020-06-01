@@ -26,7 +26,8 @@ def train(epochs=10, lr=0.01, num_clusters=100, batch_size=1024, iterations=None
 
 	#Set up Reader and Preprocess Data
 	reader = reader_utils.get_reader()
-
+  print("Hello")
+  print(FLAGS.train_data_pattern)
 	unused_video_id, model_input_raw, labels_batch, num_frames = (
       reader_utils.get_input_data_tensors(
           reader,
