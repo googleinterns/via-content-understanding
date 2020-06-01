@@ -19,6 +19,7 @@ from base import BaseLanguageModel
 from transformers import TFOpenAIGPTModel, OpenAIGPTTokenizer
 
 class OpenAIGPTModel(BaseLanguageModel):
+    """An implementation of BaseLanguageModel for the openai-gpt1 model."""
 
     max_input_length = 324
     _batch_size = 48

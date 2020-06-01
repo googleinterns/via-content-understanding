@@ -19,6 +19,18 @@ from cache import cache_language_model_embeddings
 
 
 def get_encode_function(language_model):
+    """Returns a function that encodes captions.
+
+    Arguments:
+        language_model: an instance of BaseLanguageModel that is used to encode
+            the text.
+
+    Returns: a function that has two parameters, the video id, and the caption
+        text. This function then returns a tuple of 3 values. The first value is
+        the video id, the second value is the encoded ids, and the third is the
+        caption text.
+    """
+
     def encode_text(text):
         result = language_model.encode(text.numpy().decode("utf-8"))
         return [result]
@@ -32,6 +44,17 @@ def get_encode_function(language_model):
     return wrapper
 
 def get_language_model_inference_function(language_model):
+    """Returns a function that inferences with the language model.
+
+    Arguments:
+        language_model: an instance of BaseLanguageModel that is used to
+            generate contextual embeddings from the text.
+
+    Returns: a function that has three parameters, the video id, the encoded ids
+        and the text of the caption. The function returns three values, the 
+        video id, the contextual embeddings, and the caption text.
+    """
+
     def inference(ids):
         return language_model(ids)
 
@@ -42,6 +65,21 @@ def get_language_model_inference_function(language_model):
     return wrapper
 
 def generate_contextal_embeddings(language_model, dataset):
+    """Generate the contextual embeddings for a given dataset.
+
+    Arguments:
+        language_model: an instance of BaseLanguageModel that is used to
+            generate contextual embeddings
+        dataset: a tf.data Dataset where each of the dataset has two items.
+            First, a video id in the form of a string tensor, and second, 
+            a caption corresponding to that video in the form of a string
+            tensor.
+
+    Returns: a tf.data Dataset that has three elements: a video id in the form
+        of a string tensor, the contextual embeddings as a float32 tensor, and
+        the original caption as a string tensor.
+    """
+
     encode = get_encode_function(language_model)
 
     return (dataset
@@ -51,6 +89,20 @@ def generate_contextal_embeddings(language_model, dataset):
 
 
 def generate_and_cache_contextual_embeddings(language_model, source_dataset):
+    """Generate and cache contextual embeddings for a given dataset/model.
+
+    For each split in the source dataset, given by 
+    source_dataset.id_caption_pair_dataset, generate contextual embeddings using
+    language_model and cache them.
+
+    Arguments:
+        language_model: an instance of BaseLanguageModel used for generating
+            contextual embeddings.
+        source_dataset: the source dataset as an an instance of BaseDataset.
+
+    Returns: nothing.
+    """
+
     for ds_split, split_name in source_dataset.id_caption_pair_datasets:
         ds_split = generate_contextal_embeddings(language_model, ds_split)
 

@@ -19,7 +19,7 @@ import math
 from pathlib import Path
 import glob
 
-embeddings_per_file = 2000
+embeddings_per_file = 50
 
 decoding_schema = {
     "video_id": tf.io.FixedLenFeature([], tf.string),
@@ -29,10 +29,12 @@ decoding_schema = {
 
 
 def get_feature(value):
+    """Get a tf.train.Feature from the parameter value as a bytes list."""
     bytes_list = tf.train.BytesList(value=[value.numpy()])
     return tf.train.Feature(bytes_list=bytes_list)
 
 def get_records_directory(dataset, language_model, split):
+    """Get a path to cache the data from the dataset/model/split."""
     dataset_name = dataset.dataset_name
     language_model_name = language_model.name
 
@@ -43,6 +45,7 @@ def get_records_directory(dataset, language_model, split):
     return path
 
 def seralize_to_protobuf(video_id, contextual_embeddings, text):
+    """Seralizes the video_id, contextual_embeddings, and text as a protobuf."""
     video_id_feature = get_feature(video_id)
     text_feature = get_feature(text)
 
@@ -60,9 +63,11 @@ def seralize_to_protobuf(video_id, contextual_embeddings, text):
     return protobuf.SerializeToString()
 
 def seralize_to_protobuf_wrapper(*args):
+    """Wraps the seralize_to_protobuf function with tf.py_function."""
     return tf.py_function(seralize_to_protobuf, args, tf.string)
 
 def write_dataset(dataset, records_directory, dataset_size):
+    """Shards a tf.data Dataset and writes it to disk.""" 
     for shard_index, batch in enumerate(dataset.batch(embeddings_per_file)):
         file_path = records_directory / (f"lm_{shard_index}.tfrecord")
 
@@ -73,6 +78,24 @@ def write_dataset(dataset, records_directory, dataset_size):
  
 def cache_language_model_embeddings(dataset, source_dataset, language_model,
     split):
+    """Cache embeddings for a specific dataset/model/split.
+
+    Arguments:
+        dataset: a tf.data Dataset to be cached where the first element is the
+            video is as a string tensor, the second is the contextual embeddings
+            as a float32 tensor, and the third is teh raw caption text as a
+            string tensor.
+        source_dataset: an implementation of BaseDataset for the dataset to be
+            loaded.
+        language_model: an implementation of BaseLanguageModel for the language
+            model used to generate the contextual embeddings.
+        split: the name of the split (as a string).
+
+    Returns: a tf.data Dataset where the first element is the video id as a
+        string tensor, the second is the contextual embeddings as a float32
+        tensor, and the third is the raw caption text as a string tensor.
+        The dataset is empty if there are no cached results.  
+    """
 
     dataset = dataset.unbatch().map(seralize_to_protobuf_wrapper, 
         num_parallel_calls=tf.data.experimental.AUTOTUNE)
@@ -84,6 +107,17 @@ def cache_language_model_embeddings(dataset, source_dataset, language_model,
         source_dataset.num_of_examples_by_split(split))
 
 def get_cached_records(source_dataset, language_model, split):
+    """Get a list of files that contain cached data for a specific dataset/
+
+    Paraemters:
+        source_dataset: an implementation of BaseDataset that the cached
+            embeddings were generated from. 
+        language_model: an implementation of BaseLanguage model that the
+            cached embeddings were generated from.
+        split: the name of the dataset split.
+
+    Returns: a list of file paths (as strings) to each cached tfrecord file.
+    """
 
     records_directory = get_records_directory(
         source_dataset, language_model, split)
@@ -92,6 +126,12 @@ def get_cached_records(source_dataset, language_model, split):
     return glob.glob(glob_string)
 
 def unseralize_data(seralized_item):
+    """Unseralizes a seralized protobuf feature.
+
+    Returns: a tuple of 3 items, the first being the video id as a string tensor,
+        the second being the contextual embeddings as a float32 tensor,
+        the third being the source text as tensor.
+    """
     example = tf.io.parse_single_example(seralized_item, decoding_schema)
     contextual_embeddings = tf.io.parse_tensor(
         example["seralized_embeddings"], tf.float32)
@@ -99,6 +139,20 @@ def unseralize_data(seralized_item):
     return (example["video_id"], contextual_embeddings, example["text"])
 
 def get_cached_language_model_embeddings(source_dataset, language_model, split):
+    """Load the cached embeddings for a specific dataset/model/split.
+
+    Arguments:
+        source_dataset: an implementation of BaseDataset for the dataset to be
+            loaded.
+        language_model: an implementation of BaseLanguageModel for the language
+            model used to generate the contextual embeddings.
+        split: the name of the split (as a string).
+
+    Returns: a tf.data Dataset where the first element is the video id as a
+        string tensor, the second is the contextual embeddings as a float32
+        tensor, and the third is the raw caption text as a string tensor.
+        The dataset is empty if there are no cached results.  
+    """
     record_files = get_cached_records(source_dataset, language_model, split)
 
     return (tf.data.TFRecordDataset(record_files)
