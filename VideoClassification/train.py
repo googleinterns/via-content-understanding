@@ -19,11 +19,9 @@ if __name__ == "__main__":
       "features (i.e. tensorflow.SequenceExample), then set --reader_type "
       "format. The (Sequence)Examples are expected to have 'rgb' byte array "
       "sequence feature as well as a 'labels' int64 context feature.")
-  flags.DEFINE_integer("num_readers", 8,
-                       "How many threads to use for reading input files.")
 
 
-def train(epochs=100, lr=0.01, num_clusters=100, batch_size=1024, iterations=None, random_frames=True, num_mixtures=2):
+def train(epochs=10, lr=0.01, num_clusters=100, batch_size=1024, iterations=None, random_frames=True, num_mixtures=2, num_readers=8):
 	steps_per_epoch = NUM_EXAMPLES / epochs
 
 	#Set up Reader and Preprocess Data
