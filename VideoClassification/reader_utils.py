@@ -1,6 +1,6 @@
 import readers
 import tensorflow as tf
-from tensorflow import gfile
+from tensorflow.io import gfile
 
 def get_input_data_tensors(reader,
                            data_pattern,

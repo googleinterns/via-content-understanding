@@ -14,10 +14,6 @@
 """Contains a collection of util functions for model construction."""
 import numpy
 import tensorflow as tf
-from tensorflow import logging
-from tensorflow import flags
-import tensorflow.contrib.slim as slim
-
 
 def SampleRandomSequence(model_input, num_frames, num_samples):
   """Samples a random sequence of frames of size num_samples.

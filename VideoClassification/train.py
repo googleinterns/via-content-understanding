@@ -4,7 +4,7 @@ import reader_utils
 
 import readers
 
-from tensorflow import flags
+from tensorflow.python.platform import flags
 
 FLAGS = flags.FLAGS
 NUM_EXAMPLES = 3844
