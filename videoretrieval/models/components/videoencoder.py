@@ -17,7 +17,7 @@ limitations under the License.
 
 import tensorflow as tf
 from models.layers import TemporalAggregationLayer, \
-    ExpertProjectionModulationLayer, GatedEmbeddingModule 
+    ExpertProjectionModulationLayer, GatedEmbeddingModule
 
 
 class VideoEncoder(tf.keras.Model):
