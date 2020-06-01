@@ -25,8 +25,8 @@ if __name__ == "__main__":
 
 def train(epochs=100, lr=0.01, num_clusters=100, batch_size=1024, iterations=None, random_frames=True, num_mixtures=2):
 	steps_per_epoch = NUM_EXAMPLES / epochs
-
-	#Set up Reader and Preprocess Data
+	
+        #Set up Reader and Preprocess Data
 	reader = reader_utils.get_reader()
 
 	unused_video_id, model_input_raw, labels_batch, num_frames = (
@@ -34,7 +34,7 @@ def train(epochs=100, lr=0.01, num_clusters=100, batch_size=1024, iterations=Non
           reader,
           FLAGS.train_data_pattern,
           batch_size=batch_size,
-          num_readers=num_readers,
+          num_readers=8,
           num_epochs=epochs))
 	  
 	feature_dim = len(model_input_raw.get_shape()) - 1
