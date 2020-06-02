@@ -33,7 +33,7 @@ def train(epochs=100, lr=0.01, num_clusters=100, batch_size=1024, iterations=Non
 
 	train_dataset = reader.get_dataset('/home/conorfvedova_google_com/data/train/', batch_size=batch_size, num_workers=8)
 	print(train_dataset)
-	print(len(list(dataset)))
+	print(len(list(train_dataset)))
 
 	assert False
 	num_frames = reader.max_frames
