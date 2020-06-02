@@ -11,33 +11,33 @@ NUM_EXAMPLES = 3844
 NUM_VAL_EXAMPLES = 3844
 
 if __name__ == "__main__":
-  # Dataset flags.
-  flags.DEFINE_string("train_dir", "~/data/train/train*.tfreco",
-                      "The directory to save the model files in.")
-  flags.DEFINE_string(
-      "train_data_pattern", "~/data/train/train*.tfrecord",
-      "File glob for the training dataset. If the files refer to Frame Level "
-      "features (i.e. tensorflow.SequenceExample), then set --reader_type "
-      "format. The (Sequence)Examples are expected to have 'rgb' byte array "
-      "sequence feature as well as a 'labels' int64 context feature.")
-  flags.DEFINE_integer("num_readers", 8,
-                       "How many threads to use for reading input files.")
+	# Dataset flags.
+	flags.DEFINE_string("train_dir", "~/data/train/train*.tfreco",
+											"The directory to save the model files in.")
+	flags.DEFINE_string(
+			"train_data_pattern", "~/data/train/train*.tfrecord",
+			"File glob for the training dataset. If the files refer to Frame Level "
+			"features (i.e. tensorflow.SequenceExample), then set --reader_type "
+			"format. The (Sequence)Examples are expected to have 'rgb' byte array "
+			"sequence feature as well as a 'labels' int64 context feature.")
+	flags.DEFINE_integer("num_readers", 8,
+											 "How many threads to use for reading input files.")
 
 
 def train(epochs=100, lr=0.01, num_clusters=100, batch_size=1024, iterations=None, random_frames=True, num_mixtures=2):
 	steps_per_epoch = NUM_EXAMPLES // batch_size
-  validation_steps = NUM_VAL_EXAMPLES // batch_size
-        
-  #Set up Reader and Preprocess Data
+	validation_steps = NUM_VAL_EXAMPLES // batch_size
+				
+	#Set up Reader and Preprocess Data
 	reader = reader_utils.get_reader()
 
 	train_dataset = reader.get_dataset('~/data/train/', batch_size=batch_size, num_workers=8)
-  print(train_dataset)
+	print(train_dataset)
 
-  assert False
-  num_frames = reader.max_frames
+	assert False
+	num_frames = reader.max_frames
 
-  validation_dataset = reader.get_dataset('~/data/validate/', batch_size=batch_size, num_workers=8, type="validate")
+	validation_dataset = reader.get_dataset('~/data/validate/', batch_size=batch_size, num_workers=8, type="validate")
 
 	video_input_shape = (batch_size, num_frames, 1024)
 	audio_input_shape = (batch_size, num_frames, 128)
