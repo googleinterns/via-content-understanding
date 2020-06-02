@@ -156,6 +156,7 @@ class VideoClassifier(tf.keras.Model):
 		ValueError: If the number of samples of the audio_input_shape and video_input_shape do not match.
 	"""
 	def __init__(self, num_clusters, video_input_shape, audio_input_shape, iterations, random_frames, num_classes, num_mixtures):
+		super(VideoClassifier, self).__init__()
 		if num_clusters % 2 != 0:
 			raise ValueError("num_clusters must be divisible by 2.")
 		batch_size = video_input_shape[0]
