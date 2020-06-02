@@ -22,7 +22,7 @@ class OpenAIGPTModel(BaseLanguageModel):
     """An implementation of BaseLanguageModel for the openai-gpt1 model."""
 
     max_input_length = 324
-    _batch_size = 48
+    _batch_size = 3
 
     def __init__(self):
         self.model = TFOpenAIGPTModel.from_pretrained("openai-gpt")
@@ -38,7 +38,7 @@ class OpenAIGPTModel(BaseLanguageModel):
 
     @property
     def encoded_shape(self):
-        return (max_input_length,)
+        return (self.max_input_length,)
 
     def pad_tokens(self, tokens):
         """Zero pad tokens to max input length.
