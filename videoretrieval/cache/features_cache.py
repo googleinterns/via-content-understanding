@@ -78,6 +78,6 @@ def get_cached_features_by_expert_and_dataset(dataset, expert):
         return None
 
     with open(file_path, "rb") as file:
-        cached_features = picle.load(file)
+        cached_features = pickle.load(file)
 
     return cached_features

@@ -26,7 +26,7 @@ class ResNext101(BaseExpert):
     
     @property
     def embedding_shape(self):
-        return (1024,)
+        return (2048,)
 
 class SeNet154(BaseExpert):
     """Implementation of the SeNet expert class."""
@@ -37,4 +37,4 @@ class SeNet154(BaseExpert):
     
     @property
     def embedding_shape(self):
-        return (1024,)
+        return (2048,)
