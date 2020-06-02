@@ -185,11 +185,11 @@ class VideoClassifier(tf.keras.Model):
 			kernel_regularizer=tf.keras.regularizers.l2(1e-5),
 		)
 
-		self.first_cg = ContextGating((batch_size, fc_units))
+		self.first_cg = ContextGating(input_shape=(batch_size, fc_units))
 
 		self.moe = MOELogistic(self.first_cg.compute_output_shape((batch_size, fc_units)), self.num_classes, self.num_mixtures)
 
-		self.second_cg = ContextGating(self.moe.compute_output_shape((batch_size, fc_units)))
+		self.second_cg = ContextGating(input_shape=self.moe.compute_output_shape((batch_size, fc_units)))
 
 	def call(self, model_input):
 		"""Perform one forward pass of the model.
