@@ -174,7 +174,7 @@ class VideoClassifier(tf.keras.Model):
 		self.video_feature_dim = video_input_shape[2]
 
 		self.video_vlad = netvlad.NetVLAD(num_clusters)
-		self.audio_vlad = netvlad.NetVLAD(num_clusters/2)
+		self.audio_vlad = netvlad.NetVLAD(num_clusters//2)
 
 		fc_units = self.video_vlad.compute_output_shape(video_input_shape)[1] + self.audio_vlad.compute_output_shape(audio_input_shape)[1]
 
