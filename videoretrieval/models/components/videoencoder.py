@@ -134,7 +134,7 @@ class VideoEncoder(tf.keras.Model):
                         summed_pairwise_attentions = attentions
                     else:
                         summed_pairwise_attentions += attentions
-            print(summed_pairwise_attentions.shape)
+
             attentions = self.h_mlp(summed_pairwise_attentions)
 
             embeddings = self.expert_projection([embedding, attentions])
