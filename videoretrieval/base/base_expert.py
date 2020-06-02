@@ -19,21 +19,16 @@ from abc import abstractmethod
 import pathlib
 
 class BaseExpert(AbstractClass):
-	"""Base class for expert models."""
+    """Base class for expert models."""
 
-	@property
-	@abstractmethod
-	def name(self):
-		"""A short name for the expert: e.g., slowfast."""
-		pass
-	
-	@property
-	@abstractmethod
-	def embedding_shape(self):
-		pass
+    @property
+    @abstractmethod
+    def name(self):
+        """A short name for the expert: e.g., slowfast."""
+        pass
 
-	@property
-	@abstractmethod
-	def encoded_shape(self):
-		"""The shape of the embedding outputted by the expert."""
-		pass
+    @property
+    @abstractmethod
+    def embedding_shape(self):
+        """The shape of the embedding outputted by the expert."""
+        pass
