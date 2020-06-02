@@ -15,6 +15,7 @@
 
 import tensorflow as tf
 import utils
+import os
 
 
 def resize_axis(tensor, axis, new_size, fill_value=0):
@@ -54,7 +55,7 @@ def resize_axis(tensor, axis, new_size, fill_value=0):
   resized.set_shape(new_shape)
   return resized
 
-class YT8MFrameFeatureReader():
+class YT8MFrameFeatureDataset():
   """Reads TFRecords of SequenceExamples.
 
   The TFRecords must contain SequenceExamples with the sparse in64 'labels'
@@ -68,18 +69,14 @@ class YT8MFrameFeatureReader():
       num_classes=3862,
       feature_sizes=[1024, 128],
       feature_names=["rgb", "audio"],
-      max_frames=300,
-      segment_labels=False,
-      segment_size=5):
-    """Construct a YT8MFrameFeatureReader.
+      max_frames=300):
+    """Construct a YT8MFrameFeatureDataset.
 
     Args:
       num_classes: a positive integer for the number of classes.
       feature_sizes: positive integer(s) for the feature dimensions as a list.
       feature_names: the feature name(s) in the tensorflow record as a list.
       max_frames: the maximum number of frames to process.
-      segment_labels: if we read segment labels instead.
-      segment_size: the segment_size used for reading segments.
     """
 
     assert len(feature_names) == len(feature_sizes), (
@@ -90,8 +87,6 @@ class YT8MFrameFeatureReader():
     self.feature_sizes = feature_sizes
     self.feature_names = feature_names
     self.max_frames = max_frames
-    self.segment_labels = segment_labels
-    self.segment_size = segment_size
 
   def get_video_matrix(self, features, feature_size, max_frames,
                        max_quantized_value, min_quantized_value):
@@ -118,47 +113,37 @@ class YT8MFrameFeatureReader():
     feature_matrix = resize_axis(feature_matrix, 0, max_frames)
     return feature_matrix, num_frames
 
-  def prepare_reader(self,
-                     filename_queue,
-                     max_quantized_value=2,
-                     min_quantized_value=-2):
-    """Creates a single reader thread for YouTube8M SequenceExamples.
+  def get_dataset(self, data_dir, batch_size, type="train", max_quantized_value=2, min_quantized_value=-2, num_workers=8):
+    """Returns TFRecordDataset after it has been parsed.
 
     Args:
-      filename_queue: A tensorflow queue of filename locations.
-      max_quantized_value: the maximum of the quantized value.
-      min_quantized_value: the minimum of the quantized value.
-
+      data_dir: directory of the TFRecords
     Returns:
-      A dict of video indexes, video features, labels, and frame counts.
+      dataset: TFRecordDataset of the input training data
     """
-    reader = tf.TFRecordReader()
-    _, serialized_example = reader.read(filename_queue)
+    files = tf.matching_files(os.path.join(data_dir, '%s*' % type))
 
-    return self.prepare_serialized_examples(serialized_example,
-                                            max_quantized_value,
-                                            min_quantized_value)
+    files_dataset = tf.data.Dataset.from_tensor_slices(files)
+    files_dataset = files_dataset.shuffle(tf.cast(tf.shape(files)[0], tf.int64))
+    files_dataset = files_dataset.repeat()
+    dataset = files_dataset.interleave(tf.data.TFRecordDataset)
+    dataset = dataset.shuffle(buffer_size=8192)
 
-  def prepare_serialized_examples(self,
-                                  serialized_example,
-                                  max_quantized_value=2,
-                                  min_quantized_value=-2):
-    """Parse single serialized SequenceExample from the TFRecords."""
+    parser = partial(self._parse_fn, max_quantized_value=max_quantized_value, min_quantized_value=min_quantized_value)
+    dataset = dataset.map(parser).batch(batch_size)
+
+    dataset = dataset.prefetch(batch_size)
+    return dataset
+
+  def _parse_fn(self, serialized_example, max_quantized_value=2, min_quantized_value=-2):
+    """Parse single Serialized Example from the TFRecords."""
 
     # Read/parse frame/segment-level labels.
     context_features = {
         "id": tf.io.FixedLenFeature([], tf.string),
+        "labels": tf.io.VarLenFeature(tf.int64)
     }
-    if self.segment_labels:
-      context_features.update({
-          # There is no need to read end-time given we always assume the segment
-          # has the same size.
-          "segment_labels": tf.io.VarLenFeature(tf.int64),
-          "segment_start_times": tf.io.VarLenFeature(tf.int64),
-          "segment_scores": tf.io.VarLenFeature(tf.float32)
-      })
-    else:
-      context_features.update({"labels": tf.io.VarLenFeature(tf.int64)})
+    
     sequence_features = {
         feature_name: tf.io.FixedLenSequenceFeature([], dtype=tf.string)
         for feature_name in self.feature_names
@@ -194,59 +179,21 @@ class YT8MFrameFeatureReader():
     # concatenate different features
     video_matrix = tf.concat(feature_matrices, 1)
 
-    # Partition frame-level feature matrix to segment-level feature matrix.
-    if self.segment_labels:
-      start_times = contexts["segment_start_times"].values
-      # Here we assume all the segments that started at the same start time has
-      # the same segment_size.
-      uniq_start_times, seg_idxs = tf.unique(start_times,
-                                             out_idx=tf.dtypes.int64)
-      # TODO(zhengxu): Ensure the segment_sizes are all same.
-      segment_size = self.segment_size
-      # Range gather matrix, e.g., [[0,1,2],[1,2,3]] for segment_size == 3.
-      range_mtx = tf.expand_dims(uniq_start_times, axis=-1) + tf.expand_dims(
-          tf.range(0, segment_size, dtype=tf.int64), axis=0)
-      # Shape: [num_segment, segment_size, feature_dim].
-      batch_video_matrix = tf.gather_nd(video_matrix,
-                                        tf.expand_dims(range_mtx, axis=-1))
-      num_segment = tf.shape(batch_video_matrix)[0]
-      batch_video_ids = tf.reshape(tf.tile([contexts["id"]], [num_segment]),
-                                   (num_segment,))
-      batch_frames = tf.reshape(tf.tile([segment_size], [num_segment]),
-                                (num_segment,))
-
-      # For segment labels, all labels are not exhausively rated. So we only
-      # evaluate the rated labels.
-
-      # Label indices for each segment, shape: [num_segment, 2].
-      label_indices = tf.stack([seg_idxs, contexts["segment_labels"].values],
-                               axis=-1)
-      label_values = contexts["segment_scores"].values
-      sparse_labels = tf.sparse.SparseTensor(label_indices, label_values,
-                                             (num_segment, self.num_classes))
-      batch_labels = tf.sparse.to_dense(sparse_labels, validate_indices=False)
-
-      sparse_label_weights = tf.sparse.SparseTensor(
-          label_indices, tf.ones_like(label_values, dtype=tf.float32),
-          (num_segment, self.num_classes))
-      batch_label_weights = tf.sparse.to_dense(sparse_label_weights,
-                                               validate_indices=False)
-    else:
-      # Process video-level labels.
-      label_indices = contexts["labels"].values
-      sparse_labels = tf.sparse.SparseTensor(
-          tf.expand_dims(label_indices, axis=-1),
-          tf.ones_like(contexts["labels"].values, dtype=tf.bool),
-          (self.num_classes,))
-      labels = tf.sparse.to_dense(sparse_labels,
-                                  default_value=False,
-                                  validate_indices=False)
-      # convert to batch format.
-      batch_video_ids = tf.expand_dims(contexts["id"], 0)
-      batch_video_matrix = tf.expand_dims(video_matrix, 0)
-      batch_labels = tf.expand_dims(labels, 0)
-      batch_frames = tf.expand_dims(num_frames, 0)
-      batch_label_weights = None
+    
+    # Process video-level labels.
+    label_indices = contexts["labels"].values
+    sparse_labels = tf.sparse.SparseTensor(
+        tf.expand_dims(label_indices, axis=-1),
+        tf.ones_like(contexts["labels"].values, dtype=tf.bool),
+        (self.num_classes,))
+    labels = tf.sparse.to_dense(sparse_labels,
+                                default_value=False,
+                                validate_indices=False)
+    # convert to batch format.
+    batch_video_ids = tf.expand_dims(contexts["id"], 0)
+    batch_video_matrix = tf.expand_dims(video_matrix, 0)
+    batch_labels = tf.expand_dims(labels, 0)
+    batch_frames = tf.expand_dims(num_frames, 0)
 
     output_dict = {
         "video_ids": batch_video_ids,
@@ -254,7 +201,9 @@ class YT8MFrameFeatureReader():
         "labels": batch_labels,
         "num_frames": batch_frames,
     }
-    if batch_label_weights is not None:
-      output_dict["label_weights"] = batch_label_weights
 
-    return output_dict
+    feature_dim = len(batch_video_matrix.get_shape()) - 1
+
+    batch_video_matrix = tf.nn.l2_normalize(batch_video_matrix, feature_dim)
+
+    return (batch_video_matrix, batch_labels)
