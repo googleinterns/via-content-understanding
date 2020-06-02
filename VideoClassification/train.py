@@ -11,7 +11,7 @@ NUM_EXAMPLES = 3844
 
 if __name__ == "__main__":
   # Dataset flags.
-  flags.DEFINE_string("train_dir", "~/data/train/train*.tfrecord",
+  flags.DEFINE_string("train_dir", "~/data/train/train*.tfreco",
                       "The directory to save the model files in.")
   flags.DEFINE_string(
       "train_data_pattern", "",
