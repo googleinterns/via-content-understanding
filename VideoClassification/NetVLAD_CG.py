@@ -187,7 +187,7 @@ class VideoClassifier(tf.keras.Model):
 
 		self.first_cg = ContextGating(input_shape=(batch_size, fc_units))
 
-		self.moe = MOELogistic(self.first_cg.compute_output_shape((batch_size, fc_units)), self.num_classes, self.num_mixtures)
+		self.moe = MOELogistic(input_shape=self.first_cg.compute_output_shape((batch_size, fc_units)), num_classes=self.num_classes, num_mixtures=self.num_mixtures)
 
 		self.second_cg = ContextGating(input_shape=self.moe.compute_output_shape((batch_size, fc_units)))
 
