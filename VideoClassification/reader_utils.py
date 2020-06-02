@@ -8,7 +8,7 @@ def get_reader(feature_names='rgb,audio', feature_sizes='1024,128'):
 	feature_names, feature_sizes = GetListOfFeatureNamesAndSizes(
 			feature_names, feature_sizes)
 
-	reader = readers.YT8MFrameFeatureReader(feature_names=feature_names,
+	reader = readers.YT8MFrameFeatureDataset(feature_names=feature_names,
 																						feature_sizes=feature_sizes)
 	return reader
 

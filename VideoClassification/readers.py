@@ -16,7 +16,7 @@
 import tensorflow as tf
 import utils
 import os
-
+from functools import partial
 
 def resize_axis(tensor, axis, new_size, fill_value=0):
 	"""Truncates or pads a tensor to new_size on on a given axis.
@@ -104,7 +104,7 @@ class YT8MFrameFeatureDataset():
 			num_frames: number of frames in the sequence
 		"""
 		decoded_features = tf.reshape(
-				tf.cast(tf.decode_raw(features, tf.uint8), tf.float32),
+				tf.cast(tf.io.decode_raw(features, tf.uint8), tf.float32),
 				[-1, feature_size])
 
 		num_frames = tf.minimum(tf.shape(decoded_features)[0], max_frames)
@@ -121,8 +121,7 @@ class YT8MFrameFeatureDataset():
 		Returns:
 			dataset: TFRecordDataset of the input training data
 		"""
-		files = tf.matching_files(os.path.join(data_dir, '%s*' % type))
-
+		files = tf.io.matching_files(os.path.join(data_dir, '%s*' % type))
 		files_dataset = tf.data.Dataset.from_tensor_slices(files)
 		files_dataset = files_dataset.shuffle(tf.cast(tf.shape(files)[0], tf.int64))
 		files_dataset = files_dataset.repeat()

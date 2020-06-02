@@ -31,13 +31,13 @@ def train(epochs=100, lr=0.01, num_clusters=100, batch_size=1024, iterations=Non
 	#Set up Reader and Preprocess Data
 	reader = reader_utils.get_reader()
 
-	train_dataset = reader.get_dataset('~/data/train/', batch_size=batch_size, num_workers=8)
+	train_dataset = reader.get_dataset('/home/conorfvedova_google_com/data/train/', batch_size=batch_size, num_workers=8)
 	print(train_dataset)
 
 	assert False
 	num_frames = reader.max_frames
 
-	validation_dataset = reader.get_dataset('~/data/validate/', batch_size=batch_size, num_workers=8, type="validate")
+	validation_dataset = reader.get_dataset('/home/conorfvedova_google_com/data/validate/', batch_size=batch_size, num_workers=8, type="validate")
 
 	video_input_shape = (batch_size, num_frames, 1024)
 	audio_input_shape = (batch_size, num_frames, 128)
