@@ -127,7 +127,7 @@ class YT8MFrameFeatureDataset():
 		files_dataset = files_dataset.shuffle(tf.cast(tf.shape(files)[0], tf.int64))
 		files_dataset = files_dataset.repeat()
 		dataset = files_dataset.interleave(tf.data.TFRecordDataset)
-		dataset = dataset.shuffle(buffer_size=8192)
+		dataset = dataset.shuffle(buffer_size=batch_size*5)
 
 		parser = partial(self._parse_fn, max_quantized_value=max_quantized_value, min_quantized_value=min_quantized_value)
 		dataset = dataset.map(parser).batch(batch_size)
