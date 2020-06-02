@@ -24,7 +24,7 @@ if __name__ == "__main__":
 											 "How many threads to use for reading input files.")
 
 
-def train(epochs=100, lr=0.01, num_clusters=100, batch_size=1024, iterations=None, random_frames=True, num_mixtures=2):
+def train(epochs=2, lr=0.01, num_clusters=100, batch_size=1024, iterations=None, random_frames=True, num_mixtures=2):
 	steps_per_epoch = NUM_EXAMPLES // batch_size
 	validation_steps = NUM_VAL_EXAMPLES // batch_size
 				
@@ -41,12 +41,13 @@ def train(epochs=100, lr=0.01, num_clusters=100, batch_size=1024, iterations=Non
 	audio_input_shape = (batch_size, num_frames, 128)
 
 	#Compile and train model
-	model = VideoClassifier(num_clusters, video_input_shape, audio_input_shape, iterations=iterations, random_frames=random_frames, num_classes=reader.num_classes, num_mixtures=num_mixtures)
+	model = NetVLAD_CG.VideoClassifier(num_clusters, video_input_shape, audio_input_shape, iterations=iterations, random_frames=random_frames, num_classes=reader.num_classes, num_mixtures=num_mixtures)
 	
 	model.compile(optimizer=keras.optimizers.Adam(learning_rate=lr), loss=keras.losses.CategoricalCrossentropy(from_logits=True), metrics=['categorical_accuracy'])
 
 	model.fit(x=train_dataset, steps_per_epoch=steps_per_epoch, validation_data=validation_dataset, validation_steps=validation_steps, epochs=epochs)
 
+	model.save('/home/conorfvedova_google_com/saved_model/model-final.h5')
 
 if __name__ == "__main__":
 	train()
