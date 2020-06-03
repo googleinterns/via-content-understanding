@@ -232,7 +232,8 @@ class VideoClassifier(tf.keras.Model):
 		self.num_mixtures = num_mixtures
 
 		self.video_feature_dim = video_input_shape[2]
-
+		print(video_input_shape)
+		print(audio_input_shape)
 		self.video_vlad = NetVLAD(num_clusters, input_shape=video_input_shape)
 		self.audio_vlad = NetVLAD(num_clusters//2, input_shape=audio_input_shape)
 
