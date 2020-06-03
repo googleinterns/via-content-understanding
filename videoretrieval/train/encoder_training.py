@@ -61,13 +61,14 @@ def epoch(train_ds, valid_ds, train_ds_len, valid_ds_len, train_step_function,
 
     train_iter_progress = progress_bar(
         iter(train_batched_dataset), total=train_ds_len)
-    valid_iter_progress = progress_bar(
-        iter(valid_batched_dataset), total=valid_ds_len)
 
     for video_embeddings_batch, text_embeddings_batch in train_iter_progress:
         train_step_function(video_embeddings_batch, text_embeddings_batch)
         train_iter_progress.set_description(
             f"Train Loss: {train_loss.result().numpy()}")
+
+    valid_iter_progress = progress_bar(
+        iter(valid_batched_dataset), total=valid_ds_len)
 
     for video_embeddings_batch, text_embeddings_batch in valid_iter_progress:
         valid_loss(bidirectional_max_margin_ranking_loss(
