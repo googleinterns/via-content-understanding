@@ -262,8 +262,6 @@ class VideoClassifier(tf.keras.Model):
 		#	model_input = utils.SampleRandomFrames(model_input, self.num_frames, self.iterations)
 		#else:
 		#	model_input = utils.SampleRandomSequence(model_input, self.num_frames, self.iterations)
-		
-		model_input = tf.squeeze(model_input)
 
 		video_input = model_input[:,:,:self.video_feature_dim]
 		audio_input = model_input[:,:,self.video_feature_dim:]
@@ -279,6 +277,7 @@ class VideoClassifier(tf.keras.Model):
 		print(moe_out.shape)
 		final_out = self.second_cg(moe_out)
 		print(final_out.shape)
+		print("Here")
 		return final_out
 
 #Fix num_frames in call function
