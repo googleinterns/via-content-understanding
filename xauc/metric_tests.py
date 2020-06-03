@@ -32,6 +32,8 @@ class TestCrossAUCMetrics(unittest.TestCase):
     maximum_error = 1e-6
 
     def verify_metrics_match(self, expected, calculated):
+        """Verify the calculated and expected metrics match."""
+
         self.assertTrue(
             abs(expected.xauc - calculated.xauc) < self.maximum_error)
 
