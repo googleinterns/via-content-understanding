@@ -24,7 +24,7 @@ if __name__ == "__main__":
 											 "How many threads to use for reading input files.")
 
 
-def train(epochs=2, lr=0.01, num_clusters=64, batch_size=64, iterations=None, random_frames=True, num_mixtures=2, fc_units=2048):
+def train(epochs=100, lr=0.01, num_clusters=64, batch_size=64, iterations=None, random_frames=True, num_mixtures=2, fc_units=2048):
 	steps_per_epoch = NUM_EXAMPLES // batch_size
 	validation_steps = NUM_VAL_EXAMPLES // batch_size
 				
@@ -32,7 +32,7 @@ def train(epochs=2, lr=0.01, num_clusters=64, batch_size=64, iterations=None, ra
 	reader = reader_utils.get_reader()
 
 	train_dataset = reader.get_dataset('/home/conorfvedova_google_com/data/train/', batch_size=batch_size, num_workers=8)
-	print(train_dataset)
+
 	num_frames = reader.max_frames
 
 	validation_dataset = reader.get_dataset('/home/conorfvedova_google_com/data/validate/', batch_size=batch_size, num_workers=8, type="validate")

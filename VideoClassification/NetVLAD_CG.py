@@ -274,10 +274,8 @@ class VideoClassifier(tf.keras.Model):
 		fc_out = self.fc(vlad_out)
 		cg_out = self.first_cg(fc_out)
 		moe_out = self.moe(cg_out)
-		print(moe_out.shape)
 		final_out = self.second_cg(moe_out)
-		print(final_out.shape)
-		print("Here")
+
 		return final_out
 
 #Fix num_frames in call function
