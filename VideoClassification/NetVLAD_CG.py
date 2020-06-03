@@ -26,15 +26,8 @@ class ContextGating(tf.keras.layers.Layer):
 	2D tensor with shape: `(batch_size, feature_dim)`.
 	"""
 
-	def __init__(self, **kwargs):
-		super().__init__(**kwargs)
-
-	def build(self, input_shape):
-		"""Keras build method.
-
-		Args:
-			input_shape: tuple denoting the shape of the input
-		"""
+	def __init__(self, input_shape):
+		super(ContextGating, self).__init__()
 		feature_dim = input_shape[-1]
 		if not isinstance(feature_dim, int):
 			feature_dim = feature_dim.value
@@ -43,7 +36,6 @@ class ContextGating(tf.keras.layers.Layer):
 			activation=tf.nn.sigmoid,
 			kernel_regularizer=tf.keras.regularizers.l2(1e-5),
 		)
-		super(ContextGating, self).build(input_shape)
 
 	def call(self, input):
 		"""Apply the ContextGating module to the given input.
@@ -83,17 +75,8 @@ class MOELogistic(tf.keras.layers.Layer):
 		2D tensor with shape: `(batch_size, num_classes)`.
 	"""
 
-	def __init__(self, **kwargs):
-		super().__init__(**kwargs)
-
-	def build(self, input_shape, num_classes, num_mixtures):
-		"""Keras build method.
-
-		Args:
-			input_shape: tuple denoting the shape of the input. Shape is of (batch_size, feature_dim).
-			num_classes: number of classes our model is predicting
-			num_mixtures: number of mixtures to be used for MoE
-		"""
+	def __init__(self, input_shape, num_classes, num_mixtures):
+		super(MOELogistic, self).__init__()
 		self.num_classes = num_classes
 		self.num_mixtures = num_mixtures
 
@@ -106,8 +89,6 @@ class MOELogistic(tf.keras.layers.Layer):
 			units=num_classes*num_mixtures,
 			kernel_regularizer=tf.keras.regularizers.l2(1e-5),
 		)
-
-		super(MOELogistic, self).build(input_shape)
 
 	def call(self, input):
 		"""Apply the MoE algorithm to the given input.
