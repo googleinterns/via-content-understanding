@@ -32,7 +32,7 @@ class ContextGating(tf.keras.layers.Layer):
 		if not isinstance(feature_dim, int):
 			feature_dim = feature_dim.value
 		self.fc = tf.keras.layers.Dense(
-			units=self.input_dim,
+			units=feature_dim,
 			activation=tf.nn.sigmoid,
 			kernel_regularizer=tf.keras.regularizers.l2(1e-5),
 		)
