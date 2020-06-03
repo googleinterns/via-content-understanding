@@ -47,7 +47,7 @@ def train(epochs=2, lr=0.01, num_clusters=64, batch_size=64, iterations=None, ra
 
 	model.fit(x=train_dataset, steps_per_epoch=steps_per_epoch, validation_data=validation_dataset, validation_steps=validation_steps, epochs=epochs)
 
-	model.save('/home/conorfvedova_google_com/saved_model/model-final.h5')
+	model.save_weights('/home/conorfvedova_google_com/saved_model/model-final.h5')
 
 if __name__ == "__main__":
 	train()
