@@ -59,8 +59,7 @@ class ContextGating(tf.keras.layers.Layer):
 		return output
 
 	def compute_output_shape(self, input_shape):
-		input_shape = tf.TensorShape(input_shape).as_list()
-		return tf.TensorShape([input_shape[0], input_shape[-1]])
+		return (input_shape[0],self.num_classes)
 
 	def get_config(self):
 		base_config = super().get_config()
@@ -96,15 +95,10 @@ class MOELogistic(tf.keras.layers.Layer):
 		Args:
 			input: A tensor with shape [batch_size, feature_dim].
 		Returns:
-			A tensor with shape [batch_size, feature_dim].
+			A tensor with shape [batch_size, num_classes].
 		Raises:
 			ValueError: If the `feature_dim` of input is not defined.
 		"""
-		frames.shape.assert_has_rank(2)
-		feature_dim = frames.shape.as_list()[-1]
-		if feature_dim is None:
-			raise ValueError("Last dimension must be defined.")
-		
 		gate_activations = self.gate_fc(input)
 		expert_activations = self.expert_fc(input)
 
@@ -113,9 +107,12 @@ class MOELogistic(tf.keras.layers.Layer):
 		expert_dist = tf.nn.sigmoid(tf.reshape(expert_activations, [-1, self.num_mixtures]))
 
 		probs = tf.reduce_sum(tf.math.mult(gate_dist[:,:self.num_mixtures], expert_dist),1)
-		probs = tf.reshape(probs, [-1, self.vocab_size])
+		probs = tf.reshape(probs, [-1, self.num_classes])
 
 		return probs
+
+	def compute_output_shape(self, input_shape):
+		return 
 
 	def get_config(self):
 		base_config = super().get_config()
