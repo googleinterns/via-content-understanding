@@ -183,7 +183,7 @@ class VideoClassifier(tf.keras.Model):
 		#else:
 		#	model_input = utils.SampleRandomSequence(model_input, self.num_frames, self.iterations)
 		
-		model_input = tf.reshape(model_input, [model_input.shape[0],model_input.shape[2],model_input.shape[3]])
+		model_input = tf.squeeze(model_input)
 
 		video_input = model_input[:,:,:self.video_feature_dim]
 		audio_input = model_input[:,:,self.video_feature_dim:]
