@@ -17,8 +17,6 @@
 """
 
 import numpy as np
-from sklearn import metrics
-
 from labels import validate_labels
 
 class ProbabilityCalculator:
@@ -35,20 +33,17 @@ class ProbabilityCalculator:
         self.preferred_outcome_label = preferred_outcome_label
         self.undesired_outcome_label = undesired_outcome_label
 
+        self.preferred_are_positive = \
+            self.preferred_outcome_label > self.undesired_outcome_label
+
+        if self.preferred_are_positive:
+            self.preferred_are_ranked_above_undesired = lambda a, b: a > b
+        else:
+            self.preferred_are_ranked_above_undesired = lambda a, b: a < b
+
     def probability_preferred_ranked_above_undesired(
         self, preferred_scores, undesired_scores):
         """Find the probability that preferred scores are above undesired ones.
-
-        This method uses sklearn's AUC function to calculate the probability
-        that a score in preferred_scores is more preferred with 
-        respect to the labels self.preferred_outcome_label and the label 
-        self.undesired_outcome_label than a score in undesired_score. 
-
-        The scores vector inputted to the AUC function is the concatenation of
-        preferred_scores and undesired_scores, while the labels vector inputted
-        is self.preferred_outcome_label for the first len(preferred_scores)
-        items and self.undesired_outcome_label for the rest of the
-        vector. The value returned by the AUC function is the return value.
 
 
         Arguments:
@@ -59,14 +54,36 @@ class ProbabilityCalculator:
                 undesired outcome. 
         """
 
-        scores = np.concatenate((preferred_scores, undesired_scores))
-        labels = np.zeros_like(scores)
+        preferred_examples = len(preferred_scores)
+        undesired_examples = len(undesired_scores)
 
-        preferred_scores_length = len(preferred_scores)
+        if preferred_examples == 0 or undesired_examples == 0:
+            raise ValueError(
+                "Preferred scorse or undesired scores had no length")
 
-        labels[:preferred_scores_length] = self.preferred_outcome_label
-        labels[preferred_scores_length:] = self.undesired_outcome_label
+        preferred_scores = np.sort(preferred_scores)
+        undesired_scores = np.sort(undesired_scores)
 
-        probability = metrics.roc_auc_score(labels, scores)
+        if self.preferred_are_positive:
+            preferred_scores = preferred_scores[::-1]
+            undesired_scores = undesired_scores[::-1]
+        
+        undesired_index = 0
 
-        return probability
+        preferred_scores_ranked_above_undesired = 0
+
+        for preferred_index in range(preferred_examples):
+
+            while undesired_index < undesired_examples and \
+                not self.preferred_are_ranked_above_undesired(
+                    preferred_scores[preferred_index],
+                    undesired_scores[undesired_index]):
+
+                undesired_index += 1
+
+
+            preferred_scores_ranked_above_undesired += \
+                undesired_examples - undesired_index
+
+        return preferred_scores_ranked_above_undesired /\
+            (preferred_examples * undesired_examples)
