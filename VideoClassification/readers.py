@@ -205,5 +205,6 @@ class YT8MFrameFeatureDataset():
 		feature_dim = len(batch_video_matrix.get_shape()) - 1
 
 		batch_video_matrix = tf.nn.l2_normalize(batch_video_matrix, feature_dim)
-
+		batch_video_matrix = tf.squeeze(batch_video_matrix)
+		batch_labels = tf.squeeze(batch_labels)
 		return (batch_video_matrix, batch_labels)
