@@ -236,7 +236,8 @@ class VideoClassifier(tf.keras.Model):
 		print(audio_input_shape)
 		self.video_vlad = NetVLAD(num_clusters, input_shape=video_input_shape)
 		self.audio_vlad = NetVLAD(num_clusters//2, input_shape=audio_input_shape)
-
+		print(self.video_vlad.compute_output_shape(video_input_shape))
+		print(self.audio_vlad.compute_output_shape(audio_input_shape))
 		fc_units = self.video_vlad.compute_output_shape(video_input_shape)[1] + self.audio_vlad.compute_output_shape(audio_input_shape)[1]
 
 		#Relu6 is used as it is employed in the paper.
