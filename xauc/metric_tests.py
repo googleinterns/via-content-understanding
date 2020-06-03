@@ -83,5 +83,26 @@ class TestCrossAUCMetrics(unittest.TestCase):
             other_positive_scores, other_negative_scores,
             expected_other_metrics)
 
+    def test_fair_scores(self):
+        """Tests calculating xAUC scores for fair scores."""
+
+        protected_positive_scores = np.array([0.96, 0.8, .4])
+        protected_negative_scores = np.array([0.6, 0.33, 0.21])
+
+        other_positive_scores = np.array([0.83, 0.94, .30])
+        other_negative_scores = np.array([0.7, 0.3, 0.2])
+
+        expected_protected_metrics = metrics.xAUCMetrics(
+            xauc=8/9, xauc0=15/18, xauc1=16/18)
+
+        expected_other_metrics = metrics.xAUCMetrics(
+            xauc=7/9, xauc0=15/18, xauc1=14/18)
+
+        self.verify_metrics(protected_positive_scores,
+            protected_negative_scores, expected_protected_metrics,
+            other_positive_scores, other_negative_scores,
+            expected_other_metrics)
+
+
 if __name__ == "__main__":
     unittest.main()
