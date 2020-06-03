@@ -21,6 +21,7 @@ from models.layers import TemporalAggregationLayer, \
 
 
 class VideoEncoder(tf.keras.Model):
+    """Implementation of the video encoder"""
 
     def __init__(self, 
             experts, 

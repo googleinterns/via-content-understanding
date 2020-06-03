@@ -1,7 +1,8 @@
 
 import tensorflow as tf
 from metrics.loss import bidirectional_max_margin_ranking_loss 
-from tqdm import tqdm as progress_bar
+from tqdm import tqdm as terminal_progress_bar
+from tqdm import tqdm_notebook as progress_bar_notebook
 
 def get_train_step(video_encoder, text_encoder):
     video_encoder_optimizer = tf.keras.optimizers.Adam()
@@ -41,34 +42,39 @@ def get_train_step(video_encoder, text_encoder):
     return train_step, forward, train_loss, valid_loss 
 
 def epoch(train_ds, valid_ds, train_ds_len, valid_ds_len, train_step_function,
-    forward_function, batch_size, train_loss, valid_loss):
+    forward_function, batch_size, train_loss, valid_loss, in_notebook=False):
     train_loss.reset_states()
     valid_loss.reset_states()
 
     train_batched_dataset = (train_ds
-        .shuffle(250*batch_size)
+        .shuffle(50*batch_size)
         .batch(batch_size))
 
     valid_batched_dataset = (valid_ds
-        .shuffle(250*batch_size)
+        .shuffle(50*batch_size)
         .batch(batch_size))
 
-    train_iter_progress = progress_bar(iter(train_batched_dataset))
-    valid_iter_progress = progress_bar(iter(valid_batched_dataset))
+    if in_notebook:
+        progress_bar = progress_bar_notebook
+    else:
+        progress_bar = terminal_progress_bar
+
+    train_iter_progress = progress_bar(
+        iter(train_batched_dataset), total=train_ds_len)
+    valid_iter_progress = progress_bar(
+        iter(valid_batched_dataset), total=valid_ds_len)
 
     for video_embeddings_batch, text_embeddings_batch in train_iter_progress:
         train_step_function(video_embeddings_batch, text_embeddings_batch)
         train_iter_progress.set_description(
             f"Train Loss: {train_loss.result().numpy()}")
 
-    print(f"\nTraining loss: {train_loss.result().numpy()}")
-
     for video_embeddings_batch, text_embeddings_batch in valid_iter_progress:
         valid_loss(bidirectional_max_margin_ranking_loss(
             *forward_function(
                 video_embeddings_batch, text_embeddings_batch, 1)))
         valid_iter_progress.set_description(
-            f"Valid Loss: {valid_loss.result().numpy()}\r", end="")
+            f"Valid Loss: {valid_loss.result().numpy()}")
 
     print()
 
