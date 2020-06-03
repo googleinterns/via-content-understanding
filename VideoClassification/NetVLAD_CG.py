@@ -59,7 +59,7 @@ class ContextGating(tf.keras.layers.Layer):
 		return output
 
 	def compute_output_shape(self, input_shape):
-		return (input_shape[0],self.num_classes)
+		return input_shape
 
 	def get_config(self):
 		base_config = super().get_config()
@@ -112,7 +112,7 @@ class MOELogistic(tf.keras.layers.Layer):
 		return probs
 
 	def compute_output_shape(self, input_shape):
-		return 
+		return (input_shape[0], self.num_classes)
 
 	def get_config(self):
 		base_config = super().get_config()
