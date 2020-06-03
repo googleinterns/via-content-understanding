@@ -215,7 +215,7 @@ class VideoClassifier(tf.keras.Model):
 		ValueError: If the batch sizes of the audio_input_shape and video_input_shape do not match.
 		ValueError: If the number of samples of the audio_input_shape and video_input_shape do not match.
 	"""
-	def __init__(self, num_clusters, video_input_shape, audio_input_shape, iterations, random_frames, num_classes, num_mixtures):
+	def __init__(self, num_clusters, video_input_shape, audio_input_shape, iterations, random_frames, num_classes, num_mixtures, fc_units):
 		super(VideoClassifier, self).__init__()
 		if num_clusters % 2 != 0:
 			raise ValueError("num_clusters must be divisible by 2.")
@@ -232,13 +232,9 @@ class VideoClassifier(tf.keras.Model):
 		self.num_mixtures = num_mixtures
 
 		self.video_feature_dim = video_input_shape[2]
-		print(video_input_shape)
-		print(audio_input_shape)
+
 		self.video_vlad = NetVLAD(num_clusters, input_shape=video_input_shape)
 		self.audio_vlad = NetVLAD(num_clusters//2, input_shape=audio_input_shape)
-		print(self.video_vlad.compute_output_shape(video_input_shape))
-		print(self.audio_vlad.compute_output_shape(audio_input_shape))
-		fc_units = self.video_vlad.compute_output_shape(video_input_shape)[1] + self.audio_vlad.compute_output_shape(audio_input_shape)[1]
 
 		#Relu6 is used as it is employed in the paper.
 		self.fc = tf.keras.layers.Dense(
@@ -274,10 +270,9 @@ class VideoClassifier(tf.keras.Model):
 
 		video_vlad_out = self.video_vlad(video_input)
 		audio_vlad_out = self.audio_vlad(audio_input)
-		print(video_vlad_out.shape)
-		print(audio_vlad_out.shape)
+
 		vlad_out = tf.concat([video_vlad_out, audio_vlad_out], axis=1)
-		print(vlad_out.shape)
+
 		fc_out = self.fc(vlad_out)
 		cg_out = self.first_cg(fc_out)
 		moe_out = self.moe(cg_out)

@@ -24,7 +24,7 @@ if __name__ == "__main__":
 											 "How many threads to use for reading input files.")
 
 
-def train(epochs=2, lr=0.01, num_clusters=100, batch_size=64, iterations=None, random_frames=True, num_mixtures=2):
+def train(epochs=2, lr=0.01, num_clusters=100, batch_size=64, iterations=None, random_frames=True, num_mixtures=2, fc_units=7424):
 	steps_per_epoch = NUM_EXAMPLES // batch_size
 	validation_steps = NUM_VAL_EXAMPLES // batch_size
 				
@@ -41,7 +41,7 @@ def train(epochs=2, lr=0.01, num_clusters=100, batch_size=64, iterations=None, r
 	audio_input_shape = (batch_size, num_frames, 128)
 
 	#Compile and train model
-	model = NetVLAD_CG.VideoClassifier(num_clusters, video_input_shape, audio_input_shape, iterations=iterations, random_frames=random_frames, num_classes=reader.num_classes, num_mixtures=num_mixtures)
+	model = NetVLAD_CG.VideoClassifier(num_clusters, video_input_shape, audio_input_shape, fc_units=fc_units, iterations=iterations, random_frames=random_frames, num_classes=reader.num_classes, num_mixtures=num_mixtures)
 	
 	model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=lr), loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True), metrics=['categorical_accuracy'])
 
