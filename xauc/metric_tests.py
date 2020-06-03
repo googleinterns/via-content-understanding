@@ -45,9 +45,9 @@ class TestCrossAUCMetrics(unittest.TestCase):
 
     def verify_metrics(
         self, protected_positive_scores, protected_negative_scores,
-        expected_protected_metrics, other_positive_scores, other_negative_scores,
-        expected_other_metrics):
-        """Asserts that calculated metrics are equal to the target score.
+        expected_protected_metrics, other_positive_scores,
+        other_negative_scores, expected_other_metrics):
+        """Asserts that calculated metrics are equal to the expected metrics.
 
         Note: this method assumes that for arg_a and arg_b, 1 is the desired 
         label 0 is the undesired label.
@@ -68,6 +68,7 @@ class TestCrossAUCMetrics(unittest.TestCase):
     
     def test_biased_scores(self):
         """Tests calculating xAUC scores for biased scores."""
+
         protected_positive_scores = np.array([0.75, 0.64, 0.46])
         protected_negative_scores = np.array([0.33, 0.21, 0.10])
 

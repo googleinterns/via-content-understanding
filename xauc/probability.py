@@ -20,13 +20,14 @@ import numpy as np
 from labels import validate_labels
 
 class ProbabilityCalculator:
+    """A class for calculating probabilities."""
 
     def __init__(self, preferred_outcome_label, undesired_outcome_label):
-        """Initializes an instance of ProbabilityCalculator with a   
+        """Initializes an instance of ProbabilityCalculator
 
         Arguments:
-            preferred_outcome_label:
-            undesired_outcome_label: 
+            preferred_outcome_label: the label for preferred outcomes.
+            undesired_outcome_label: the label for undesired outcomes.
         """
         validate_labels(preferred_outcome_label, undesired_outcome_label)
 
