@@ -1,6 +1,7 @@
 import tensorflow as tf
 import NetVLAD_CG
 import reader_utils
+import loss
 
 import readers
 
