@@ -29,13 +29,13 @@ def train(epochs=100, lr=0.01, num_clusters=64, batch_size=64, iterations=None, 
 	validation_steps = NUM_VAL_EXAMPLES // batch_size
 				
 	#Set up Reader and Preprocess Data
-	reader = reader_utils.get_reader()
+	data_reader = reader_utils.get_reader()
 
-	train_dataset = reader.get_dataset('/home/conorfvedova_google_com/data/train/', batch_size=batch_size, num_workers=8)
+	train_dataset = data_reader.get_dataset('/home/conorfvedova_google_com/data/train/', batch_size=batch_size, num_workers=8)
 
-	num_frames = reader.max_frames
+	num_frames = data_reader.max_frames
 
-	validation_dataset = reader.get_dataset('/home/conorfvedova_google_com/data/validate/', batch_size=batch_size, num_workers=8, type="validate")
+	validation_dataset = data_reader.get_dataset('/home/conorfvedova_google_com/data/validate/', batch_size=batch_size, num_workers=8, type="validate")
 
 	video_input_shape = (batch_size, num_frames, 1024)
 	audio_input_shape = (batch_size, num_frames, 128)
@@ -43,7 +43,7 @@ def train(epochs=100, lr=0.01, num_clusters=64, batch_size=64, iterations=None, 
 	#Compile and train model
 	model = NetVLAD_CG.VideoClassifier(num_clusters, video_input_shape, audio_input_shape, fc_units=fc_units, iterations=iterations, random_frames=random_frames, num_classes=reader.num_classes, num_mixtures=num_mixtures)
 	
-	model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=lr), loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True), metrics=['categorical_accuracy'])
+	model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=lr), loss=loss.custom_crossentropy, metrics=['categorical_accuracy'])
 
 	model.fit(x=train_dataset, steps_per_epoch=steps_per_epoch, validation_data=validation_dataset, validation_steps=validation_steps, epochs=epochs)
 
