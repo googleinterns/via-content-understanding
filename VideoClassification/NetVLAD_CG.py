@@ -48,6 +48,8 @@ class NetVLAD(tf.keras.layers.Layer):
 			),
 			trainable=True,
 		)
+		self.feature_dim = feature_dim
+		self.max_frames = input_shape[-2]
 
 	def call(self, frames):
 		"""Apply the NetVLAD module to the given frames.
@@ -58,11 +60,8 @@ class NetVLAD(tf.keras.layers.Layer):
 		Raises:
 			ValueError: If the `feature_dim` of input is not defined.
 		"""
-		frames.shape.assert_has_rank(3)
-		feature_dim = frames.shape.as_list()[-1]
-		if feature_dim is None:
-			raise ValueError("Last dimension must be defined.")
-		max_frames = tf.shape(frames)[-2]
+		feature_dim = self.feature_dim
+		max_frames = self.max_frames
 		# Compute soft-assignment from frames to clusters.
 		# Essentially: softmax(w*x + b), although BN can be used instead of bias.
 		frames = tf.reshape(frames, (-1, feature_dim))
