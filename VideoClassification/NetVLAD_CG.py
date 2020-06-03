@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 import tensorflow as tf
-import tensorflow_addons.layers.netvlad as netvlad
+#import tensorflow_addons.layers.netvlad as netvlad
 import model_utils as utils
 
 class NetVLAD(tf.keras.layers.Layer):
@@ -26,8 +26,7 @@ class NetVLAD(tf.keras.layers.Layer):
 	Output shape:
 		2D tensor with shape: `(batch_size, feature_dim * num_clusters)`.
 	"""
-	@typechecked
-	def __init__(self, num_clusters: int, **kwargs):
+	def __init__(self, num_clusters, **kwargs):
 		super().__init__(**kwargs)
 		if num_clusters <= 0:
 			raise ValueError("`num_clusters` must be greater than 1: %i" % num_clusters)
@@ -236,8 +235,8 @@ class VideoClassifier(tf.keras.Model):
 
 		self.video_feature_dim = video_input_shape[2]
 
-		self.video_vlad = netvlad.NetVLAD(num_clusters)
-		self.audio_vlad = netvlad.NetVLAD(num_clusters//2)
+		self.video_vlad = NetVLAD(num_clusters)
+		self.audio_vlad = NetVLAD(num_clusters//2)
 
 		fc_units = self.video_vlad.compute_output_shape(video_input_shape)[1] + self.audio_vlad.compute_output_shape(audio_input_shape)[1]
 
