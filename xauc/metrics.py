@@ -68,7 +68,7 @@ def compute_class_xauc(
     xauc1 = probability_calculator.probability_preferred_ranked_above_undesired(
         class_scores.preferred, all_scores.undesired)
 
-    return xAUCMetrics(xauc=xauc, xauc0=xauc, xauc1=xauc1)
+    return xAUCMetrics(xauc=xauc, xauc0=xauc0, xauc1=xauc1)
 
 
 def calculate_xauc_metrics(

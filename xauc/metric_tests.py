@@ -58,7 +58,7 @@ class TestCrossAUCMetrics(unittest.TestCase):
             arg_b: a vector that's the second parameter of metric.
         """
         protected_metrics, other_metrics = metrics.calculate_xauc_metrics(
-            protected_positive_scores, protected_positive_scores,
+            protected_positive_scores, protected_negative_scores,
             other_positive_scores, other_negative_scores, 1, 0)
 
         self.verify_metrics_match(protected_metrics, expected_protected_metrics)
@@ -73,10 +73,10 @@ class TestCrossAUCMetrics(unittest.TestCase):
         other_negative_scores = np.array([0.74, 0.41, 0.49, 0.44])
 
         expected_protected_metrics = metrics.xAUCMetrics(
-            xauc=9/12, xauc0=1, xauc1=17/28)
+            xauc=9/12, xauc0=1, xauc1=18/21)
 
         expected_other_metrics = metrics.xAUCMetrics(
-            xauc=1.0, xauc0=22/28, xauc1=26/28)
+            xauc=1.0, xauc0=23/28, xauc1=26/28)
 
         self.verify_metrics(protected_positive_scores,
             protected_negative_scores, expected_protected_metrics,
