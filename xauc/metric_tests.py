@@ -22,7 +22,7 @@ import metrics
 import numpy as np
 
 class TestCrossAUCMetrics(unittest.TestCase):
-    """Unit tests for the xAUC metrics in the metrics file.
+    """Unit tests for the xAUC metrics in the metrics module.
 
     Attrs:
         maximum_error: the maximum allowable difference between the target_score
