@@ -27,7 +27,7 @@ def match_cached_embeddings_with_experts(precomputed_features, *datasets):
     map_fn = replace_video_id_with_expert_features_wrapper(precomputed_features)
 
     return [(dataset
-        .map(map_fn)#, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+        .map(map_fn, num_parallel_calls=tf.data.experimental.AUTOTUNE)
         .prefetch(tf.data.experimental.AUTOTUNE)) for dataset in datasets]
 
 def get_precomputed_features(source_dataset, experts):
