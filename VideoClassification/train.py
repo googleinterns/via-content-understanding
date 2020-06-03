@@ -32,7 +32,7 @@ def train(epochs=2, lr=0.01, num_clusters=100, batch_size=64, iterations=None, r
 	reader = reader_utils.get_reader()
 
 	train_dataset = reader.get_dataset('/home/conorfvedova_google_com/data/train/', batch_size=batch_size, num_workers=8)
-
+	print(train_dataset)
 	num_frames = reader.max_frames
 
 	validation_dataset = reader.get_dataset('/home/conorfvedova_google_com/data/validate/', batch_size=batch_size, num_workers=8, type="validate")

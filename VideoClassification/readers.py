@@ -130,7 +130,7 @@ class YT8MFrameFeatureDataset():
 		dataset = dataset.shuffle(buffer_size=batch_size)
 
 		parser = partial(self._parse_fn, max_quantized_value=max_quantized_value, min_quantized_value=min_quantized_value)
-		dataset = dataset.map(parser).batch(batch_size)
+		dataset = dataset.map(parser).batch(batch_size, drop_remainder=True)
 
 		dataset = dataset.prefetch(batch_size)
 		return dataset
