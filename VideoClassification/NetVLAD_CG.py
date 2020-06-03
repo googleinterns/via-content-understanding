@@ -26,14 +26,11 @@ class NetVLAD(tf.keras.layers.Layer):
 	Output shape:
 		2D tensor with shape: `(batch_size, feature_dim * num_clusters)`.
 	"""
-	def __init__(self, num_clusters, **kwargs):
+	def __init__(self, num_clusters, input_shape, **kwargs):
 		super().__init__(**kwargs)
 		if num_clusters <= 0:
 			raise ValueError("`num_clusters` must be greater than 1: %i" % num_clusters)
 		self.num_clusters = num_clusters
-	def build(self, input_shape):
-		"""Keras build method."""
-		print(input_shape)
 		feature_dim = input_shape[-1]
 		if not isinstance(feature_dim, int):
 			feature_dim = feature_dim.value
@@ -50,7 +47,7 @@ class NetVLAD(tf.keras.layers.Layer):
 			),
 			trainable=True,
 		)
-		super(NetVLAD, self).build(input_shape)
+
 	def call(self, frames):
 		"""Apply the NetVLAD module to the given frames.
 		Args:
@@ -236,8 +233,8 @@ class VideoClassifier(tf.keras.Model):
 
 		self.video_feature_dim = video_input_shape[2]
 
-		self.video_vlad = NetVLAD(num_clusters)
-		self.audio_vlad = NetVLAD(num_clusters//2)
+		self.video_vlad = NetVLAD(num_clusters, input_shape=video_input_shape)
+		self.audio_vlad = NetVLAD(num_clusters//2, input_shape=audio_input_shape)
 
 		fc_units = self.video_vlad.compute_output_shape(video_input_shape)[1] + self.audio_vlad.compute_output_shape(audio_input_shape)[1]
 
