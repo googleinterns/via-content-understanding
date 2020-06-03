@@ -87,7 +87,8 @@ def fit(
     valid_ds,
     train_ds_len,
     valid_ds_len,
-    batch_size):
+    batch_size,
+    in_notebook=False):
     
     train_step, forward, train_loss, valid_loss = \
         get_train_step(video_encoder, text_encoder)
@@ -103,4 +104,5 @@ def fit(
             forward,
             batch_size,
             train_loss,
-            valid_loss)
+            valid_loss,
+            in_notebook)
