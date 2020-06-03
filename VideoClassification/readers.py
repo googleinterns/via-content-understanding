@@ -125,7 +125,7 @@ class YT8MFrameFeatureDataset():
 		print(files)
 		files_dataset = tf.data.Dataset.from_tensor_slices(files)
 		files_dataset = files_dataset.shuffle(tf.cast(tf.shape(files)[0], tf.int64))
-		files_dataset = files_dataset.repeat()
+		#files_dataset = files_dataset.repeat()
 		dataset = files_dataset.interleave(tf.data.TFRecordDataset)
 		dataset = dataset.shuffle(buffer_size=batch_size*5)
 
