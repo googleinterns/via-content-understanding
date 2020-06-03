@@ -119,24 +119,24 @@ class ContextGating(tf.keras.layers.Layer):
 			kernel_regularizer=tf.keras.regularizers.l2(1e-5),
 		)
 
-	def call(self, input):
+	def call(self, model_input):
 		"""Apply the ContextGating module to the given input.
 
 		Args:
-			input: A tensor with shape [batch_size, feature_dim].
+			model_input: A tensor with shape [batch_size, feature_dim].
 		Returns:
 			A tensor with shape [batch_size, feature_dim].
 		Raises:
-			ValueError: If the `feature_dim` of input is not defined.
+			ValueError: If the `feature_dim` of model_input is not defined.
 		"""
-		frames.shape.assert_has_rank(2)
-		feature_dim = frames.shape.as_list()[-1]
+		model_input.shape.assert_has_rank(2)
+		feature_dim = model_input.shape.as_list()[-1]
 		if feature_dim is None:
 			raise ValueError("Last dimension must be defined.")
 		
-		context_gate = self.fc(input)
+		context_gate = self.fc(model_input)
 
-		output = tf.math.multiply(context_gate, input)
+		output = tf.math.multiply(context_gate, model_input)
 
 		return output
 
