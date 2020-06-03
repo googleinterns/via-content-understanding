@@ -43,7 +43,7 @@ def train(epochs=2, lr=0.01, num_clusters=100, batch_size=1024, iterations=None,
 	#Compile and train model
 	model = NetVLAD_CG.VideoClassifier(num_clusters, video_input_shape, audio_input_shape, iterations=iterations, random_frames=random_frames, num_classes=reader.num_classes, num_mixtures=num_mixtures)
 	
-	model.compile(optimizer=keras.optimizers.Adam(learning_rate=lr), loss=keras.losses.CategoricalCrossentropy(from_logits=True), metrics=['categorical_accuracy'])
+	model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=lr), loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True), metrics=['categorical_accuracy'])
 
 	model.fit(x=train_dataset, steps_per_epoch=steps_per_epoch, validation_data=validation_dataset, validation_steps=validation_steps, epochs=epochs)
 
