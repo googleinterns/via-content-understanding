@@ -188,7 +188,7 @@ class MOELogistic(tf.keras.layers.Layer):
 		gate_dist = tf.nn.softmax(tf.reshape(gate_activations, [-1, self.num_mixtures+1]))
 		expert_dist = tf.nn.sigmoid(tf.reshape(expert_activations, [-1, self.num_mixtures]))
 
-		probs = tf.reduce_sum(tf.math.mult(gate_dist[:,:self.num_mixtures], expert_dist),1)
+		probs = tf.reduce_sum(tf.math.multiply(gate_dist[:,:self.num_mixtures], expert_dist),1)
 		probs = tf.reshape(probs, [-1, self.num_classes])
 
 		return probs
