@@ -16,6 +16,7 @@ limitations under the License.
 import tensorflow as tf
 #import tensorflow_addons.layers.netvlad as netvlad
 import model_utils as utils
+import math
 
 class NetVLAD(tf.keras.layers.Layer):
 	"""Applies NetVLAD to the input.
