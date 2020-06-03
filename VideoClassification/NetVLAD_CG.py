@@ -33,6 +33,7 @@ class NetVLAD(tf.keras.layers.Layer):
 		self.num_clusters = num_clusters
 	def build(self, input_shape):
 		"""Keras build method."""
+		print(input_shape)
 		feature_dim = input_shape[-1]
 		if not isinstance(feature_dim, int):
 			feature_dim = feature_dim.value
