@@ -199,5 +199,6 @@ class YT8MFrameFeatureDataset():
 		batch_frames = tf.cast(tf.expand_dims(batch_frames, 1), tf.float32)
 		print(batch_frames)
 		print(batch_frames.shape)
+		print(batch_video_matrix)
 
 		return (batch_video_matrix, batch_labels)
