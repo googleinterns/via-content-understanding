@@ -2,6 +2,9 @@ import tensorflow as tf
 import NetVLAD_CG
 import reader_utils
 import loss
+import tensorflow_datasets as tfds
+
+import eval_util
 
 import readers
 
