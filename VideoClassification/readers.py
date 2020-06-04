@@ -106,7 +106,7 @@ class YT8MFrameFeatureDataset():
 		return model_input[start_index:start_index+num_samples,:]
 
 
-	def sample_random_frames(video_matrix, num_frames, num_samples):
+	def sample_random_frames1(video_matrix, num_frames, num_samples):
 		"""Samples a random set of num_samples frames.
 
 		Args:
@@ -124,7 +124,7 @@ class YT8MFrameFeatureDataset():
 	def select_frames(self, video_matrix, num_frames):
 		print(video_matrix)
 		if self.random_frames:
-			subsampled_video = self.sample_random_frames(video_matrix=video_matrix, num_frames=num_frames, num_samples=self.num_samples)
+			subsampled_video = self.sample_random_frames1(video_matrix=video_matrix, num_frames=num_frames, num_samples=self.num_samples)
 		else:
 			subsampled_video = self.sample_random_sequence(video_matrix=video_matrix, num_frames=num_frames, num_samples=self.num_samples)
 		return subsampled_video
