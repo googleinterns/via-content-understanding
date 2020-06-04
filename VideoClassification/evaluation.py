@@ -1,5 +1,5 @@
 import tensorflow as tf
-import tfds
+import tensorflow_datasets as tfds
 
 import eval_util
 import NetVLAD_CG
