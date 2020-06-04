@@ -156,5 +156,5 @@ def get_cached_language_model_embeddings(source_dataset, language_model, split):
 
     return (tf.data.TFRecordDataset(
             record_files, 
-            num_parallel_reads=num_parallel_calls)
+            num_parallel_reads=tf.data.experimental.AUTOTUNE)
         .map(unseralize_data, num_parallel_calls=tf.data.experimental.AUTOTUNE))
