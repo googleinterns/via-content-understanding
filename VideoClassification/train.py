@@ -28,7 +28,7 @@ if __name__ == "__main__":
 											 "How many threads to use for reading input files.")
 
 
-def train(epochs=5, lr=0.01, num_clusters=64, batch_size=64, iterations=None, random_frames=True, num_mixtures=2, fc_units=2048):
+def train(epochs=5, lr=0.01, num_clusters=64, batch_size=64, iterations=None, random_frames=True, num_mixtures=2, fc_units=2048, num_frames=30):
 	steps_per_epoch = NUM_EXAMPLES // batch_size
 	validation_steps = NUM_VAL_EXAMPLES // batch_size
 				
@@ -37,7 +37,7 @@ def train(epochs=5, lr=0.01, num_clusters=64, batch_size=64, iterations=None, ra
 
 	train_dataset = data_reader.get_dataset('/home/conorfvedova_google_com/data/train/', batch_size=batch_size, num_workers=8)
 
-	num_frames = data_reader.max_frames
+	
 
 	validation_dataset = data_reader.get_dataset('/home/conorfvedova_google_com/data/validate/', batch_size=batch_size, num_workers=8, type="validate")
 
@@ -55,7 +55,8 @@ def train(epochs=5, lr=0.01, num_clusters=64, batch_size=64, iterations=None, ra
 	test_dataset = data_reader.get_dataset('/home/conorfvedova_google_com/data/test/', batch_size=batch_size, num_workers=8, type="test")
 	numpy_dataset = tfds.as_numpy(test_dataset)
 	evaluation_metrics = eval_util.EvaluationMetrics(data_reader.num_classes, 20)
-	for batch in numpy_dataset:
+	for i in range(3844 // batch_size):
+		batch = numpy_dataset.next()
 		test_input = tf.convert_to_tensor(batch[0])
 		test_labels = tf.convert_to_tensor(batch[1])
 
