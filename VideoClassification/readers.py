@@ -189,16 +189,17 @@ class YT8MFrameFeatureDataset():
 		labels = tf.sparse.to_dense(sparse_labels, default_value=False, validate_indices=False)
 		# convert to batch format.
 		batch_video_ids = tf.expand_dims(contexts["id"], 0)
+		num_frames = tf.expand_dims(num_frames, 0)
 		batch_video_matrix = video_matrix
 		batch_labels = labels
-		#batch_frames = tf.constant(num_frames[0], shape=(self.max_frames,1))
+		batch_frames = tf.constant(num_frames[0], shape=(self.max_frames,1))
 
 		feature_dim = len(batch_video_matrix.get_shape()) - 1
 
 		batch_video_matrix = tf.nn.l2_normalize(batch_video_matrix, feature_dim)
 
 		#Add number of frames to data
-		#batch_video_matrix = tf.stack([batch_video_matrix, batch_frames], axis=1)
+		batch_video_matrix = tf.stack([batch_video_matrix, batch_frames], axis=1)
 		print(num_frames.shape)
 
 		return (batch_video_matrix, batch_labels)
