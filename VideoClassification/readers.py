@@ -90,7 +90,7 @@ class YT8MFrameFeatureDataset():
 		self.num_samples = num_samples
 		self.random_frames = random_frames
 
-	def sample_random_sequence(video_matrix, num_frames, num_samples):
+	def sample_random_sequence(self, video_matrix, num_frames, num_samples):
 		"""Samples a random sequence of num_samples frames.
 
 		Args:
@@ -106,7 +106,7 @@ class YT8MFrameFeatureDataset():
 		return model_input[start_index:start_index+num_samples,:]
 
 
-	def sample_random_frames(video_matrix, num_frames, num_samples):
+	def sample_random_frames(self, video_matrix, num_frames, num_samples):
 		"""Samples a random set of num_samples frames.
 
 		Args:
