@@ -3,7 +3,7 @@ import tensorflow as tf
 from tensorflow.io import gfile
 
 
-def get_reader(feature_names='rgb,audio', feature_sizes='1024,128', num_samples, random_frames):
+def get_reader(num_samples, random_frames, feature_names='rgb,audio', feature_sizes='1024,128'):
 	# Convert feature_names and feature_sizes to lists of values.
 	feature_names, feature_sizes = GetListOfFeatureNamesAndSizes(feature_names, feature_sizes)
 
