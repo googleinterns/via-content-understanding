@@ -125,7 +125,7 @@ class YT8MFrameFeatureDataset():
 	def select_frames(self, video_matrix, num_frames):
 		print(video_matrix)
 		if self.random_frames:
-			sampled_video = self.sample_random_sequence(video_matrix=video_matrix, num_frames=num_frames, num_samples=self.num_samples)
+			sampled_video = self.sample_random_frames(video_matrix=video_matrix, num_frames=num_frames, num_samples=self.num_samples)
 		else:
 			sampled_video = self.sample_random_sequence(video_matrix=video_matrix, num_frames=num_frames, num_samples=self.num_samples)
 		return sampled_video
