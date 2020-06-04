@@ -14,6 +14,7 @@ def test(model_dir, num_clusters=64, batch_size=64, iterations=None, random_fram
 	numpy_dataset = tfds.as_numpy(test_dataset)
 	for ex in numpy_dataset:
 		print(ex)
+                assert False
 	assert False
 	num_frames = data_reader.max_frames
 
