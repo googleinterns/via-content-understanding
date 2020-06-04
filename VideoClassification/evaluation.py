@@ -30,7 +30,8 @@ def test(model_dir, num_clusters=64, batch_size=64, iterations=None, random_fram
 		test_input = tf.convert_to_tensor(batch[0])
 		test_labels = tf.convert_to_tensor(batch[1])
 
-		predictions = model.evaluate(test_input)
+		predictions = model.predict(test_input)
+		print(predictions)
 		predictions = tf.transpose(predictions)
 		print(predictions.shape)
 		
