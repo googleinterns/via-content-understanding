@@ -123,6 +123,7 @@ class YT8MFrameFeatureDataset():
 		return tf.gather_nd(video_matrix, index)
 
 	def select_frames(self, video_matrix, num_frames):
+		num_frames = tf.make_ndarray(num_frames)
 		print(num_frames)
 		if self.random_frames:
 			sampled_video = self.sample_random_frames(video_matrix=video_matrix, num_frames=num_frames, num_samples=self.num_samples)
