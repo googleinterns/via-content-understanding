@@ -31,13 +31,11 @@ def test(model_dir, num_clusters=64, batch_size=64, iterations=None, random_fram
 		test_labels = tf.convert_to_tensor(batch[1])
 
 		predictions = model.predict(test_input)
-		print(predictions)
-		predictions = tf.transpose(predictions)
-		print(predictions.shape)
 		
 		loss_vals = loss.eval_loss(test_labels, predictions)
 		print(loss_vals.shape)
 
+		predictions = tf.transpose(predictions)
 		evaluation_metrics.accumulate(predictions, test_labels, loss_vals)
 	eval_dict = evaluation_metrics.get()
 
