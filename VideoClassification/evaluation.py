@@ -1,0 +1,34 @@
+import tensorflow as tf
+
+import eval_util
+import NetVLAD_CG
+import reader_utils
+import readers
+
+def test(model_dir, num_clusters=64, batch_size=64, iterations=None, random_frames=True, num_mixtures=2, fc_units=2048):
+	data_reader = reader_utils.get_reader()
+
+	test_dataset = data_reader.get_dataset('/home/conorfvedova_google_com/data/test/', batch_size=batch_size, num_workers=8, type="test")
+
+	print(tf.convert_to_tensor(test_dataset))
+	assert False
+	num_frames = data_reader.max_frames
+
+	video_input_shape = (batch_size, num_frames, 1024)
+	audio_input_shape = (batch_size, num_frames, 128)
+
+	#Compile and train model
+	model = NetVLAD_CG.VideoClassifier(num_clusters, video_input_shape, audio_input_shape, fc_units=fc_units, iterations=iterations, random_frames=random_frames, num_classes=data_reader.num_classes, num_mixtures=num_mixtures)
+	model.load_weights(model_dir)
+
+
+
+	predictions = model.evaluate(test_dataset)
+	predictions = tf.transpose(predictions)
+
+	evaluation_metrics = eval_util.EvaluationMetrics(data_reader.num_classes, 20)
+
+	evaluation_metrics.accumulate(predictions, )
+
+if __name__ == "__main__":
+	test("/home/conorfvedova_google_com/saved_model/model-final.h5")
