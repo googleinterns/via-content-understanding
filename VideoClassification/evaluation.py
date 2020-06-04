@@ -22,7 +22,7 @@ def test(model_dir, num_clusters=64, batch_size=64, iterations=None, random_fram
 	#Compile and train model
 	model = NetVLAD_CG.VideoClassifier(num_clusters, video_input_shape, audio_input_shape, fc_units=fc_units, iterations=iterations, random_frames=random_frames, num_classes=data_reader.num_classes, num_mixtures=num_mixtures)
 	print(model.layers)
-	model.load_weights(model_dir)
+	model.load_weights(model_dir, by_name=True)
 
 	evaluation_metrics = eval_util.EvaluationMetrics(data_reader.num_classes, 20)
 	for batch in numpy_dataset:
