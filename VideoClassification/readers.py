@@ -199,7 +199,7 @@ class YT8MFrameFeatureDataset():
 
 		#Add number of frames to data
 		batch_frames = tf.repeat(tf.cast(tf.expand_dims(batch_frames, 1), tf.float32), repeats=[self.max_frames], axis=0)
-		batch_video_matrix = tf.stack([batch_video_matrix, batch_frames], axis=1)
+		batch_video_matrix = tf.stack([batch_video_matrix, batch_frames], axis=0)
 
 
 		return (batch_video_matrix, batch_labels)
