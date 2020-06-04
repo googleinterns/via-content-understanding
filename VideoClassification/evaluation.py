@@ -1,5 +1,5 @@
 import tensorflow as tf
-import tfds
+import tensorflow_datasets as tfds
 
 import eval_util
 import NetVLAD_CG
@@ -16,6 +16,7 @@ def test(model_dir, num_clusters=64, batch_size=64, iterations=None, random_fram
 	
 		print(ex)
 		assert False
+
 	num_frames = data_reader.max_frames
 
 	video_input_shape = (batch_size, num_frames, 1024)
