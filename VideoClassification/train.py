@@ -25,7 +25,7 @@ if __name__ == "__main__":
 											 "How many threads to use for reading input files.")
 
 
-def train(epochs=100, lr=0.01, num_clusters=64, batch_size=64, iterations=None, random_frames=True, num_mixtures=2, fc_units=2048):
+def train(epochs=5, lr=0.01, num_clusters=64, batch_size=64, iterations=None, random_frames=True, num_mixtures=2, fc_units=2048):
 	steps_per_epoch = NUM_EXAMPLES // batch_size
 	validation_steps = NUM_VAL_EXAMPLES // batch_size
 				
@@ -47,6 +47,27 @@ def train(epochs=100, lr=0.01, num_clusters=64, batch_size=64, iterations=None, 
 	model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=lr), loss=loss.custom_crossentropy, metrics=['categorical_accuracy'])
 
 	model.fit(x=train_dataset, steps_per_epoch=steps_per_epoch, validation_data=validation_dataset, validation_steps=validation_steps, epochs=epochs)
+
+	#Evaluate model
+	test_dataset = data_reader.get_dataset('/home/conorfvedova_google_com/data/test/', batch_size=batch_size, num_workers=8, type="test")
+	numpy_dataset = tfds.as_numpy(test_dataset)
+	evaluation_metrics = eval_util.EvaluationMetrics(data_reader.num_classes, 20)
+	for batch in numpy_dataset:
+		test_input = tf.convert_to_tensor(batch[0])
+		test_labels = tf.convert_to_tensor(batch[1])
+
+		predictions = model.predict(test_input)
+		
+		loss_vals = loss.eval_loss(test_labels, predictions)
+
+		test_labels = test_labels.numpy()
+		loss_vals = loss_vals.numpy()
+
+		evaluation_metrics.accumulate(predictions, test_labels, loss_vals)
+	eval_dict = evaluation_metrics.get()
+
+	print(eval_dict)
+
 
 	model.save_weights('/home/conorfvedova_google_com/saved_model/model-final.h5')
 
