@@ -39,6 +39,7 @@ class NetVLAD(tf.keras.layers.Layer):
 			units=self.num_clusters,
 			activation=tf.nn.softmax,
 			kernel_regularizer=tf.keras.regularizers.l2(1e-5),
+			name=str(num_clusters)+"first_fc"
 		)
 		self.cluster_centers = self.add_weight(
 			name="cluster_centers",
@@ -47,6 +48,7 @@ class NetVLAD(tf.keras.layers.Layer):
 				stddev=1.0 / math.sqrt(feature_dim)
 			),
 			trainable=True,
+			name=str(num_clusters)+"second_fc"
 		)
 		self.feature_dim = feature_dim
 		self.max_frames = input_shape[-2]
@@ -108,8 +110,8 @@ class ContextGating(tf.keras.layers.Layer):
 	2D tensor with shape: `(batch_size, feature_dim)`.
 	"""
 
-	def __init__(self, input_shape):
-		super(ContextGating, self).__init__()
+	def __init__(self, input_shape, **kwargs):
+		super(ContextGating, self).__init__(**kwargs)
 		feature_dim = input_shape[-1]
 		if not isinstance(feature_dim, int):
 			feature_dim = feature_dim.value
@@ -156,8 +158,8 @@ class MOELogistic(tf.keras.layers.Layer):
 		2D tensor with shape: `(batch_size, num_classes)`.
 	"""
 
-	def __init__(self, input_shape, num_classes, num_mixtures):
-		super(MOELogistic, self).__init__()
+	def __init__(self, input_shape, num_classes, num_mixtures, **kwargs):
+		super(MOELogistic, self).__init__(**kwargs)
 		self.num_classes = num_classes
 		self.num_mixtures = num_mixtures
 
@@ -215,8 +217,8 @@ class VideoClassifier(tf.keras.Model):
 		ValueError: If the batch sizes of the audio_input_shape and video_input_shape do not match.
 		ValueError: If the number of samples of the audio_input_shape and video_input_shape do not match.
 	"""
-	def __init__(self, num_clusters, video_input_shape, audio_input_shape, iterations, random_frames, num_classes, num_mixtures, fc_units):
-		super(VideoClassifier, self).__init__()
+	def __init__(self, num_clusters, video_input_shape, audio_input_shape, iterations, random_frames, num_classes, num_mixtures, fc_units, **kwargs):
+		super(VideoClassifier, self).__init__(**kwargs)
 		if num_clusters % 2 != 0:
 			raise ValueError("num_clusters must be divisible by 2.")
 		batch_size = video_input_shape[0]
@@ -233,21 +235,22 @@ class VideoClassifier(tf.keras.Model):
 
 		self.video_feature_dim = video_input_shape[2]
 
-		self.video_vlad = NetVLAD(num_clusters, input_shape=video_input_shape)
-		self.audio_vlad = NetVLAD(num_clusters//2, input_shape=audio_input_shape)
+		self.video_vlad = NetVLAD(num_clusters, input_shape=video_input_shape, name="video_vlad")
+		self.audio_vlad = NetVLAD(num_clusters//2, input_shape=audio_input_shape, name="audio_vlad")
 
 		#Relu6 is used as it is employed in the paper.
 		self.fc = tf.keras.layers.Dense(
 			units=fc_units,
 			activation=tf.nn.relu6,
 			kernel_regularizer=tf.keras.regularizers.l2(1e-5),
+			name="first_fc"
 		)
 
-		self.first_cg = ContextGating(input_shape=(batch_size, fc_units))
+		self.first_cg = ContextGating(input_shape=(batch_size, fc_units), name="first_cg")
 
-		self.moe = MOELogistic(input_shape=self.first_cg.compute_output_shape((batch_size, fc_units)), num_classes=self.num_classes, num_mixtures=self.num_mixtures)
+		self.moe = MOELogistic(input_shape=self.first_cg.compute_output_shape((batch_size, fc_units)), num_classes=self.num_classes, num_mixtures=self.num_mixtures, name="moe")
 
-		self.second_cg = ContextGating(input_shape=self.moe.compute_output_shape((batch_size, fc_units)))
+		self.second_cg = ContextGating(input_shape=self.moe.compute_output_shape((batch_size, fc_units)), name="second_cg")
 
 	def call(self, model_input):
 		"""Perform one forward pass of the model.
