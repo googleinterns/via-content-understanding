@@ -261,6 +261,7 @@ class VideoClassifier(tf.keras.Model):
 		"""
 		num_frames = model_input[:,0,-1]
 		print(num_frames.shape)
+		print(model_input)
 		if self.random_frames:
 			model_input = utils.SampleRandomFrames(model_input, num_frames, self.iterations)
 		else:
