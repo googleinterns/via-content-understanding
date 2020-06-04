@@ -43,17 +43,20 @@ def get_train_step(video_encoder, text_encoder, m):
     return train_step, forward, train_loss, valid_loss 
 
 def epoch(train_ds, valid_ds, train_ds_len, valid_ds_len, train_step_function,
-    forward_function, batch_size, train_loss, valid_loss, m, in_notebook=False):
+    forward_function, batch_size, train_loss, valid_loss, m, in_notebook=False,
+    batches_per_buffer=50):
     train_loss.reset_states()
     valid_loss.reset_states()
 
     train_batched_dataset = (train_ds
-        .shuffle(50*batch_size)
-        .batch(batch_size))
+        .shuffle(batches_per_buffer*batch_size)
+        .batch(batch_size)
+        .prefetch(batches_per_buffer))
 
     valid_batched_dataset = (valid_ds
-        .shuffle(50*batch_size)
-        .batch(batch_size))
+        .shuffle(batches_per_buffer*batch_size)
+        .batch(batch_size)
+        .prefetch(batches_per_buffer))
 
     if in_notebook:
         progress_bar = progress_bar_notebook

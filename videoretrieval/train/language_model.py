@@ -32,11 +32,11 @@ def get_encode_function(language_model):
     """
 
     def encode_text(text):
-        result = language_model.encode(text.numpy().decode("utf-8"))
+        result = language_model.encode(text.decode("utf-8"))
         return [result]
 
     def wrapper(video_id, text):
-        result = tf.py_function(encode_text, [text], tf.int64)
+        result = tf.numpy_function(encode_text, [text], tf.int64)
         result.set_shape(language_model.encoded_shape)
 
         return video_id, result, text

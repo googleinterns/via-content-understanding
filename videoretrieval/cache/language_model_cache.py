@@ -19,12 +19,11 @@ import math
 from pathlib import Path
 import glob
 
-embeddings_per_file = 50
+embeddings_per_file = 200
 
 decoding_schema = {
     "video_id": tf.io.FixedLenFeature([], tf.string),
     "seralized_embeddings": tf.io.FixedLenFeature([], tf.string),
-    "text": tf.io.FixedLenFeature([], tf.string)
 }
 
 
@@ -46,8 +45,8 @@ def get_records_directory(dataset, language_model, split):
 
 def seralize_to_protobuf(video_id, contextual_embeddings, text):
     """Seralizes the video_id, contextual_embeddings, and text as a protobuf."""
+
     video_id_feature = get_feature(video_id)
-    text_feature = get_feature(text)
 
     seralized_embedding = tf.io.serialize_tensor(contextual_embeddings)
     embeddings_feature = get_feature(seralized_embedding)
@@ -55,12 +54,13 @@ def seralize_to_protobuf(video_id, contextual_embeddings, text):
     feature = {
         "video_id": video_id_feature,
         "seralized_embeddings": embeddings_feature,
-        "text": text_feature
     }
 
     protobuf = tf.train.Example(features=tf.train.Features(feature=feature))
 
-    return protobuf.SerializeToString()
+    seralized = protobuf.SerializeToString()
+
+    return seralized
 
 def seralize_to_protobuf_wrapper(*args):
     """Wraps the seralize_to_protobuf function with tf.py_function."""
@@ -136,7 +136,7 @@ def unseralize_data(seralized_item):
     contextual_embeddings = tf.io.parse_tensor(
         example["seralized_embeddings"], tf.float32)
 
-    return (example["video_id"], contextual_embeddings, example["text"])
+    return (example["video_id"], contextual_embeddings)
 
 def get_cached_language_model_embeddings(source_dataset, language_model, split):
     """Load the cached embeddings for a specific dataset/model/split.

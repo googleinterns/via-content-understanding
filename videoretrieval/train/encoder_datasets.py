@@ -15,7 +15,7 @@ def replace_video_id_with_expert_features_wrapper(precomputed_features):
 
         return expert_features
 
-    def wrapper(video_id, ids, source):
+    def wrapper(video_id, ids):
         expert_features = tf.numpy_function(
             get_expert_features, [video_id], output_shape)
 
@@ -28,7 +28,7 @@ def match_cached_embeddings_with_experts(precomputed_features, *datasets):
 
     return [(dataset
         .map(map_fn, num_parallel_calls=tf.data.experimental.AUTOTUNE)
-        .prefetch(tf.data.experimental.AUTOTUNE)) for dataset in datasets]
+        ) for dataset in datasets]
 
 def get_precomputed_features(source_dataset, experts):
     precomputed_features = []
