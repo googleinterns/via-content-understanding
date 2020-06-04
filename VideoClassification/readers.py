@@ -152,6 +152,8 @@ class YT8MFrameFeatureDataset():
 		feature_matrix = utils.Dequantize(decoded_features, max_quantized_value,
 																			min_quantized_value)
 		feature_matrix = resize_axis(feature_matrix, 0, max_frames)
+		print(max_frames)
+		print(decoded_features.shape.as_list()[0])
 		num_frames = min([max_frames, decoded_features.shape.as_list()[0]])
 		return feature_matrix, num_frames
 
