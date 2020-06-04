@@ -69,7 +69,7 @@ class YT8MFrameFeatureDataset():
 			num_classes=3862,
 			feature_sizes=[1024, 128],
 			feature_names=["rgb", "audio"],
-			max_frames=300, num_samples=30, random_sample=True):
+			max_frames=300, num_samples=30, random_frames=True):
 		"""Construct a YT8MFrameFeatureDataset.
 
 		Args:
@@ -88,7 +88,7 @@ class YT8MFrameFeatureDataset():
 		self.feature_names = feature_names
 		self.max_frames = max_frames
 		self.num_samples = num_samples
-		self.random_sample = random_sample
+		self.random_frames = random_frames
 
 	def SampleRandomSequence(video_matrix, num_frames, num_samples):
 		"""Samples a random sequence of num_samples frames.

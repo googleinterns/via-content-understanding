@@ -3,13 +3,12 @@ import tensorflow as tf
 from tensorflow.io import gfile
 
 
-def get_reader(feature_names='rgb,audio', feature_sizes='1024,128'):
+def get_reader(feature_names='rgb,audio', feature_sizes='1024,128', num_samples, random_frames):
 	# Convert feature_names and feature_sizes to lists of values.
-	feature_names, feature_sizes = GetListOfFeatureNamesAndSizes(
-			feature_names, feature_sizes)
+	feature_names, feature_sizes = GetListOfFeatureNamesAndSizes(feature_names, feature_sizes)
 
-	reader = readers.YT8MFrameFeatureDataset(feature_names=feature_names,
-																						feature_sizes=feature_sizes)
+	reader = readers.YT8MFrameFeatureDataset(feature_names=feature_names, feature_sizes=feature_sizes, num_samples=num_samples, random_frames=random_frames)
+
 	return reader
 
 def GetListOfFeatureNamesAndSizes(feature_names, feature_sizes):
