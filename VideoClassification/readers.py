@@ -123,6 +123,7 @@ class YT8MFrameFeatureDataset():
 		return tf.gather_nd(video_matrix, index)
 
 	def select_frames(self, video_matrix, num_frames):
+		num_frames = tf.make_ndarray(tf.make_tensor_proto(num_frames))
 		print(num_frames)
 		if self.random_frames:
 			sampled_video = self.sample_random_frames(video_matrix=video_matrix, num_frames=num_frames, num_samples=self.num_samples)
@@ -151,7 +152,7 @@ class YT8MFrameFeatureDataset():
 		feature_matrix = utils.Dequantize(decoded_features, max_quantized_value,
 																			min_quantized_value)
 		feature_matrix = resize_axis(feature_matrix, 0, max_frames)
-		num_frames = feature_matrix.shape.as_list()[0]
+		num_frames = min([max_frames, decoded_features.shape.as_list()[0]])
 		return feature_matrix, num_frames
 
 	def get_dataset(self, data_dir, batch_size, type="train", max_quantized_value=2, min_quantized_value=-2, num_workers=8):
@@ -213,7 +214,6 @@ class YT8MFrameFeatureDataset():
 				num_frames = num_frames_in_this_feature
 
 			feature_matrices[feature_index] = feature_matrix
-
 
 		# concatenate different features
 		video_matrix = tf.concat(feature_matrices, 1)
