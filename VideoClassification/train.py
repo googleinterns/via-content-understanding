@@ -62,7 +62,12 @@ def train(epochs=5, lr=0.01, num_clusters=64, batch_size=64, iterations=None, ra
 		predictions = model.predict(test_input)
 		
 		loss_vals = loss.eval_loss(test_labels, predictions)
-
+		print(loss_vals.shape)
+		print(predictions.shape)
+		print(test_labels.shape)
+		print(predictions)
+		print(test_labels)
+		print(loss_vals)
 		test_labels = test_labels.numpy()
 		loss_vals = loss_vals.numpy()
 
@@ -72,7 +77,7 @@ def train(epochs=5, lr=0.01, num_clusters=64, batch_size=64, iterations=None, ra
 	print(eval_dict)
 
 
-	model.save_weights('/home/conorfvedova_google_com/saved_model/model-final.h5')
+	#model.save_weights('/home/conorfvedova_google_com/saved_model/model-final.h5')
 
 if __name__ == "__main__":
 	train()
