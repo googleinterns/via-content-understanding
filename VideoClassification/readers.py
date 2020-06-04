@@ -192,7 +192,7 @@ class YT8MFrameFeatureDataset():
 		num_frames = tf.expand_dims(num_frames, 0)
 		batch_video_matrix = video_matrix
 		batch_labels = labels
-		batch_frames = tf.constant(tf.make_ndarray(num_frames)[0], shape=(self.max_frames,1))
+		#batch_frames = tf.constant(tf.make_ndarray(num_frames)[0], shape=(self.max_frames,1))
 
 		feature_dim = len(batch_video_matrix.get_shape()) - 1
 
@@ -200,6 +200,6 @@ class YT8MFrameFeatureDataset():
 
 		#Add number of frames to data
 		#batch_video_matrix = tf.stack([batch_video_matrix, batch_frames], axis=1)
-		print(num_frames.shape)
+		print(num_frames)
 
 		return (batch_video_matrix, batch_labels)
