@@ -191,7 +191,7 @@ class YT8MFrameFeatureDataset():
 		batch_video_ids = tf.expand_dims(contexts["id"], 0)
 		batch_video_matrix = video_matrix
 		batch_labels = labels
-		batch_frames = num_frames
+		batch_frames = tf.expand_dims(num_frames, 0)
 
 		feature_dim = len(batch_video_matrix.get_shape()) - 1
 
