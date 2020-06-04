@@ -39,7 +39,7 @@ class NetVLAD(tf.keras.layers.Layer):
 			units=self.num_clusters,
 			activation=tf.nn.softmax,
 			kernel_regularizer=tf.keras.regularizers.l2(1e-5),
-			name="temp_fc"
+			name="first_fc" + str(num_clusters)
 		)
 		self.cluster_centers = self.add_weight(
 			name="cluster_centers",
@@ -48,7 +48,7 @@ class NetVLAD(tf.keras.layers.Layer):
 				stddev=1.0 / math.sqrt(feature_dim)
 			),
 			trainable=True,
-			name=str(num_clusters)+"second_fc"
+			name="second_fc" + str(num_clusters)
 		)
 		self.feature_dim = feature_dim
 		self.max_frames = input_shape[-2]
