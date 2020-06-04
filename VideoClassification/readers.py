@@ -123,9 +123,9 @@ class YT8MFrameFeatureDataset():
 
 	def select_frames(self, video_matrix, num_frames):
 		if self.random_frames:
-			subsampled_video = self.sample_random_frames(video_matrix, num_frames, self.num_samples)
+			subsampled_video = self.sample_random_frames(video_matrix=video_matrix, num_frames=num_frames, num_samples=self.num_samples)
 		else:
-			subsampled_video = self.sample_random_sequence(video_matrix, num_frames, self.num_samples)
+			subsampled_video = self.sample_random_sequence(video_matrix=video_matrix, num_frames=num_frames, num_samples=self.num_samples)
 		return subsampled_video
 
 	def get_video_matrix(self, features, feature_size, max_frames,
