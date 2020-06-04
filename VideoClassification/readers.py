@@ -125,13 +125,12 @@ class YT8MFrameFeatureDataset():
 	def select_frames(self, video_matrix, num_frames):
 		print(video_matrix)
 		if self.random_frames:
-			video_matrix = self.sample_random_frames(video_matrix=video_matrix, num_frames=num_frames, num_samples=self.num_samples)
+			sampled_video = self.sample_random_sequence(video_matrix=video_matrix, num_frames=num_frames, num_samples=self.num_samples)
 		else:
-			video_matrix = self.sample_random_sequence(video_matrix=video_matrix, num_frames=num_frames, num_samples=self.num_samples)
-		return video_matrix
+			sampled_video = self.sample_random_sequence(video_matrix=video_matrix, num_frames=num_frames, num_samples=self.num_samples)
+		return sampled_video
 
-	def get_video_matrix(self, features, feature_size, max_frames,
-											 max_quantized_value, min_quantized_value):
+	def get_video_matrix(self, features, feature_size, max_frames, max_quantized_value, min_quantized_value):
 		"""Decodes features from an input string and quantizes it.
 
 		Args:
