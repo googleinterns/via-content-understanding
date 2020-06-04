@@ -69,7 +69,7 @@ class YT8MFrameFeatureDataset():
 			num_classes=3862,
 			feature_sizes=[1024, 128],
 			feature_names=["rgb", "audio"],
-			max_frames=300):
+			max_frames=300, num_samples=30, random_sample=True):
 		"""Construct a YT8MFrameFeatureDataset.
 
 		Args:
@@ -87,6 +87,46 @@ class YT8MFrameFeatureDataset():
 		self.feature_sizes = feature_sizes
 		self.feature_names = feature_names
 		self.max_frames = max_frames
+		self.num_samples = num_samples
+		self.random_sample = random_sample
+
+	def SampleRandomSequence(video_matrix, num_frames, num_samples):
+		"""Samples a random sequence of num_samples frames.
+
+		Args:
+		video_matrix: A tensor of size max_frames x feature_size, representing the video matrix
+		num_frames: An int representing the number of frames in video_matrix
+		num_samples: An int representing the number of frames to be sampled
+
+		Returns:
+		`video_matrix`: A tensor of size num_samples x feature_size
+		"""
+		start_index = tf.random.uniform([1], minval=0, maxval=num_frames-num_samples-1, dtype=int64)
+		
+		return model_input[start_index:start_index+num_samples,:]
+
+
+	def SampleRandomFrames(video_matrix, num_frames, num_samples):
+		"""Samples a random set of num_samples frames.
+
+		Args:
+		video_matrix: A tensor of size max_frames x feature_size, representing the video matrix
+		num_frames: An int representing the number of frames in video_matrix
+		num_samples: An int representing the number of frames to be sampled
+
+		Returns:
+		`model_input`: A tensor of size num_samples x feature_size
+		"""
+		frame_index = tf.random.uniform([num_samples], minval=0, maxval=num_frames-1, dtype=int64)
+
+		return tf.gather_nd(video_matrix, index)
+
+	def select_frames(self, video_matrix, num_frames):
+		if self.random_frames:
+			subsampled_video = utils.SampleRandomFrames(video_matrix, num_frames, self.num_samples)
+		else:
+			subsampled_video = utils.SampleRandomSequence(video_matrix, num_frames, self.num_samples)
+		return subsampled_video
 
 	def get_video_matrix(self, features, feature_size, max_frames,
 											 max_quantized_value, min_quantized_value):
@@ -179,6 +219,9 @@ class YT8MFrameFeatureDataset():
 		# concatenate different features
 		video_matrix = tf.concat(feature_matrices, 1)
 
+		#Select num_samples frames.
+		num_frames = tf.expand_dims(num_frames, 0)
+		video_matrix = self.select_frames(video_matrix, num_frames)
 		
 		# Process video-level labels.
 		label_indices = contexts["labels"].values
@@ -189,7 +232,7 @@ class YT8MFrameFeatureDataset():
 		labels = tf.sparse.to_dense(sparse_labels, default_value=False, validate_indices=False)
 		# convert to batch format.
 		batch_video_ids = tf.expand_dims(contexts["id"], 0)
-		num_frames = tf.expand_dims(num_frames, 0)
+		
 		batch_video_matrix = video_matrix
 		batch_labels = labels
 
