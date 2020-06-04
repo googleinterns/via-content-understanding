@@ -1,4 +1,5 @@
 import tensorflow as tf
+import tfds
 
 import eval_util
 import NetVLAD_CG
@@ -10,7 +11,7 @@ def test(model_dir, num_clusters=64, batch_size=64, iterations=None, random_fram
 
 	test_dataset = data_reader.get_dataset('/home/conorfvedova_google_com/data/test/', batch_size=batch_size, num_workers=8, type="test")
 
-	print(tf.convert_to_tensor(test_dataset))
+	print(tfds.as_numpy(test_dataset))
 	assert False
 	num_frames = data_reader.max_frames
 
