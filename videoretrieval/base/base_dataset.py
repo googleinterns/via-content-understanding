@@ -104,9 +104,9 @@ class BaseVideoDataset(AbstractClass):
             else:
                 print(f"Orphan pair: id: {video_id}, caption: {hash(caption)}")
 
-        self.num_of_train_examples = len(train_ids)
-        self.num_of_valid_examples = len(valid_ids)
-        self.num_of_test_examples = len(test_ids)
+        self.num_of_train_examples = len(train_data)
+        self.num_of_valid_examples = len(valid_data)
+        self.num_of_test_examples = len(test_data)
 
         train_dataset = self.build_id_caption_pair_generator_dataset(train_data)
         valid_dataset = self.build_id_caption_pair_generator_dataset(valid_data)
