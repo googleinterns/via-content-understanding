@@ -118,7 +118,7 @@ class YT8MFrameFeatureDataset():
 		`model_input`: A tensor of size num_samples x feature_size
 		"""
 		print(video_matrix)
-		frame_index = tf.random.uniform([num_samples], minval=0, maxval=num_frames-1, dtype=tf.dtypes.int32)
+		frame_index = tf.random.uniform(num_samples, minval=0, maxval=num_frames-1, dtype=tf.dtypes.int32)
 
 		return tf.gather_nd(video_matrix, index)
 
