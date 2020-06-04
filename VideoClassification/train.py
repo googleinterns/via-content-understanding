@@ -49,7 +49,7 @@ def train(epochs=5, lr=0.01, num_clusters=64, batch_size=64, iterations=None, ra
 	
 	model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=lr), loss=loss.custom_crossentropy, metrics=['categorical_accuracy'])
 
-	print(train_dataset)
+	print(train_dataset[1])
 	model.fit(x=train_dataset, steps_per_epoch=steps_per_epoch, validation_data=validation_dataset, validation_steps=validation_steps, epochs=epochs)
 
 	#Evaluate model
