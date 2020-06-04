@@ -39,16 +39,15 @@ class NetVLAD(tf.keras.layers.Layer):
 			units=self.num_clusters,
 			activation=tf.nn.softmax,
 			kernel_regularizer=tf.keras.regularizers.l2(1e-5),
-			name="first_fc" + str(num_clusters)
+			name="vlad_fc" + str(num_clusters)
 		)
 		self.cluster_centers = self.add_weight(
-			name="cluster_centers",
 			shape=(1, feature_dim, self.num_clusters),
 			initializer=tf.keras.initializers.TruncatedNormal(
 				stddev=1.0 / math.sqrt(feature_dim)
 			),
 			trainable=True,
-			name="second_fc" + str(num_clusters)
+			name="cluster_centers" + str(num_clusters)
 		)
 		self.feature_dim = feature_dim
 		self.max_frames = input_shape[-2]
@@ -243,7 +242,7 @@ class VideoClassifier(tf.keras.Model):
 			units=fc_units,
 			activation=tf.nn.relu6,
 			kernel_regularizer=tf.keras.regularizers.l2(1e-5),
-			name="first_fc"
+			name="main_fc"
 		)
 
 		self.first_cg = ContextGating(input_shape=(batch_size, fc_units), name="first_cg")
