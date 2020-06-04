@@ -19,7 +19,7 @@ import math
 from pathlib import Path
 import glob
 
-embeddings_per_file = 200
+embeddings_per_file = 50
 
 decoding_schema = {
     "video_id": tf.io.FixedLenFeature([], tf.string),
@@ -147,7 +147,6 @@ def get_cached_language_model_embeddings(source_dataset, language_model, split):
         language_model: an implementation of BaseLanguageModel for the language
             model used to generate the contextual embeddings.
         split: the name of the split (as a string).
-
     Returns: a tf.data Dataset where the first element is the video id as a
         string tensor, the second is the contextual embeddings as a float32
         tensor, and the third is the raw caption text as a string tensor.
@@ -155,5 +154,7 @@ def get_cached_language_model_embeddings(source_dataset, language_model, split):
     """
     record_files = get_cached_records(source_dataset, language_model, split)
 
-    return (tf.data.TFRecordDataset(record_files)
+    return (tf.data.TFRecordDataset(
+            record_files, 
+            num_parallel_reads=num_parallel_calls)
         .map(unseralize_data, num_parallel_calls=tf.data.experimental.AUTOTUNE))
