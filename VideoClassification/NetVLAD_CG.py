@@ -260,10 +260,11 @@ class VideoClassifier(tf.keras.Model):
 			A tensor with shape [batch_size, num_classes].
 		"""
 		num_frames = model_input[:,0,-1]
+		print(num_frames.shape)
 		if self.random_frames:
-			model_input = utils.SampleRandomFrames(model_input, self.num_frames, self.iterations)
+			model_input = utils.SampleRandomFrames(model_input, num_frames, self.iterations)
 		else:
-			model_input = utils.SampleRandomSequence(model_input, self.num_frames, self.iterations)
+			model_input = utils.SampleRandomSequence(model_input, num_frames, self.iterations)
 
 		video_input = model_input[:,:,:self.video_feature_dim]
 		audio_input = model_input[:,:,self.video_feature_dim:-1]
