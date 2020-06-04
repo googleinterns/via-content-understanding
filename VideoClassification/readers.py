@@ -131,9 +131,7 @@ class YT8MFrameFeatureDataset():
 
 		parser = partial(self._parse_fn, max_quantized_value=max_quantized_value, min_quantized_value=min_quantized_value)
 		dataset = dataset.map(parser)
-
-		if type != "test":
-			dataset = dataset.batch(batch_size, drop_remainder=True).prefetch(batch_size)
+		dataset = dataset.batch(batch_size, drop_remainder=True).prefetch(batch_size)
 
 		return dataset
 
