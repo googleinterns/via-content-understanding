@@ -35,8 +35,6 @@ def test(model_dir, num_clusters=64, batch_size=64, iterations=None, random_fram
 		loss_vals = loss.eval_loss(test_labels, predictions)
 		print(loss_vals.shape)
 
-		predictions = tf.transpose(predictions)
-		print(predictions)
 		evaluation_metrics.accumulate(predictions, test_labels, loss_vals)
 	eval_dict = evaluation_metrics.get()
 
