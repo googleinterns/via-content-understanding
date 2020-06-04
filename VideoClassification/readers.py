@@ -151,8 +151,7 @@ class YT8MFrameFeatureDataset():
 		num_frames = tf.minimum(tf.shape(decoded_features)[0], max_frames)
 		feature_matrix = utils.Dequantize(decoded_features, max_quantized_value,
 																			min_quantized_value)
-		feature_matrix = self.select_frames(feature_matrix, num_frames)
-
+		feature_matrix = resize_axis(feature_matrix, 0, max_frames)
 		return feature_matrix, num_frames
 
 	def get_dataset(self, data_dir, batch_size, type="train", max_quantized_value=2, min_quantized_value=-2, num_workers=8):
@@ -223,6 +222,8 @@ class YT8MFrameFeatureDataset():
 
 		#Select num_samples frames.
 		num_frames = tf.expand_dims(num_frames, 0)
+		print(video_matrix)
+		video_matrix = self.select_frames(video_matrix, num_frames)
 		
 		# Process video-level labels.
 		label_indices = contexts["labels"].values
