@@ -151,7 +151,7 @@ class YT8MFrameFeatureDataset():
 		feature_matrix = utils.Dequantize(decoded_features, max_quantized_value,
 																			min_quantized_value)
 		feature_matrix = resize_axis(feature_matrix, 0, max_frames)
-		num_frames = tf.shape(feature_matrix).numpy()[0]
+		num_frames = tf.shape(feature_matrix).as_list()[0]
 		return feature_matrix, num_frames
 
 	def get_dataset(self, data_dir, batch_size, type="train", max_quantized_value=2, min_quantized_value=-2, num_workers=8):
