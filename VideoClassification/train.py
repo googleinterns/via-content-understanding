@@ -33,7 +33,7 @@ def train(epochs=5, lr=0.01, num_clusters=64, batch_size=64, random_frames=True,
 	validation_steps = NUM_VAL_EXAMPLES // batch_size
 				
 	#Set up Reader and Preprocess Data
-	data_reader = reader_utils.get_reader(num_samples=num_samples, random_frames=random_frames)
+	data_reader = reader_utils.get_reader(num_samples=num_frames, random_frames=random_frames)
 
 	train_dataset = data_reader.get_dataset('/home/conorfvedova_google_com/data/train/', batch_size=batch_size, num_workers=8)
 
