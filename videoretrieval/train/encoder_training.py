@@ -72,9 +72,12 @@ def epoch(train_ds, valid_ds, train_ds_len, valid_ds_len, train_step_function,
         iter(valid_batched_dataset), total=math.ceil(valid_ds_len / batch_size))
 
     for video_embeddings_batch, text_embeddings_batch in valid_iter_progress:
+
+        video_embeddings, text_embeddings = forward_function(
+                video_embeddings_batch, text_embeddings_batch)
+
         valid_loss(bidirectional_max_margin_ranking_loss(
-            *forward_function(
-                video_embeddings_batch, text_embeddings_batch, m)))
+            video_embeddings,text_embeddings, m))
         valid_iter_progress.set_description(
             f"Valid Loss: {valid_loss.result().numpy()}")
 
