@@ -205,6 +205,6 @@ class YT8MFrameFeatureDataset():
 		batch_video_matrix = tf.nn.l2_normalize(batch_video_matrix, feature_dim)
 		batch_video_matrix = tf.squeeze(batch_video_matrix)
 		batch_labels = tf.squeeze(batch_labels)
-		print(num_frames)
+		print(batch_frames)
 		assert False
 		return (batch_video_matrix, batch_labels, batch_frames)
