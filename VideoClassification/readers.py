@@ -221,6 +221,7 @@ class YT8MFrameFeatureDataset():
 
 		#Select num_samples frames.
 		num_frames = tf.expand_dims(num_frames, 0)
+		print(video_matrix)
 		video_matrix = self.select_frames(video_matrix, num_frames)
 		
 		# Process video-level labels.
