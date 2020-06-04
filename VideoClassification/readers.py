@@ -122,6 +122,7 @@ class YT8MFrameFeatureDataset():
 		return tf.gather_nd(video_matrix, index)
 
 	def select_frames(self, video_matrix, num_frames):
+		print(video_matrix)
 		if self.random_frames:
 			subsampled_video = self.sample_random_frames(video_matrix=video_matrix, num_frames=num_frames, num_samples=self.num_samples)
 		else:
