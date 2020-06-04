@@ -251,7 +251,7 @@ class VideoClassifier(tf.keras.Model):
 
 		self.second_cg = ContextGating(input_shape=self.moe.compute_output_shape((batch_size, fc_units)), name="second_cg")
 
-	def call(self, model_input):
+	def call(self, model_input, num_frames):
 		"""Perform one forward pass of the model.
 
 		Args:
