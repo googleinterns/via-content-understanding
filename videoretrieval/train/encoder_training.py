@@ -51,12 +51,12 @@ def epoch(train_ds, valid_ds, train_ds_len, valid_ds_len, train_step_function,
     train_batched_dataset = (train_ds
         .shuffle(batches_per_buffer*batch_size)
         .batch(batch_size)
-        .prefetch(batches_per_buffer))
+        .prefetch(tf.data.experimental.AUTOTUNE))
 
     valid_batched_dataset = (valid_ds
         .shuffle(batches_per_buffer*batch_size)
         .batch(batch_size)
-        .prefetch(batches_per_buffer))
+        .prefetch(tf.data.experimental.AUTOTUNE))
 
     if in_notebook:
         progress_bar = progress_bar_notebook
