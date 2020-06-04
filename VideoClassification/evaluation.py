@@ -13,9 +13,6 @@ def test(model_dir, num_clusters=64, batch_size=64, iterations=None, random_fram
 	test_dataset = data_reader.get_dataset('/home/conorfvedova_google_com/data/test/', batch_size=batch_size, num_workers=8, type="test")
 
 	numpy_dataset = tfds.as_numpy(test_dataset)
-	
-		print(ex)
-		assert False
 
 	num_frames = data_reader.max_frames
 
