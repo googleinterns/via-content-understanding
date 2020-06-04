@@ -36,7 +36,9 @@ def test(model_dir, num_clusters=64, batch_size=64, iterations=None, random_fram
 		print(loss_vals.shape)
 		print(predictions.shape)
 		print(test_labels.shape)
-
+		print(predictions)
+		print(test_labels)
+		print(loss_vals)
 		predictions = predictions.numpy()
 		test_labels = test_labels.numpy()
 		loss_vals = loss_vals.numpy()
