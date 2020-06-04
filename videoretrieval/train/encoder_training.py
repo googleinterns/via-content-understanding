@@ -3,8 +3,9 @@ import tensorflow as tf
 from metrics.loss import bidirectional_max_margin_ranking_loss 
 from tqdm import tqdm as terminal_progress_bar
 from tqdm import tqdm_notebook as progress_bar_notebook
+import math
 
-def get_train_step(video_encoder, text_encoder):
+def get_train_step(video_encoder, text_encoder, m):
     video_encoder_optimizer = tf.keras.optimizers.Adam()
     text_encoder_optimizer = tf.keras.optimizers.Adam()
 
@@ -25,7 +26,7 @@ def get_train_step(video_encoder, text_encoder):
             text_results = text_encoder(text_embeddings_batch)
 
             loss = bidirectional_max_margin_ranking_loss(
-                video_results, text_results, 1)
+                video_results, text_results, m)
 
         video_gradients = video_tape.gradient(
             loss, video_encoder.trainable_variables)
@@ -42,7 +43,7 @@ def get_train_step(video_encoder, text_encoder):
     return train_step, forward, train_loss, valid_loss 
 
 def epoch(train_ds, valid_ds, train_ds_len, valid_ds_len, train_step_function,
-    forward_function, batch_size, train_loss, valid_loss, in_notebook=False):
+    forward_function, batch_size, train_loss, valid_loss, m, in_notebook=False):
     train_loss.reset_states()
     valid_loss.reset_states()
 
@@ -60,7 +61,7 @@ def epoch(train_ds, valid_ds, train_ds_len, valid_ds_len, train_step_function,
         progress_bar = terminal_progress_bar
 
     train_iter_progress = progress_bar(
-        iter(train_batched_dataset), total=train_ds_len)
+        iter(train_batched_dataset), total=math.ceil(train_ds_len / batch_size))
 
     for video_embeddings_batch, text_embeddings_batch in train_iter_progress:
         train_step_function(video_embeddings_batch, text_embeddings_batch)
@@ -68,12 +69,12 @@ def epoch(train_ds, valid_ds, train_ds_len, valid_ds_len, train_step_function,
             f"Train Loss: {train_loss.result().numpy()}")
 
     valid_iter_progress = progress_bar(
-        iter(valid_batched_dataset), total=valid_ds_len)
+        iter(valid_batched_dataset), total=math.ceil(valid_ds_len / batch_size))
 
     for video_embeddings_batch, text_embeddings_batch in valid_iter_progress:
         valid_loss(bidirectional_max_margin_ranking_loss(
             *forward_function(
-                video_embeddings_batch, text_embeddings_batch, 1)))
+                video_embeddings_batch, text_embeddings_batch, m)))
         valid_iter_progress.set_description(
             f"Valid Loss: {valid_loss.result().numpy()}")
 
@@ -88,10 +89,11 @@ def fit(
     train_ds_len,
     valid_ds_len,
     batch_size,
+    m,
     in_notebook=False):
     
     train_step, forward, train_loss, valid_loss = \
-        get_train_step(video_encoder, text_encoder)
+        get_train_step(video_encoder, text_encoder, m)
 
     for epoch_num in range(num_epochs):
         print(f"Epoch {epoch_num+1} / {num_epochs}")
@@ -105,4 +107,5 @@ def fit(
             batch_size,
             train_loss,
             valid_loss,
+            m,
             in_notebook)
