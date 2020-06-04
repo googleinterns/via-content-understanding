@@ -11,26 +11,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Calculate or keep track of the interpolated average precision.
 
+"""Calculate or keep track of the interpolated average precision.
 It provides an interface for calculating interpolated average precision for an
 entire list or the top-n ranked items. For the definition of the
 (non-)interpolated average precision:
 http://trec.nist.gov/pubs/trec15/appendices/CE.MEASURES06.pdf
-
 Example usages:
 1) Use it as a static function call to directly calculate average precision for
 a short ranked list in the memory.
-
 ```
 import random
-
 p = np.array([random.random() for _ in xrange(10)])
 a = np.array([random.choice([0, 1]) for _ in xrange(10)])
-
 ap = average_precision_calculator.AveragePrecisionCalculator.ap(p, a)
 ```
-
 2) Use it as an object for long ranked list that cannot be stored in memory or
 the case where partial predictions can be observed at a time (Tensorflow
 predictions). In this case, we first call the function accumulate many times
@@ -41,7 +36,6 @@ p1 = np.array([random.random() for _ in xrange(5)])
 a1 = np.array([random.choice([0, 1]) for _ in xrange(5)])
 p2 = np.array([random.random() for _ in xrange(5)])
 a2 = np.array([random.choice([0, 1]) for _ in xrange(5)])
-
 # interpolated average precision at 10 using 1000 break points
 calculator = average_precision_calculator.AveragePrecisionCalculator(10)
 calculator.accumulate(p1, a1)
@@ -62,13 +56,10 @@ class AveragePrecisionCalculator(object):
 
   def __init__(self, top_n=None):
     """Construct an AveragePrecisionCalculator to calculate average precision.
-
     This class is used to calculate the average precision for a single label.
-
     Args:
-      top_n: A positive Integer specifying the average precision at n, or None
-        to use all provided data points.
-
+      top_n: A positive Integer specifying the average precision at n, or
+        None to use all provided data points.
     Raises:
       ValueError: An error occurred when the top_n is not a positive integer.
     """
@@ -91,19 +82,16 @@ class AveragePrecisionCalculator(object):
 
   def accumulate(self, predictions, actuals, num_positives=None):
     """Accumulate the predictions and their ground truth labels.
-
     After the function call, we may call peek_ap_at_n to actually calculate
     the average precision.
     Note predictions and actuals must have the same shape.
-
     Args:
       predictions: a list storing the prediction scores.
-      actuals: a list storing the ground truth labels. Any value larger than 0
-        will be treated as positives, otherwise as negatives. num_positives = If
-        the 'predictions' and 'actuals' inputs aren't complete, then it's
-        possible some true positives were missed in them. In that case, you can
-        provide 'num_positives' in order to accurately track recall.
-
+      actuals: a list storing the ground truth labels. Any value
+      larger than 0 will be treated as positives, otherwise as negatives.
+      num_positives = If the 'predictions' and 'actuals' inputs aren't complete,
+      then it's possible some true positives were missed in them. In that case,
+      you can provide 'num_positives' in order to accurately track recall.
     Raises:
       ValueError: An error occurred when the format of the input is not the
       numpy 1-D array or the shape of predictions and actuals does not match.
@@ -111,16 +99,14 @@ class AveragePrecisionCalculator(object):
     if len(predictions) != len(actuals):
       raise ValueError("the shape of predictions and actuals does not match.")
 
-    if num_positives is not None:
+    if not num_positives is None:
       if not isinstance(num_positives, numbers.Number) or num_positives < 0:
-        raise ValueError(
-            "'num_positives' was provided but it was a negative number.")
+        raise ValueError("'num_positives' was provided but it wan't a nonzero number.")
 
-    if num_positives is not None:
+    if not num_positives is None:
       self._total_positives += num_positives
     else:
-      self._total_positives += numpy.size(
-          numpy.where(numpy.array(actuals) > 1e-5))
+      self._total_positives += numpy.size(numpy.where(actuals > 0))
     topk = self._top_n
     heap = self._heap
 
@@ -139,7 +125,6 @@ class AveragePrecisionCalculator(object):
 
   def peek_ap_at_n(self):
     """Peek the non-interpolated average precision at n.
-
     Returns:
       The non-interpolated average precision at n (default 0).
       If n is larger than the length of the ranked list,
@@ -158,40 +143,37 @@ class AveragePrecisionCalculator(object):
   @staticmethod
   def ap(predictions, actuals):
     """Calculate the non-interpolated average precision.
-
     Args:
       predictions: a numpy 1-D array storing the sparse prediction scores.
       actuals: a numpy 1-D array storing the ground truth labels. Any value
-        larger than 0 will be treated as positives, otherwise as negatives.
-
+      larger than 0 will be treated as positives, otherwise as negatives.
     Returns:
       The non-interpolated average precision at n.
       If n is larger than the length of the ranked list,
       the average precision will be returned.
-
     Raises:
       ValueError: An error occurred when the format of the input is not the
       numpy 1-D array or the shape of predictions and actuals does not match.
     """
-    return AveragePrecisionCalculator.ap_at_n(predictions, actuals, n=None)
+    return AveragePrecisionCalculator.ap_at_n(predictions,
+                                              actuals,
+                                              n=None)
 
   @staticmethod
   def ap_at_n(predictions, actuals, n=20, total_num_positives=None):
     """Calculate the non-interpolated average precision.
-
     Args:
       predictions: a numpy 1-D array storing the sparse prediction scores.
       actuals: a numpy 1-D array storing the ground truth labels. Any value
-        larger than 0 will be treated as positives, otherwise as negatives.
+      larger than 0 will be treated as positives, otherwise as negatives.
       n: the top n items to be considered in ap@n.
       total_num_positives : (optionally) you can specify the number of total
-        positive in the list. If specified, it will be used in calculation.
-
+        positive
+      in the list. If specified, it will be used in calculation.
     Returns:
       The non-interpolated average precision at n.
       If n is larger than the length of the ranked list,
       the average precision will be returned.
-
     Raises:
       ValueError: An error occurred when
       1) the format of the input is not the numpy 1-D array;
@@ -212,11 +194,12 @@ class AveragePrecisionCalculator(object):
     actuals = numpy.array(actuals)
 
     # add a shuffler to avoid overestimating the ap
-    predictions, actuals = AveragePrecisionCalculator._shuffle(
-        predictions, actuals)
-    sortidx = sorted(range(len(predictions)),
-                     key=lambda k: predictions[k],
-                     reverse=True)
+    predictions, actuals = AveragePrecisionCalculator._shuffle(predictions,
+                                                               actuals)
+    sortidx = sorted(
+        range(len(predictions)),
+        key=lambda k: predictions[k],
+        reverse=True)
 
     if total_num_positives is None:
       numpos = numpy.size(numpy.where(actuals > 0))
@@ -252,20 +235,17 @@ class AveragePrecisionCalculator(object):
   @staticmethod
   def _zero_one_normalize(predictions, epsilon=1e-7):
     """Normalize the predictions to the range between 0.0 and 1.0.
-
     For some predictions like SVM predictions, we need to normalize them before
     calculate the interpolated average precision. The normalization will not
     change the rank in the original list and thus won't change the average
     precision.
-
     Args:
       predictions: a numpy 1-D array storing the sparse prediction scores.
       epsilon: a small constant to avoid denominator being zero.
-
     Returns:
       The normalized prediction.
     """
     denominator = numpy.max(predictions) - numpy.min(predictions)
-    ret = (predictions - numpy.min(predictions)) / numpy.max(
-        denominator, epsilon)
+    ret = (predictions - numpy.min(predictions)) / numpy.max(denominator,
+                                                             epsilon)
     return ret
