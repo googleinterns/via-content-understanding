@@ -259,7 +259,7 @@ class VideoClassifier(tf.keras.Model):
 		"""
 
 		video_input = model_input[:,:,:self.video_feature_dim]
-		audio_input = model_input[:,:,self.video_feature_dim:-1]
+		audio_input = model_input[:,:,self.video_feature_dim:]
 
 		video_vlad_out = self.video_vlad(video_input)
 		audio_vlad_out = self.audio_vlad(audio_input)

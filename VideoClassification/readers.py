@@ -221,7 +221,7 @@ class YT8MFrameFeatureDataset():
 		video_matrix = tf.concat(feature_matrices, 1)
 
 		#Select num_samples frames.
-		video_matrix = self.select_frames(video_matrix, num_frames)
+		#video_matrix = self.select_frames(video_matrix, num_frames)
 		
 		# Process video-level labels.
 		label_indices = contexts["labels"].values
@@ -244,3 +244,8 @@ class YT8MFrameFeatureDataset():
 		#batch_video_matrix = tf.stack([batch_video_matrix, batch_frames], axis=1)
 
 		return (batch_video_matrix, num_frames, batch_labels)
+
+
+#Ways to implement random frames. 
+#1. Simply add it in input and loop over dataset myself. Only issue is with validation but that can be fixed, maybe?
+#2. Do it in loading. I can simply do a random uniform between 0 and 1 (not included) and then multiply it by the num_frames, then round down.
