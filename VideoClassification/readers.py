@@ -101,6 +101,7 @@ class YT8MFrameFeatureDataset():
 		Returns:
 		`video_matrix`: A tensor of size num_samples x feature_size
 		"""
+		num_frames = tf.cast(num_frames, dtype=tf.float32)
 		start_index = tf.random.uniform([1])
 		
 		#Transform to uniform distribution over the integers from 0 to num_frames-num_samples-1
@@ -122,7 +123,7 @@ class YT8MFrameFeatureDataset():
 		Returns:
 		`model_input`: A tensor of size num_samples x feature_size
 		"""
-		num_frames = tf.repeat(num_frames, [self.num_samples], axis=0)
+		num_frames = tf.cast(tf.repeat(num_frames, [self.num_samples], axis=0), dtype=tf.float32)
 
 		#Random Sample in [0,1)
 		rand_nums = tf.random.uniform([num_samples])
@@ -235,7 +236,7 @@ class YT8MFrameFeatureDataset():
 		print(video_matrix)
 		video_matrix = self.select_frames(video_matrix, num_frames)
 		print(video_matrix)
-		
+
 		# Process video-level labels.
 		label_indices = contexts["labels"].values
 		sparse_labels = tf.sparse.SparseTensor(

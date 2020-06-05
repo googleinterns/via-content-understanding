@@ -37,8 +37,6 @@ def train(epochs=5, lr=0.01, num_clusters=64, batch_size=64, random_frames=True,
 
 	train_dataset = data_reader.get_dataset('/home/conorfvedova_google_com/data/train/', batch_size=batch_size, num_workers=8)
 
-	
-
 	validation_dataset = data_reader.get_dataset('/home/conorfvedova_google_com/data/validate/', batch_size=batch_size, num_workers=8, type="validate")
 
 	video_input_shape = (batch_size, num_frames, 1024)
