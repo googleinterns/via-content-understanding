@@ -56,7 +56,7 @@ def train(epochs=2, lr=0.01, num_clusters=64, batch_size=64, random_frames=True,
 	numpy_dataset = tfds.as_numpy(test_dataset)
 	evaluation_metrics = eval_util.EvaluationMetrics(data_reader.num_classes, 20)
 	for i in range(3844 // batch_size):
-		batch = numpy_dataset.next()
+		batch = next(numpy_dataset)
 		test_input = tf.convert_to_tensor(batch[0])
 		test_labels = tf.convert_to_tensor(batch[1])
 
