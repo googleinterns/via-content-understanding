@@ -261,5 +261,5 @@ class VideoClassifier(tf.keras.Model):
 		cg_out = self.first_cg(fc_out)
 		moe_out = self.moe(cg_out)
 		#final_out = self.second_cg(moe_out)
-		final_out = final_out
+		final_out = moe_out
 		return final_out
