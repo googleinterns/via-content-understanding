@@ -63,12 +63,7 @@ def train(epochs=2, lr=0.01, num_clusters=64, batch_size=64, random_frames=True,
 		predictions = model.predict(test_input)
 		
 		loss_vals = loss.eval_loss(test_labels, predictions)
-		print(loss_vals.shape)
-		print(predictions.shape)
-		print(test_labels.shape)
-		print(predictions)
-		print(test_labels)
-		print(loss_vals)
+
 		test_labels = test_labels.numpy()
 		loss_vals = loss_vals.numpy()
 
