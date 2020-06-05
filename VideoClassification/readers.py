@@ -107,7 +107,7 @@ class YT8MFrameFeatureDataset():
 		#Transform to uniform distribution over the integers from 0 to num_frames-num_samples-1
 		start_index = tf.floor(tf.multiply(start_index, num_frames-num_samples))
 
-		index = tf.range(start_index, start_index+num_samples)
+		index = tf.cast(tf.range(start_index, start_index+num_samples), tf.int32)
 
 		return tf.gather_nd(video_matrix, index)
 
@@ -130,7 +130,7 @@ class YT8MFrameFeatureDataset():
 		rand_nums = tf.math.multiply(rand_nums, num_frames)
 
 		#Transformed to a Random uniform over the integers from 0 to num_frames - 1
-		index = tf.floor(rand_nums)
+		index = tf.cast(tf.floor(rand_nums), tf.int32)
 
 		return tf.gather_nd(video_matrix, index)
 
