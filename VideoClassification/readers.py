@@ -130,7 +130,7 @@ class YT8MFrameFeatureDataset():
 		rand_nums = tf.math.multiply(rand_nums, num_frames)
 
 		#Transformed to a Random uniform over the integers from 0 to num_frames - 1
-		index = tf.cast(tf.floor(rand_nums), tf.int32)
+		index = tf.expand_dims(tf.cast(tf.floor(rand_nums), tf.int32),1)
 
 		return tf.gather_nd(video_matrix, index)
 
