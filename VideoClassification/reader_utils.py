@@ -36,3 +36,20 @@ def GetListOfFeatureNamesAndSizes(feature_names, feature_sizes):
 									"sizes (=" + str(len(list_of_feature_sizes)) + ")")
 
 	return list_of_feature_names, list_of_feature_sizes
+
+def Dequantize(feat_vector, max_quantized_value=2, min_quantized_value=-2):
+  """Dequantize the feature from the byte format to the float format.
+
+  Args:
+    feat_vector: the input 1-d vector.
+    max_quantized_value: the maximum of the quantized value.
+    min_quantized_value: the minimum of the quantized value.
+
+  Returns:
+    A float vector which has the same shape as feat_vector.
+  """
+  assert max_quantized_value > min_quantized_value
+  quantized_range = max_quantized_value - min_quantized_value
+  scalar = quantized_range / 255.0
+  bias = (quantized_range / 512.0) + min_quantized_value
+  return feat_vector * scalar + bias

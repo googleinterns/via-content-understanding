@@ -14,7 +14,7 @@
 """Provides readers configured for different datasets."""
 
 import tensorflow as tf
-import utils
+import reader_utils as utils
 import os
 from functools import partial
 
