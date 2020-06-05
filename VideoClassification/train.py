@@ -52,7 +52,7 @@ def train(epochs=5, lr=0.01, num_clusters=64, batch_size=64, random_frames=True,
 	model.fit(x=train_dataset, steps_per_epoch=steps_per_epoch, validation_data=validation_dataset, validation_steps=validation_steps, epochs=epochs)
 
 	#Evaluate model
-	test_dataset = data_reader.get_dataset('/home/conorfvedova_google_com/data/test/', batch_size=batch_size, num_workers=8, type="test")
+	test_dataset = data_reader.get_dataset('/home/conorfvedova_google_com/data/train/', batch_size=batch_size, num_workers=8, type="train")
 	numpy_dataset = tfds.as_numpy(test_dataset)
 	evaluation_metrics = eval_util.EvaluationMetrics(data_reader.num_classes, 20)
 	for i in range(3844 // batch_size):
