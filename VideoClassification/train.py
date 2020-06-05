@@ -41,11 +41,13 @@ def train(epochs=5, lr=0.01, num_clusters=64, batch_size=64, random_frames=True,
 
 	video_input_shape = (batch_size, num_frames, 1024)
 	audio_input_shape = (batch_size, num_frames, 128)
+	input_shape = (batch_size, num_frames, 1152)
 
 	#Compile and train model
 	model = NetVLAD_CG.VideoClassifier(num_clusters, video_input_shape, audio_input_shape, fc_units=fc_units, num_classes=data_reader.num_classes, num_mixtures=num_mixtures)
 	
 	model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=lr), loss=loss.custom_crossentropy, metrics=['categorical_accuracy'])
+	model.build(input_shape)
 	model.summary()
 	model.fit(x=train_dataset, steps_per_epoch=steps_per_epoch, validation_data=validation_dataset, validation_steps=validation_steps, epochs=epochs)
 
