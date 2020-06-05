@@ -101,9 +101,14 @@ class YT8MFrameFeatureDataset():
 		Returns:
 		`video_matrix`: A tensor of size num_samples x feature_size
 		"""
-		start_index = tf.random.uniform([1], minval=0, maxval=num_frames-num_samples-1, dtype=tf.dtypes.int32)
+		start_index = tf.random.uniform([1])
 		
-		return model_input[start_index:start_index+num_samples,:]
+		#Transform to uniform distribution over the integers from 0 to num_frames-num_samples-1
+		start_index = tf.floor(tf.multiply(start_index, num_frames-num_samples))
+
+		index = tf.range(start_index, start_index+num_samples)
+
+		return tf.gather_nd(video_matrix, index)
 
 
 	def sample_random_frames(self, video_matrix, num_frames, num_samples):
@@ -117,14 +122,18 @@ class YT8MFrameFeatureDataset():
 		Returns:
 		`model_input`: A tensor of size num_samples x feature_size
 		"""
-		print(video_matrix)
-		frame_index = tf.random.uniform([num_samples], minval=0, maxval=num_frames-1, dtype=tf.dtypes.int32)
+		num_frames = tf.repeat(num_frames, [self.num_samples], axis=0)
+
+		#Random Sample in [0,1)
+		rand_nums = tf.random.uniform([num_samples])
+		rand_nums = tf.math.multiply(rand_nums, num_frames)
+
+		#Transformed to a Random uniform over the integers from 0 to num_frames - 1
+		index = tf.floor(rand_nums)
 
 		return tf.gather_nd(video_matrix, index)
 
 	def select_frames(self, video_matrix, num_frames):
-		num_frames = tf.make_ndarray(tf.make_tensor_proto(num_frames))
-		print(num_frames)
 		if self.random_frames:
 			sampled_video = self.sample_random_frames(video_matrix=video_matrix, num_frames=num_frames, num_samples=self.num_samples)
 		else:
@@ -224,7 +233,8 @@ class YT8MFrameFeatureDataset():
 		#Select num_samples frames.
 		num_frames = tf.expand_dims(num_frames, 0)
 		print(video_matrix)
-		#video_matrix = self.select_frames(video_matrix, num_frames)
+		video_matrix = self.select_frames(video_matrix, num_frames)
+		print(video_matrix)
 		
 		# Process video-level labels.
 		label_indices = contexts["labels"].values
