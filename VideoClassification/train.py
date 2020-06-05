@@ -28,7 +28,7 @@ if __name__ == "__main__":
 											 "How many threads to use for reading input files.")
 
 
-def train(epochs=5, lr=0.01, num_clusters=256, batch_size=64, random_frames=True, num_mixtures=2, fc_units=2048, num_frames=30):
+def train(epochs=5, lr=0.01, num_clusters=256, batch_size=64, random_frames=True, num_mixtures=2, fc_units=1024, num_frames=30):
 	steps_per_epoch = NUM_EXAMPLES // batch_size
 	validation_steps = NUM_VAL_EXAMPLES // batch_size
 				
