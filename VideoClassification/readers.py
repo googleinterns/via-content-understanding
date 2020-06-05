@@ -149,12 +149,10 @@ class YT8MFrameFeatureDataset():
 				tf.cast(tf.io.decode_raw(features, tf.uint8), tf.float32),
 				[-1, feature_size])
 
+		num_frames = tf.minimum(tf.shape(decoded_features)[0], max_frames)
 		feature_matrix = utils.Dequantize(decoded_features, max_quantized_value,
 																			min_quantized_value)
 		feature_matrix = resize_axis(feature_matrix, 0, max_frames)
-		print(max_frames)
-		print(decoded_features.shape.as_list()[0])
-		num_frames = min([max_frames, decoded_features.shape.as_list()[0]])
 		return feature_matrix, num_frames
 
 	def get_dataset(self, data_dir, batch_size, type="train", max_quantized_value=2, min_quantized_value=-2, num_workers=8):
@@ -217,10 +215,15 @@ class YT8MFrameFeatureDataset():
 
 			feature_matrices[feature_index] = feature_matrix
 
+		# cap the number of frames at self.max_frames
+		num_frames = tf.minimum(num_frames, self.max_frames)
+
 		# concatenate different features
 		video_matrix = tf.concat(feature_matrices, 1)
 
 		#Select num_samples frames.
+		num_frames = tf.expand_dims(num_frames, 0)
+		print(video_matrix)
 		#video_matrix = self.select_frames(video_matrix, num_frames)
 		
 		# Process video-level labels.
@@ -244,8 +247,3 @@ class YT8MFrameFeatureDataset():
 		#batch_video_matrix = tf.stack([batch_video_matrix, batch_frames], axis=1)
 
 		return (batch_video_matrix, num_frames, batch_labels)
-
-
-#Ways to implement random frames. 
-#1. Simply add it in input and loop over dataset myself. Only issue is with validation but that can be fixed, maybe?
-#2. Do it in loading. I can simply do a random uniform between 0 and 1 (not included) and then multiply it by the num_frames, then round down.
