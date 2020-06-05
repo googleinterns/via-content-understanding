@@ -243,9 +243,6 @@ class YT8MFrameFeatureDataset():
 
 		batch_video_matrix = tf.nn.l2_normalize(batch_video_matrix, feature_dim)
 
-		#Add number of frames to data
-		#batch_video_matrix = tf.stack([batch_video_matrix, batch_frames], axis=1)
-
 		return (batch_video_matrix, batch_labels)
 
 
