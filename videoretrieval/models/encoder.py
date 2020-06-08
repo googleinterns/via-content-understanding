@@ -42,7 +42,7 @@ class EncoderModel(tf.keras.Model):
         video_features, text_features = video_text_pair_batch
         
         video_results = self.video_encoder(video_features)
-        text_results = self.stext_encoder(text_features)
+        text_results = self.text_encoder(text_features)
 
         loss = self.loss_fn(
             video_results, text_results, self.loss_hyperparameter_m)
