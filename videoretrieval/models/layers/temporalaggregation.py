@@ -26,11 +26,12 @@ class TemporalAggregationLayer(tf.keras.layers.Layer):
 		self.use_netvlad = use_netvlad
 		self.netvlad_clusters = netvlad_clusters
 
-	def build(self, input_shape):
 		if self.use_netvlad:
 			self.netvlad = NetVLAD(self.netvlad_clusters)
 
-		self.projection_layer = tf.keras.layers.Dense(self.output_dim)
+			self.projection_layer = tf.keras.layers.Dense(self.output_dim)
+		else:
+			self.projection_layer = tf.keras.layers.Dense(self.output_dim)
 
 	def call(self, input_):
 		if self.use_netvlad:
