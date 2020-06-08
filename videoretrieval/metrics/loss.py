@@ -37,13 +37,8 @@ def bidirectional_max_margin_ranking_loss(
 
     batch_size = video_embeddings.shape[0]
 
-    video_embeddings = tf.expand_dims(video_embeddings, 1)
-    text_embeddings = tf.expand_dims(text_embeddings, 0)
-
-    video_embeddings = tf.tile(video_embeddings, [1, batch_size, 1])
-    text_embeddings = tf.tile(text_embeddings, [batch_size, 1, 1])
-
-    similarities = tf.reduce_sum(video_embeddings * text_embeddings, axis=-1)
+    similarities = tf.linalg.matmul(
+        video_embeddings, text_embeddings, transpose_b=True)
     similarities_transpose = tf.transpose(similarities)
 
     matching_similarities = tf.linalg.tensor_diag_part(similarities)
