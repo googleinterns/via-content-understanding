@@ -41,11 +41,29 @@ def replace_video_id_with_expert_features_wrapper(precomputed_features):
 
     return wrapper
 
-def match_cached_embeddings_with_experts(precomputed_features, *datasets):
+def update_dataset_shape_wrapper(experts, language_model):
+    expert_shapes = [expert.embedding_shape for expert in experts]
+    contextual_embeddings_shape = language_model.contextual_embeddings_shape
+
+    def map_fn(expert_features, contextual_embeddings):
+        for expert_feature, shape in zip(expert_features, expert_shapes):
+            expert_feature.set_shape(shape)
+
+        contextual_embeddings.set_shape(contextual_embeddings_shape)
+
+        return expert_features, contextual_embeddings
+
+    return map_fn
+
+
+def match_cached_embeddings_with_experts(
+    language_model, experts, precomputed_features, *datasets):
     map_fn = replace_video_id_with_expert_features_wrapper(precomputed_features)
+    set_shape_fn = update_dataset_shape_wrapper(experts, language_model)
 
     return [(dataset
         .map(map_fn, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+        .map(set_shape_fn, num_parallel_calls=tf.data.experimental.AUTOTUNE)
         ) for dataset in datasets]
 
 def get_precomputed_features(source_dataset, experts):
@@ -70,5 +88,5 @@ def generate_encoder_datasets(language_model, source_dataset, experts):
 
     precomputed_features = get_precomputed_features(source_dataset, experts)
 
-    return match_cached_embeddings_with_experts(
+    return match_cached_embeddings_with_experts(language_model, experts,
         precomputed_features, train_ds, valid_ds, test_ds)

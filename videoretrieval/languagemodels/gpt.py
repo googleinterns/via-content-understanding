@@ -40,6 +40,11 @@ class OpenAIGPTModel(BaseLanguageModel):
     def encoded_shape(self):
         return (self.max_input_length,)
 
+    @property
+    def contextual_embeddings_shape(self):
+        return (324, 768)
+    
+
     def pad_tokens(self, tokens):
         """Zero pad tokens to max input length.
 
