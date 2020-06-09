@@ -54,7 +54,7 @@ def train(epochs=50, lr=0.01, num_clusters=256, batch_size=64, random_frames=Tru
 			assert False
 		else:
 			temp_list.append(i[0])
-			print(temp_list)
+			print(len(temp_list))
 
 
 	assert False
