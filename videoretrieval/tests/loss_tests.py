@@ -68,7 +68,7 @@ class TestBidirectionalMaxMarginRankingLoss(unittest.TestCase):
 
         expected_value = 0.6779908
 
-        self.assertTrue(abs(loss.numpy() - expected_value) < self.error)
+        self.assertTrue(abs(loss.numpy() - 0.6779908) < self.error)
 
     def test_bad_embeddings(self):
         """Tests a mini batch of bad embeddings."""
@@ -90,6 +90,4 @@ class TestBidirectionalMaxMarginRankingLoss(unittest.TestCase):
         loss = bidirectional_max_margin_ranking_loss(mock_video_embeddings,
             mock_text_embeddings, 1.5)
 
-        expected_value = 1.815000005
-
-        self.assertTrue(abs(loss.numpy() - expected_value) < self.error)
+        self.assertTrue(abs(loss.numpy() - 1.815000005) < self.error)

@@ -17,39 +17,39 @@ Defines the loss function needed to train the model.
 
 import tensorflow as tf
 
-def bidirectional_max_margin_ranking_loss(video_embeddings, text_embeddings, m):
+def bidirectional_max_margin_ranking_loss(
+    video_embeddings, text_embeddings, embedding_distance_parameter):
     """Implementation of the Bidirectional max margin ranking loss.
 
     Arguments:
         video_embeddings: a tensor of dimension (batch size x embedding space
-            size) where the ith element is the embedding for the ith video in
-            the batch
+            size) where the element at index i is the video embedding
+            corresponding to the text embedding at index i in text_embeddings.
         text_embeddings: a tensor of dimension (batch size x embedding space
-            size) where the ith element is the embedding for the ith caption in
-            the batch
-        m: a hyper parameter
+            size) where the element at index i is the text embedding
+            corresponding to the video embedding at index i in video_embedding. 
+        embedding_distance_parameter: a positive hyperparameter, called "m" by
+            the authors of the paper. This parameter is added to the difference
+            between each pairwise similarity between embeddings.
 
-    Returns: a tensor with one element, the loss
+    Returns: a tensor with one element, the loss.
     """
 
     batch_size = video_embeddings.shape[0]
 
-    video_embeddings = tf.expand_dims(video_embeddings, 1)
-    text_embeddings = tf.expand_dims(text_embeddings, 0)
-
-    video_embeddings = tf.tile(video_embeddings, [1, batch_size, 1])
-    text_embeddings = tf.tile(text_embeddings, [batch_size, 1, 1])
-
-    similarities = tf.reduce_sum(video_embeddings * text_embeddings, axis=-1)
+    similarities = tf.linalg.matmul(
+        video_embeddings, text_embeddings, transpose_b=True)
     similarities_transpose = tf.transpose(similarities)
 
     matching_similarities = tf.linalg.tensor_diag_part(similarities)
     matching_similarities = tf.expand_dims(matching_similarities, 1)
     matching_similarities = tf.tile(matching_similarities, [1, batch_size])
 
-    computed_similarities = tf.nn.relu(m + similarities - matching_similarities)
+    computed_similarities = tf.nn.relu(
+        embedding_distance_parameter + similarities - matching_similarities)
     computed_similarities += tf.nn.relu(
-        m + similarities_transpose - matching_similarities)
+        embedding_distance_parameter +\
+        similarities_transpose - matching_similarities)
 
     computed_similarities = computed_similarities *  (1 - tf.eye(batch_size))
 
