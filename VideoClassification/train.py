@@ -16,7 +16,7 @@ NUM_VAL_EXAMPLES = 3844
 
 def check_in(i, temp_list):
 	for j in temp_list:
-		if i == j:
+		if (i == j).all():
 			return True
 		else:
 			return False
@@ -54,6 +54,7 @@ def train(epochs=50, lr=0.01, num_clusters=256, batch_size=64, random_frames=Tru
 		else:
 			temp_list.append(i[0])
 			print(temp_list)
+			assert False
 
 	assert False
 
