@@ -39,8 +39,9 @@ def train(epochs=50, lr=0.01, num_clusters=256, batch_size=64, random_frames=Tru
 
 	validation_dataset = data_reader.get_dataset('/home/conorfvedova_google_com/data/validate/', batch_size=batch_size, num_workers=8, type="validate")
 
-	iterator = train_dataset.make_one_shot_iterator()
-	print(iterator.get_next())
+	iterator = tfds.as_numpy(train_dataset)
+	for i in iterator:
+		print(i)
 
 	assert False
 
