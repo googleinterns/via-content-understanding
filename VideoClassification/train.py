@@ -14,6 +14,13 @@ FLAGS = flags.FLAGS
 NUM_EXAMPLES = 3844
 NUM_VAL_EXAMPLES = 3844
 
+def check_in(i, temp_list):
+	for j in temp_list:
+		if (i == j).all():
+			return True
+		else:
+			return False
+
 if __name__ == "__main__":
 	# Dataset flags.
 	flags.DEFINE_string("train_dir", "~/data/train/train*.tfreco",
@@ -42,10 +49,11 @@ def train(epochs=50, lr=0.01, num_clusters=256, batch_size=64, random_frames=Tru
 	iterator = tfds.as_numpy(train_dataset)
 	temp_list = []
 	for i in iterator:
-		if i not in temp_list:
-			temp_list.append(i)
-		else:
+		if check_in(i, temp_list):
 			print(f"Not in list, len: {len(temp_list)}\n")
+		else:
+			temp_list.append(i[0])
+			print(temp_list)
 
 	assert False
 
