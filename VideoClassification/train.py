@@ -15,7 +15,7 @@ def check_in(i, temp_list):
 		else:
 			return False
 
-def load_datasets(train_dir, validate_dir, num_epochs):
+def load_datasets(train_dir, validate_dir, num_epochs, batch_size):
 	"""Set up data reader and load training and validation datasets
 	
 	Args:
@@ -34,7 +34,7 @@ def load_datasets(train_dir, validate_dir, num_epochs):
 
 	return data_reader, train_dataset, validation_dataset
 
-def test_model(model, data_reader, test_dir):
+def test_model(model, data_reader, test_dir, batch_size):
 	"""Test the model on test dataset attained from test_dir.
 	
 	Args:
@@ -68,7 +68,7 @@ def test_model(model, data_reader, test_dir):
 
 def train(epochs=15, lr=0.01, num_clusters=256, batch_size=64, random_frames=True, num_mixtures=2, fc_units=1024, iterations=300):
 	#Set up Reader and Preprocess Data
-	data_reader, train_dataset, validation_dataset = load_datasets('/home/conorfvedova_google_com/data/train/', '/home/conorfvedova_google_com/data/validate/', epochs)
+	data_reader, train_dataset, validation_dataset = load_datasets('/home/conorfvedova_google_com/data/train/', '/home/conorfvedova_google_com/data/validate/', epochs, batch_size)
 
 	iterator = tfds.as_numpy(train_dataset)
 	temp_list = []
@@ -104,7 +104,7 @@ def train(epochs=15, lr=0.01, num_clusters=256, batch_size=64, random_frames=Tru
 		batch_counter += 1
 
 	#Evaluate model
-	test_model(model, data_reader, '/home/conorfvedova_google_com/data/train/')
+	test_model(model, data_reader, '/home/conorfvedova_google_com/data/train/', batch_size)
 
 	#model.save_weights('/home/conorfvedova_google_com/saved_model/model-final.h5')
 
