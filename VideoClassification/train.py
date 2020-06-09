@@ -52,7 +52,7 @@ def train(epochs=50, lr=0.01, num_clusters=256, batch_size=64, random_frames=Tru
 	iterator = tfds.as_numpy(train_dataset)
 	temp_list = []
 	for i in iterator:
-		if check_in(i, temp_list):
+		if check_in(i[0], temp_list):
 			print(f"Not in list, len: {len(temp_list)}\n")
 		else:
 			temp_list.append(i[0])
