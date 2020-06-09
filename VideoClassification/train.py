@@ -51,10 +51,11 @@ def train(epochs=50, lr=0.01, num_clusters=256, batch_size=64, random_frames=Tru
 	for i in iterator:
 		if check_in(i[0], temp_list):
 			print(f"Not in list, len: {len(temp_list)}\n")
+			assert False
 		else:
 			temp_list.append(i[0])
 			print(temp_list)
-			assert False
+
 
 	assert False
 
