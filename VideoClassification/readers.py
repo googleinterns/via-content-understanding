@@ -66,7 +66,6 @@ class YT8MFrameFeatureDataset():
 
 	def __init__(  # pylint: disable=dangerous-default-value
 			self,
-			num_epochs,
 			num_classes=3862,
 			feature_sizes=[1024, 128],
 			feature_names=["rgb", "audio"],
@@ -88,7 +87,6 @@ class YT8MFrameFeatureDataset():
 		self.feature_sizes = feature_sizes
 		self.feature_names = feature_names
 		self.max_frames = max_frames
-		self.num_epochs = num_epochs
 
 	def get_video_matrix(self, features, feature_size, max_frames, max_quantized_value, min_quantized_value):
 		"""Decodes features from an input string and quantizes it.
@@ -114,7 +112,7 @@ class YT8MFrameFeatureDataset():
 		feature_matrix = resize_axis(feature_matrix, 0, max_frames)
 		return feature_matrix, num_frames
 
-	def get_dataset(self, data_dir, batch_size, type="train", max_quantized_value=2, min_quantized_value=-2, num_workers=8):
+	def get_dataset(self, data_dir, batch_size, type="train", max_quantized_value=2, min_quantized_value=-2, num_epochs=None):
 		"""Returns TFRecordDataset after it has been parsed.
 
 		Args:
