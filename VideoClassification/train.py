@@ -16,9 +16,6 @@ NUM_VAL_EXAMPLES = 3844
 
 def check_in(i, temp_list):
 	for j in temp_list:
-		print(i)
-		print(j)
-		assert False
 		if i == j:
 			return True
 		else:
