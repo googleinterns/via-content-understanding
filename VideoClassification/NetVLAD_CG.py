@@ -207,7 +207,7 @@ class VideoClassifier(tf.keras.Model):
 		ValueError: If the batch sizes of the audio_input_shape and video_input_shape do not match.
 		ValueError: If the number of samples of the audio_input_shape and video_input_shape do not match.
 	"""
-	def __init__(self, num_clusters, video_input_shape, audio_input_shape, num_classes, num_mixtures, fc_units, **kwargs):
+	def __init__(self, num_clusters, video_input_shape, audio_input_shape, num_classes, num_mixtures, fc_units, iterations, random_frames, **kwargs):
 		super(VideoClassifier, self).__init__(**kwargs)
 		if num_clusters % 2 != 0:
 			raise ValueError("num_clusters must be divisible by 2.")
@@ -220,6 +220,8 @@ class VideoClassifier(tf.keras.Model):
 		self.num_frames = video_input_shape[1]
 		self.num_classes = num_classes
 		self.num_mixtures = num_mixtures
+		self.iterations = iterations
+		self.random_frames = random_frames
 
 		self.video_feature_dim = video_input_shape[2]
 
@@ -240,7 +242,7 @@ class VideoClassifier(tf.keras.Model):
 
 		#self.second_cg = ContextGating(input_shape=self.moe.compute_output_shape((batch_size, fc_units)), name="second_cg")
 
-	def call(self, model_input):
+	def call(self, model_input, num_frames):
 		"""Perform one forward pass of the model.
 
 		Args:
@@ -248,6 +250,12 @@ class VideoClassifier(tf.keras.Model):
 		Returns:
 			A tensor with shape [batch_size, num_classes].
 		"""
+
+		num_frames = tf.cast(tf.expand_dims(num_frames, 1), tf.float32)
+		if self.random_frames:
+			model_input = utils.SampleRandomFrames(model_input, num_frames, self.iterations)
+		else:
+			model_input = utils.SampleRandomSequence(model_input, num_frames, self.iterations)
 
 		video_input = model_input[:,:,:self.video_feature_dim]
 		audio_input = model_input[:,:,self.video_feature_dim:]

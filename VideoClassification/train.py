@@ -35,12 +35,12 @@ if __name__ == "__main__":
 											 "How many threads to use for reading input files.")
 
 
-def train(epochs=50, lr=0.01, num_clusters=256, batch_size=64, random_frames=True, num_mixtures=2, fc_units=1024, num_frames=30):
+def train(epochs=15, lr=0.01, num_clusters=256, batch_size=64, random_frames=True, num_mixtures=2, fc_units=1024, iterations=300):
 	steps_per_epoch = NUM_EXAMPLES // batch_size
 	validation_steps = NUM_VAL_EXAMPLES // batch_size
 				
 	#Set up Reader and Preprocess Data
-	data_reader = reader_utils.get_reader(num_samples=num_frames, random_frames=random_frames)
+	data_reader = reader_utils.get_reader(epochs)
 
 	train_dataset = data_reader.get_dataset('/home/conorfvedova_google_com/data/train/', batch_size=batch_size, num_workers=8)
 
@@ -59,17 +59,26 @@ def train(epochs=50, lr=0.01, num_clusters=256, batch_size=64, random_frames=Tru
 
 	assert False
 
-	video_input_shape = (batch_size, num_frames, 1024)
-	audio_input_shape = (batch_size, num_frames, 128)
-	input_shape = (batch_size, num_frames, 1152)
+	video_input_shape = (batch_size, iterations, 1024)
+	audio_input_shape = (batch_size, iterations, 128)
+	input_shape = (batch_size, iterations, 1152)
 
 	#Compile and train model
-	model = NetVLAD_CG.VideoClassifier(num_clusters, video_input_shape, audio_input_shape, fc_units=fc_units, num_classes=data_reader.num_classes, num_mixtures=num_mixtures)
+	model = NetVLAD_CG.VideoClassifier(num_clusters, video_input_shape, audio_input_shape, fc_units=fc_units, num_classes=data_reader.num_classes, num_mixtures=num_mixtures, iterations=iterations, random_frames=random_frames)
 	
 	model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=lr), loss=loss.custom_crossentropy, metrics=['categorical_accuracy'])
 	model.build(input_shape)
 	model.summary()
-	model.fit(x=train_dataset, steps_per_epoch=steps_per_epoch, validation_data=validation_dataset, validation_steps=validation_steps, epochs=epochs)
+	num_batches = 0
+	for batch in train_dataset:
+		num_frames = batch[1]
+		model_input = batch[0]
+		model_output = batch[2]
+		
+		model.call = partial(model.call, num_frames=num_frames)
+
+		model.train_on_batch(model_input, model_output)
+
 
 	#Evaluate model
 	test_dataset = data_reader.get_dataset('/home/conorfvedova_google_com/data/train/', batch_size=batch_size, num_workers=8, type="train")

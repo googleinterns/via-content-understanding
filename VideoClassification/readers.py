@@ -66,10 +66,11 @@ class YT8MFrameFeatureDataset():
 
 	def __init__(  # pylint: disable=dangerous-default-value
 			self,
+			num_epochs,
 			num_classes=3862,
 			feature_sizes=[1024, 128],
 			feature_names=["rgb", "audio"],
-			max_frames=300, num_samples=30, random_frames=True):
+			max_frames=300):
 		"""Construct a YT8MFrameFeatureDataset.
 
 		Args:
@@ -87,59 +88,7 @@ class YT8MFrameFeatureDataset():
 		self.feature_sizes = feature_sizes
 		self.feature_names = feature_names
 		self.max_frames = max_frames
-		self.num_samples = num_samples
-		self.random_frames = random_frames
-
-	def sample_random_sequence(self, video_matrix, num_frames, num_samples):
-		"""Samples a random sequence of num_samples frames.
-
-		Args:
-		video_matrix: A tensor of size max_frames x feature_size, representing the video matrix
-		num_frames: An int representing the number of frames in video_matrix
-		num_samples: An int representing the number of frames to be sampled
-
-		Returns:
-		`video_matrix`: A tensor of size num_samples x feature_size
-		"""
-		num_frames = tf.cast(num_frames, dtype=tf.float32)
-		start_index = tf.random.uniform([1])
-		
-		#Transform to uniform distribution over the integers from 0 to num_frames-num_samples-1
-		start_index = tf.floor(tf.multiply(start_index, num_frames-num_samples))
-
-		index = tf.cast(tf.range(start_index, start_index+num_samples), tf.int32)
-
-		return tf.gather_nd(video_matrix, index)
-
-
-	def sample_random_frames(self, video_matrix, num_frames, num_samples):
-		"""Samples a random set of num_samples frames.
-
-		Args:
-		video_matrix: A tensor of size max_frames x feature_size, representing the video matrix
-		num_frames: An int representing the number of frames in video_matrix
-		num_samples: An int representing the number of frames to be sampled
-
-		Returns:
-		`model_input`: A tensor of size num_samples x feature_size
-		"""
-		num_frames = tf.cast(tf.repeat(num_frames, [self.num_samples], axis=0), dtype=tf.float32)
-
-		#Random Sample in [0,1)
-		rand_nums = tf.random.uniform([num_samples])
-		rand_nums = tf.math.multiply(rand_nums, num_frames)
-
-		#Transformed to a Random uniform over the integers from 0 to num_frames - 1
-		index = tf.expand_dims(tf.cast(tf.floor(rand_nums), tf.int32),1)
-
-		return tf.gather_nd(video_matrix, index)
-
-	def select_frames(self, video_matrix, num_frames):
-		if self.random_frames:
-			sampled_video = self.sample_random_frames(video_matrix=video_matrix, num_frames=num_frames, num_samples=self.num_samples)
-		else:
-			sampled_video = self.sample_random_sequence(video_matrix=video_matrix, num_frames=num_frames, num_samples=self.num_samples)
-		return sampled_video
+		self.num_epochs = num_epochs
 
 	def get_video_matrix(self, features, feature_size, max_frames, max_quantized_value, min_quantized_value):
 		"""Decodes features from an input string and quantizes it.
@@ -177,12 +126,13 @@ class YT8MFrameFeatureDataset():
 		
 		files_dataset = tf.data.Dataset.from_tensor_slices(files)
 		files_dataset = files_dataset.shuffle(tf.cast(tf.shape(files)[0], tf.int64))
-		#files_dataset = files_dataset.repeat()
-		dataset = files_dataset.interleave(tf.data.TFRecordDataset)
-		dataset = dataset.shuffle(buffer_size=batch_size)
+		#files_dataset = files_dataset.repeat(self.num_epochs)
+		dataset = files_dataset.interleave(lambda files: tf.data.TFRecordDataset(files, num_parallel_reads=tf.data.experimental.AUTOTUNE))
+		dataset = dataset.shuffle(buffer_size=5*batch_size)
 
 		parser = partial(self._parse_fn, max_quantized_value=max_quantized_value, min_quantized_value=min_quantized_value)
-		dataset = dataset.map(parser)
+		dataset = dataset.map(parser, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+
 		dataset = dataset.batch(batch_size, drop_remainder=True).prefetch(batch_size)
 
 		return dataset
@@ -233,9 +183,6 @@ class YT8MFrameFeatureDataset():
 
 		#Select num_samples frames.
 		num_frames = tf.expand_dims(num_frames, 0)
-		print(video_matrix)
-		video_matrix = self.select_frames(video_matrix, num_frames)
-		print(video_matrix)
 
 		# Process video-level labels.
 		label_indices = contexts["labels"].values
@@ -254,8 +201,8 @@ class YT8MFrameFeatureDataset():
 
 		batch_video_matrix = tf.nn.l2_normalize(batch_video_matrix, feature_dim)
 
-		return (batch_video_matrix, batch_labels)
-
+		return (batch_video_matrix, num_frames, batch_labels)
+ 
 
 #Ways to implement random frames. 
 #1. Simply add it in input and loop over dataset myself. Only issue is with validation but that can be fixed, maybe?
