@@ -28,12 +28,12 @@ decoding_schema = {
 
 
 def get_feature(value):
-    """Get a tf.train.Feature from the parameter value as a bytes list."""
+    """Gets a tf.train.Feature from the parameter value as a bytes list."""
     bytes_list = tf.train.BytesList(value=[value.numpy()])
     return tf.train.Feature(bytes_list=bytes_list)
 
 def get_records_directory(dataset, language_model, split):
-    """Get a path to cache the data from the dataset/model/split."""
+    """Gets a path to cache the data from the dataset/model/split."""
     dataset_name = dataset.dataset_name
     language_model_name = language_model.name
 
@@ -78,7 +78,7 @@ def write_dataset(dataset, records_directory, dataset_size):
  
 def cache_language_model_embeddings(dataset, source_dataset, language_model,
     split):
-    """Cache embeddings for a specific dataset/model/split.
+    """Caches embeddings for a specific dataset/model/split.
 
     Arguments:
         dataset: a tf.data Dataset to be cached where the first element is the
@@ -106,8 +106,9 @@ def cache_language_model_embeddings(dataset, source_dataset, language_model,
     write_dataset(dataset, records_directory, 
         source_dataset.num_of_examples_by_split(split))
 
-def get_cached_records(source_dataset, language_model, split):
-    """Get a list of files that contain cached data.
+def get_cached_records_dataset(
+    source_dataset, language_model, split, shuffle_files):
+    """Gets a TFRecordDataset of cached data.
 
     Parameters:
         source_dataset: an implementation of BaseDataset that the cached
@@ -115,6 +116,8 @@ def get_cached_records(source_dataset, language_model, split):
         language_model: an implementation of BaseLanguage model that the
             cached embeddings were generated from.
         split: the name of the dataset split.
+        shuffle_files: a boolean indicating if the files should be shuffled
+            before they are read.
 
     Returns: a list of file paths (as strings) to each cached tfrecord file.
     """
@@ -123,13 +126,28 @@ def get_cached_records(source_dataset, language_model, split):
         source_dataset, language_model, split)
     glob_string = str((records_directory / "*.tfrecord").absolute())
 
-    return glob.glob(glob_string)
+    file_paths = glob.glob(glob_string)
+
+    if len(file_paths) == 0:
+        # In this case, there are no files, so we'll return an empty dataset.
+        return tf.data.TFRecordDataset(file_paths)
+
+    dataset = tf.data.Dataset.from_tensor_slices(file_paths)
+
+    if shuffle_files:
+        dataset = dataset.shuffle(len(file_paths))
+
+    dataset = dataset.batch(len(file_paths)).interleave(
+        lambda files: tf.data.TFRecordDataset(
+            files, num_parallel_reads=tf.data.experimental.AUTOTUNE))
+
+    return dataset
 
 def unseralize_data(seralized_item):
     """Unseralizes a seralized protobuf feature.
 
-    Returns: a tuple of 3 items, the first being the video id as a string tensor,
-        the second being the contextual embeddings as a float32 tensor,
+    Returns: a tuple of 3 items, the first being the video id as a string
+        tensor, the second being the contextual embeddings as a float32 tensor,
         the third being the source text as tensor.
     """
     example = tf.io.parse_single_example(seralized_item, decoding_schema)
@@ -138,8 +156,9 @@ def unseralize_data(seralized_item):
 
     return (example["video_id"], contextual_embeddings)
 
-def get_cached_language_model_embeddings(source_dataset, language_model, split):
-    """Load the cached embeddings for a specific dataset/model/split.
+def get_cached_language_model_embeddings(
+    source_dataset, language_model, split, shuffle_files=True):
+    """Loads the cached embeddings for a specific dataset/model/split.
 
     Arguments:
         source_dataset: an implementation of BaseDataset for the dataset to be
@@ -147,14 +166,15 @@ def get_cached_language_model_embeddings(source_dataset, language_model, split):
         language_model: an implementation of BaseLanguageModel for the language
             model used to generate the contextual embeddings.
         split: the name of the split (as a string).
+        shuffle_files: a boolean indicating if the files should be shuffled
+            before they are read.
     Returns: a tf.data Dataset where the first element is the video id as a
         string tensor, the second is the contextual embeddings as a float32
         tensor, and the third is the raw caption text as a string tensor.
         The dataset is empty if there are no cached results.  
     """
-    record_files = get_cached_records(source_dataset, language_model, split)
+    dataset = get_cached_records_dataset(
+        source_dataset, language_model, split, shuffle_files)
 
-    return (tf.data.TFRecordDataset(
-            record_files, 
-            num_parallel_reads=tf.data.experimental.AUTOTUNE)
-        .map(unseralize_data, num_parallel_calls=tf.data.experimental.AUTOTUNE))
+    return dataset.map(
+        unseralize_data, num_parallel_calls=tf.data.experimental.AUTOTUNE)
