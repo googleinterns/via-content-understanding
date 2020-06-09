@@ -44,7 +44,7 @@ class ProbabilityCalculator:
 
     def probability_preferred_ranked_above_undesired(
         self, preferred_scores, undesired_scores):
-        """Find the probability that preferred scores are above undesired ones.
+        """Finds the probability that preferred scores are above undesired ones.
 
 
         Arguments:
