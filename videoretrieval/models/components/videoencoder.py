@@ -21,7 +21,23 @@ from models.layers import TemporalAggregationLayer, \
 
 
 class VideoEncoder(tf.keras.Model):
-    """Implementation of the video encoder"""
+    """Implementation of the video encoder.
+
+    Attributes:
+        experts: a list of experts (that implement BaseExpert)
+        expert_aggregated_size: the dimensionality we'll project experts to.
+        encoded_expert_dimensionality: the dimensionality experts embeddings
+            are computed down to. Final output size is num of experts *
+            encoded_expert_dimensionality.
+        g_mlp_layers: layers in the mlp labeled "g".
+        h_mlp_layers: layers in the mlp labeled "h".
+        temporal_aggregation_layers: a list of temporal aggregation layers, one
+            per expert.
+        expert_projection: An expert projection modulation layer.
+        g_mlp: A standard feedforward deep neural network, with g_mlp_layers.
+        h_mlp: A standard feedforward deep neural network, with h_mlp_layers.
+        gems: A list of gated embedding modules, one per network.
+    """
 
     def __init__(self, 
             experts, 
