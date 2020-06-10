@@ -32,7 +32,7 @@ def SampleRandomSequence(model_input, num_frames, num_samples):
                                [batch_size, 1])
   max_start_frame_index = tf.maximum(num_frames - num_samples, 0)
   start_frame_index = tf.cast(
-      tf.multiply(tf.random_uniform([batch_size, 1]),
+      tf.multiply(tf.random.uniform([batch_size, 1]),
                   tf.cast(max_start_frame_index + 1, tf.float32)), tf.int32)
   frame_index = tf.minimum(start_frame_index + frame_index_offset,
                            tf.cast(num_frames - 1, tf.int32))
@@ -55,7 +55,7 @@ def SampleRandomFrames(model_input, num_frames, num_samples):
   """
   batch_size = tf.shape(model_input)[0]
   frame_index = tf.cast(
-      tf.multiply(tf.random_uniform([batch_size, num_samples]),
+      tf.multiply(tf.random.uniform([batch_size, num_samples]),
                   tf.tile(tf.cast(num_frames, tf.float32), [1, num_samples])),
       tf.int32)
   batch_index = tf.tile(tf.expand_dims(tf.range(batch_size), 1),

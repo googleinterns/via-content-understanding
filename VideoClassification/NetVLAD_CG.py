@@ -193,7 +193,7 @@ class MOELogistic(tf.keras.layers.Layer):
 		config = base_config.update({'number of classes': self.num_classes, 'number of mixtures': self.num_mixtures})
 		return config
 
-class VideoClassifier(tf.keras.Model):
+class VideoClassifier:
 	"""The Video Classifier model, implemented according to the winning model from the Youtube-8M Challenge.
 	The model can be found here: https://arxiv.org/pdf/1706.06905.pdf
 	
@@ -242,7 +242,7 @@ class VideoClassifier(tf.keras.Model):
 
 		#self.second_cg = ContextGating(input_shape=self.moe.compute_output_shape((batch_size, fc_units)), name="second_cg")
 
-	def call(self, inputs):
+	def build_model(self, input_shape, num_frames_shape):
 		"""Perform one forward pass of the model.
 
 		Args:
@@ -250,10 +250,9 @@ class VideoClassifier(tf.keras.Model):
 		Returns:
 			A tensor with shape [batch_size, num_classes].
 		"""
-		print(inputs)
-		model_input = inputs[0]
-		num_frames = inputs[1]
-		print(tf.shape(num_frames))
+		frames_input = tf.keras.layers.Input(shape=num_frames_shape)
+		model_input = tf.keras.layers.Input(shape=input_shape)
+
 		num_frames = tf.cast(tf.expand_dims(num_frames, 1), tf.float32)
 		if self.random_frames:
 			model_input = utils.SampleRandomFrames(model_input, num_frames, self.iterations)
@@ -271,6 +270,8 @@ class VideoClassifier(tf.keras.Model):
 		fc_out = self.fc(vlad_out)
 		cg_out = self.first_cg(fc_out)
 		moe_out = self.moe(cg_out)
-		#final_out = self.second_cg(moe_out)
-		final_out = moe_out
-		return final_out
+		final_out = self.second_cg(moe_out)
+		
+		final_model = tf.keras.models.Model(inputs=[model_input, frames_input], outputs=final_out)
+
+		return final_model
