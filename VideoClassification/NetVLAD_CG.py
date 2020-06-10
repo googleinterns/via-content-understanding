@@ -246,7 +246,7 @@ class VideoClassifier:
 		"""Perform one forward pass of the model.
 
 		Args:
-			model_input: input features of shape [batch_size, max_frames, video_feature_dim + audio_feature_dim + 1].
+			model_input: input features of shape [batch_size, max_frames, video_feature_dim + audio_feature_dim].
 		Returns:
 			A tensor with shape [batch_size, num_classes].
 		"""
