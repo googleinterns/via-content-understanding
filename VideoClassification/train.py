@@ -40,12 +40,12 @@ def test_model(model, data_reader, test_dir, batch_size):
 	test_dataset = data_reader.get_dataset(test_dir, batch_size=batch_size, type="train")
 	test_dataset = tfds.as_numpy(test_dataset)
 	evaluation_metrics = eval_util.EvaluationMetrics(data_reader.num_classes, 20)
-	for batch in numpy_dataset:
+	for batch in test_dataset:
 		test_input = tf.convert_to_tensor(batch[0])
 		test_frames = tf.convert_to_tensor(batch[1])
 		test_labels = tf.convert_to_tensor(batch[2])
 
-		predictions = model.predict(x=[test_input, test_frames])
+		predictions = model.predict(test_input)
 		
 		loss_vals = loss.eval_loss(test_labels, predictions)
 
