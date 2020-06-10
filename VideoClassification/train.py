@@ -90,7 +90,11 @@ def train(epochs=15, lr=0.01, num_clusters=256, batch_size=64, random_frames=Tru
 		train_frames = tf.convert_to_tensor(batch[1])
 		train_labels = tf.convert_to_tensor(batch[2])
 
-		loss_val = model.train_on_batch(x=[train_input, train_frames], y=train_labels)
+		print(train_input)
+		print(train_frames)
+		print(train_labels)
+
+		loss_val = model.train_on_batch(x=train_input, y=train_labels) #, train_frames]
 
 		batch_counter += 1
 
