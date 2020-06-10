@@ -83,21 +83,22 @@ def train(epochs=15, lr=0.01, num_clusters=256, batch_size=64, random_frames=Tru
 	model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=lr), loss=loss.custom_crossentropy, metrics=['categorical_accuracy'])
 
 	model.summary()
-	train_dataset = tfds.as_numpy(train_dataset)
-	batch_counter = 0
-	for batch in train_dataset:
-		train_input = tf.convert_to_tensor(batch[0])
-		train_frames = tf.convert_to_tensor(batch[1])
-		train_labels = tf.convert_to_tensor(batch[2])
+	model.fit(train_dataset, epochs=num_epochs)
+	# train_dataset = tfds.as_numpy(train_dataset)
+	# batch_counter = 0
+	# for batch in train_dataset:
+	# 	train_input = tf.convert_to_tensor(batch[0])
+	# 	train_frames = tf.convert_to_tensor(batch[1])
+	# 	train_labels = tf.convert_to_tensor(batch[2])
 
-		loss_val = model.train_on_batch(x=train_input, y=train_labels) #, train_frames]
+	# 	loss_val = model.train_on_batch(x=train_input, y=train_labels) #, train_frames]
 
-		batch_counter += 1
-		if batch_counter % 10000 == 0:
-			print(f"Batch number {batch_counter}.")
-			print(f"Current Loss value {loss_val}.")
+	# 	batch_counter += 1
+	# 	if batch_counter % 10000 == 0:
+	# 		print(f"Batch number {batch_counter}.")
+	# 		print(f"Current Loss value {loss_val}.")
 
-	print(f"Final Batch {batch_counter}")
+	# print(f"Final Batch {batch_counter}")
 	#Evaluate model
 	test_model(model, data_reader, '/home/conorfvedova_google_com/data/train/', batch_size)
 

@@ -112,7 +112,7 @@ class YT8MFrameFeatureDataset():
 		feature_matrix = resize_axis(feature_matrix, 0, max_frames)
 		return feature_matrix, num_frames
 
-	def get_dataset(self, data_dir, batch_size, type="train", max_quantized_value=2, min_quantized_value=-2, num_epochs=None):
+	def get_dataset(self, data_dir, batch_size, type="train", max_quantized_value=2, min_quantized_value=-2):
 		"""Returns TFRecordDataset after it has been parsed.
 
 		Args:
@@ -123,15 +123,15 @@ class YT8MFrameFeatureDataset():
 		files = tf.io.matching_files(os.path.join(data_dir, '%s*' % type))
 		
 		files_dataset = tf.data.Dataset.from_tensor_slices(files)
-		files_dataset = files_dataset.shuffle(tf.cast(tf.shape(files)[0], tf.int64))
-		#files_dataset.batch(tf.shape(files)[0])#.repeat(num_epochs)
-		dataset = files_dataset.interleave(lambda files: tf.data.TFRecordDataset(files))
-		dataset = dataset.shuffle(buffer_size=5*batch_size)
+		files_dataset = files_dataset.batch(tf.cast(tf.shape(files)[0], tf.int64))
+
+		dataset = files_dataset.interleave(lambda files: tf.data.TFRecordDataset(files, num_parallel_reads=tf.data.AUTOTUNE))
+		#dataset = dataset.shuffle(buffer_size=5*batch_size)
 
 		parser = partial(self._parse_fn, max_quantized_value=max_quantized_value, min_quantized_value=min_quantized_value)
 		dataset = dataset.map(parser, num_parallel_calls=tf.data.experimental.AUTOTUNE)
 
-		dataset = dataset.batch(batch_size, drop_remainder=True).prefetch(batch_size)
+		#dataset = dataset.batch(batch_size, drop_remainder=True).prefetch(batch_size)
 
 		return dataset
 
@@ -199,7 +199,7 @@ class YT8MFrameFeatureDataset():
 
 		batch_video_matrix = tf.nn.l2_normalize(batch_video_matrix, feature_dim)
 
-		return (batch_video_matrix, num_frames, batch_labels)
+		return (batch_video_matrix, batch_labels)
  
 
 #Ways to implement random frames. 
