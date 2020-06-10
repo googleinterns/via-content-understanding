@@ -83,7 +83,7 @@ def train(epochs=15, lr=0.01, num_clusters=256, batch_size=64, random_frames=Tru
 	model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=lr), loss=loss.custom_crossentropy, metrics=['categorical_accuracy'])
 
 	model.summary()
-	model.fit(train_dataset, epochs=num_epochs)
+	model.fit(train_dataset, epochs=epochs)
 	# train_dataset = tfds.as_numpy(train_dataset)
 	# batch_counter = 0
 	# for batch in train_dataset:
