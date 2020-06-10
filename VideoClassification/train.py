@@ -94,7 +94,7 @@ def train(epochs=15, lr=0.01, num_clusters=256, batch_size=64, random_frames=Tru
 
 		batch_counter += 1
 
-		if batch_counter % 10000:
+		if batch_counter % 10000 == 0:
 			print(f"Batch number {batch_counter}.")
 			print(f"Current Loss value {loss_val}.")
 
