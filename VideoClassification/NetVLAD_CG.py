@@ -252,7 +252,7 @@ class VideoClassifier:
 		"""
 		#frames_input = tf.keras.layers.Input(shape=num_frames_shape, batch_size=batch_size)
 		model_input = tf.keras.layers.Input(shape=input_shape, batch_size=batch_size)
-		print(frames_input)
+		#print(frames_input)
 		print(model_input)
 
 		#num_frames = tf.cast(tf.expand_dims(frames_input, 1), tf.float32)
