@@ -51,12 +51,16 @@ class ProbabilityFunctionsTest(unittest.TestCase):
                 preferred_scores, undesired_scores))
 
         self.assertTrue(
-            expected_score_positive - expected_probability < self.maximum_error)
+            abs(expected_score_positive - expected_probability) < \
+            self.maximum_error)
 
         expected_score_negative = (self.calculator_preferred_negative
             .probability_preferred_ranked_above_undesired(
                 1 - preferred_scores, 1 - undesired_scores))
 
+        self.assertTrue(
+            abs(expected_score_negative - expected_probability) < \
+            self.maximum_error)
 
     def test_probability_functions_unordered_different_sizes(self):
         """Tests with unordered/differently sized input vectors."""
@@ -108,6 +112,17 @@ class ProbabilityFunctionsTest(unittest.TestCase):
 
         self.assert_probability_calculated_correctly(
             scores_preferred, scores_undesired, target_prob)
+
+        self.assert_probability_calculated_correctly(
+            np.array([0.1]), np.array([0.1]), 0)
+
+    def test_edge_cases(self):
+        """Tests edge cases."""
+        self.assert_probability_calculated_correctly(
+            np.array([1.0]), np.array([0.0]), 1)
+
+        self.assert_probability_calculated_correctly(
+            np.array([0.0]), np.array([1.0]), 0)
 
     def test_invalid_probabilites(self):
         with self.assertRaises(ValueError):
