@@ -22,13 +22,13 @@ class BaseLanguageModel(AbstractClass):
     """Base class for language models."""
 
     def __call__(self, ids):
-        """Does a forward pass on the language model."""
+        """Call the language model with the given ids."""
         return self.forward(ids)
 
     @property
     @abstractmethod
     def name(self):
-        """A short name for a language model, ie: gpt."""
+        """A short name for a language model, ex: gpt."""
         pass
 
     @property
@@ -40,7 +40,7 @@ class BaseLanguageModel(AbstractClass):
 
     @abstractmethod
     def forward(self, ids):
-        """A forward pass on the model.
+        """Execute a forward pass on the model.
 
         Parameters:
             ids: a batched tensor of ids returned by the method encode.

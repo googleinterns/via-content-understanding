@@ -45,7 +45,7 @@ def get_records_directory(dataset, language_model, split):
     return path
 
 def seralize_to_protobuf(video_id, contextual_embeddings, text):
-    """Seralizes the video_id, contextual_embeddings, and text as a protobuf."""
+    """Seralize the video_id, contextual_embeddings, and text as a protobuf."""
     video_id_feature = get_feature(video_id)
     text_feature = get_feature(text)
 
@@ -63,11 +63,11 @@ def seralize_to_protobuf(video_id, contextual_embeddings, text):
     return protobuf.SerializeToString()
 
 def seralize_to_protobuf_wrapper(*args):
-    """Wraps the seralize_to_protobuf function with tf.py_function."""
+    """Wrap the seralize_to_protobuf function with tf.py_function."""
     return tf.py_function(seralize_to_protobuf, args, tf.string)
 
 def write_dataset(dataset, records_directory, dataset_size):
-    """Shards a tf.data Dataset and writes it to disk.""" 
+    """Shard a tf.data Dataset and write it to disk."""
     for shard_index, batch in enumerate(dataset.batch(embeddings_per_file)):
         file_path = records_directory / (f"lm_{shard_index}.tfrecord")
 
@@ -126,7 +126,7 @@ def get_cached_records(source_dataset, language_model, split):
     return glob.glob(glob_string)
 
 def unseralize_data(seralized_item):
-    """Unseralizes a seralized protobuf feature.
+    """Unseralize a seralized protobuf feature.
 
     Returns: a tuple of 3 items, the first being the video id as a string tensor,
         the second being the contextual embeddings as a float32 tensor,

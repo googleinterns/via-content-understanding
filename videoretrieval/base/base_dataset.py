@@ -67,19 +67,19 @@ class BaseVideoDataset(AbstractClass):
         pass
 
     def build_generator(self, data):
-        """Builds a generator that yields each element from data.""" 
+        """Build a generator that yields each element from data."""
         for example in data:
             yield example
 
     def build_id_caption_pair_generator_dataset(self, data):
-        """Builds a tf.data Dataset out of id caption pairs in data."""
+        """Build a tf.data Dataset out of id caption pairs in data."""
         generator = lambda: self.build_generator(data)
 
         return tf.data.Dataset.from_generator(generator, (tf.string, tf.string))
     
     @property
     def id_caption_pair_datasets(self):
-        """Get id caption pair datasets for each split in dataset.
+        """Gets id caption pair datasets for each split in dataset.
 
         Returns: a tuple of three tuples, where the first element of each tuple
         is the tf.data.Dataset of video id caption pairs, and the second element
@@ -94,10 +94,6 @@ class BaseVideoDataset(AbstractClass):
         valid_data = []
         test_data = []
 
-        self.num_of_train_examples = len(train_ids)
-        self.num_of_valid_examples = len(valid_ids)
-        self.num_of_test_examples = len(test_ids)
-
         for video_id, caption in self.video_captions:
             if video_id in train_ids:
                 train_data.append((video_id, caption))
@@ -107,6 +103,10 @@ class BaseVideoDataset(AbstractClass):
                 test_data.append((video_id, caption))
             else:
                 print(f"Orphan pair: id: {video_id}, caption: {hash(caption)}")
+
+        self.num_of_train_examples = len(train_data)
+        self.num_of_valid_examples = len(valid_data)
+        self.num_of_test_examples = len(test_data)
 
         train_dataset = self.build_id_caption_pair_generator_dataset(train_data)
         valid_dataset = self.build_id_caption_pair_generator_dataset(valid_data)

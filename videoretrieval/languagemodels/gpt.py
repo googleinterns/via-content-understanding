@@ -34,10 +34,12 @@ class OpenAIGPTModel(BaseLanguageModel):
 
     @property
     def batch_size(self):
+        """The batch size to be used with this language model."""
         return self._batch_size
 
     @property
     def encoded_shape(self):
+        """The shape of the vector returned by the encode method."""
         return (max_input_length,)
 
     def pad_tokens(self, tokens):
@@ -69,7 +71,7 @@ class OpenAIGPTModel(BaseLanguageModel):
         return self.tokenizer.convert_tokens_to_ids(padded_tokens)
 
     def forward(self, ids):
-        """A forward pass on the model.
+        """Execute a forward pass on the model.
 
         Parameters:
             ids: a batched tensor of ids returned by the method encode.

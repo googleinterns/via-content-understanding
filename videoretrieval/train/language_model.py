@@ -19,7 +19,7 @@ from cache import cache_language_model_embeddings
 
 
 def get_encode_function(language_model):
-    """Returns a function that encodes captions.
+    """Return a function that encodes captions.
 
     Arguments:
         language_model: an instance of BaseLanguageModel that is used to encode
@@ -44,7 +44,7 @@ def get_encode_function(language_model):
     return wrapper
 
 def get_language_model_inference_function(language_model):
-    """Returns a function that inferences with the language model.
+    """Return a function that inferences with the given language model.
 
     Arguments:
         language_model: an instance of BaseLanguageModel that is used to
