@@ -8,13 +8,6 @@ import eval_util
 
 import readers
 
-def check_in(i, temp_list):
-	for j in temp_list:
-		if (i == j).all():
-			return True
-		else:
-			return False
-
 def load_datasets(train_dir, validate_dir, num_epochs, batch_size):
 	"""Set up data reader and load training and validation datasets
 	
@@ -66,7 +59,7 @@ def test_model(model, data_reader, test_dir, batch_size):
 
 	return eval_dict
 
-def train(epochs=15, lr=0.01, num_clusters=256, batch_size=512, random_frames=True, num_mixtures=2, fc_units=1024, iterations=300):
+def train(epochs=5, lr=0.01, num_clusters=64, batch_size=64, random_frames=True, num_mixtures=2, fc_units=1024, iterations=300):
 	#Set up Reader and Preprocess Data
 	data_reader, train_dataset, validation_dataset = load_datasets('/home/conorfvedova_google_com/data/train/', '/home/conorfvedova_google_com/data/validate/', epochs, batch_size)
 
@@ -76,14 +69,11 @@ def train(epochs=15, lr=0.01, num_clusters=256, batch_size=512, random_frames=Tr
 	frames_input_shape = ()
 
 	#Compile and train model
-	strategy = tf.distribute.MirroredStrategy()
-	#train_dataset = strategy.experimental_distribute_dataset(train_dataset)
-	with strategy.scope():
-		model_generator = NetVLAD_CG.VideoClassifier(num_clusters, video_input_shape, audio_input_shape, fc_units=fc_units, num_classes=data_reader.num_classes, num_mixtures=num_mixtures, iterations=iterations, random_frames=random_frames)
-		
-		model = model_generator.build_model(input_shape, frames_input_shape, batch_size)
+	model_generator = NetVLAD_CG.VideoClassifier(num_clusters, video_input_shape, audio_input_shape, fc_units=fc_units, num_classes=data_reader.num_classes, num_mixtures=num_mixtures, iterations=iterations, random_frames=random_frames)
+	
+	model = model_generator.build_model(input_shape, frames_input_shape, batch_size)
 
-		model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=lr), loss=loss.custom_crossentropy, metrics=['categorical_accuracy'])
+	model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=lr), loss=loss.custom_crossentropy, metrics=['categorical_accuracy'])
 
 	model.summary()
 	model.fit(train_dataset, epochs=epochs)
