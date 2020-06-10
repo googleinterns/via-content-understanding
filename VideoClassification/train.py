@@ -70,19 +70,6 @@ def train(epochs=15, lr=0.01, num_clusters=256, batch_size=64, random_frames=Tru
 	#Set up Reader and Preprocess Data
 	data_reader, train_dataset, validation_dataset = load_datasets('/home/conorfvedova_google_com/data/train/', '/home/conorfvedova_google_com/data/validate/', epochs, batch_size)
 
-	iterator = tfds.as_numpy(train_dataset)
-	temp_list = []
-	for i in iterator:
-		if check_in(i[0], temp_list):
-			print(f"Not in list, len: {len(temp_list)}\n")
-			assert False
-		else:
-			temp_list.append(i[0])
-			print(len(temp_list))
-
-
-	assert False
-
 	video_input_shape = (batch_size, iterations, 1024)
 	audio_input_shape = (batch_size, iterations, 128)
 	input_shape = (batch_size, iterations, 1152)
