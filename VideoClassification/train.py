@@ -28,7 +28,7 @@ def load_datasets(train_dir, validate_dir, num_epochs, batch_size):
 	"""
 	data_reader = reader_utils.get_reader()
 
-	train_dataset = data_reader.get_dataset(train_dir, batch_size=batch_size, num_epochs=num_epochs)
+	train_dataset = data_reader.get_dataset(train_dir, batch_size=batch_size)
 
 	validation_dataset = data_reader.get_dataset(validate_dir, batch_size=batch_size, type="validate")
 
