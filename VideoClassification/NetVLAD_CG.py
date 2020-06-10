@@ -240,7 +240,7 @@ class VideoClassifier:
 
 		self.moe = MOELogistic(input_shape=self.first_cg.compute_output_shape((batch_size, fc_units)), num_classes=self.num_classes, num_mixtures=self.num_mixtures, name="moe")
 
-		#self.second_cg = ContextGating(input_shape=self.moe.compute_output_shape((batch_size, fc_units)), name="second_cg")
+		self.second_cg = ContextGating(input_shape=self.moe.compute_output_shape((batch_size, fc_units)), name="second_cg")
 
 	def build_model(self, input_shape, num_frames_shape, batch_size):
 		"""Perform one forward pass of the model.
