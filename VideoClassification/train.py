@@ -86,9 +86,14 @@ def train(epochs=15, lr=0.01, num_clusters=256, batch_size=64, random_frames=Tru
 		train_frames = tf.convert_to_tensor(batch[1])
 		train_labels = tf.convert_to_tensor(batch[2])
 
-		model.train_on_batch(x=[train_input, train_frames], y=train_labels)
+		loss_val = model.train_on_batch(x=[train_input, train_frames], y=train_labels)
 
 		batch_counter += 1
+
+		if batch_counter % 10000:
+			print(f"Batch number {batch_counter}.")
+			print(f"Current Loss value {loss_val}.")
+
 
 	#Evaluate model
 	test_model(model, data_reader, '/home/conorfvedova_google_com/data/train/', batch_size)
