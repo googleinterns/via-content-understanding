@@ -89,10 +89,10 @@ class TestCrossAUCMetrics(unittest.TestCase):
     def test_fair_scores(self):
         """Tests calculating xAUC scores for fair scores."""
 
-        protected_positive_scores = np.array([0.96, 0.8, .4])
+        protected_positive_scores = np.array([0.96, 0.8, 0.4])
         protected_negative_scores = np.array([0.6, 0.33, 0.21])
 
-        other_positive_scores = np.array([0.83, 0.94, .30])
+        other_positive_scores = np.array([0.83, 0.94, 0.3])
         other_negative_scores = np.array([0.7, 0.3, 0.2])
 
         expected_protected_metrics = metrics.xAUCMetrics(
