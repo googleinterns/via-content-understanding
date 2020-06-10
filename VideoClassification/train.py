@@ -76,14 +76,17 @@ def train(epochs=15, lr=0.01, num_clusters=256, batch_size=64, random_frames=Tru
 	frames_input_shape = ()
 
 	#Compile and train model
-	model_generator = NetVLAD_CG.VideoClassifier(num_clusters, video_input_shape, audio_input_shape, fc_units=fc_units, num_classes=data_reader.num_classes, num_mixtures=num_mixtures, iterations=iterations, random_frames=random_frames)
-	
-	model = model_generator.build_model(input_shape, frames_input_shape, batch_size)
+	strategy = tf.distribute.MirroredStrategy()
+	train_dataset = strategy.experimental_distribute_dataset(train_dataset)
+	with strategy.scope():
+		model_generator = NetVLAD_CG.VideoClassifier(num_clusters, video_input_shape, audio_input_shape, fc_units=fc_units, num_classes=data_reader.num_classes, num_mixtures=num_mixtures, iterations=iterations, random_frames=random_frames)
+		
+		model = model_generator.build_model(input_shape, frames_input_shape, batch_size)
 
-	model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=lr), loss=loss.custom_crossentropy, metrics=['categorical_accuracy'])
+		model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=lr), loss=loss.custom_crossentropy, metrics=['categorical_accuracy'])
 
 	model.summary()
-	model.fit(train_dataset, epochs=epochs, batch_size=batch_size)
+	model.fit(train_dataset, epochs=epochs)
 	# train_dataset = tfds.as_numpy(train_dataset)
 	# batch_counter = 0
 	# for batch in train_dataset:
