@@ -59,7 +59,7 @@ def test_model(model, data_reader, test_dir, batch_size):
 
 	return eval_dict
 
-def train(epochs=5, lr=0.01, num_clusters=256, batch_size=64, random_frames=True, num_mixtures=2, fc_units=1024, iterations=300):
+def train(epochs=1, lr=0.01, num_clusters=256, batch_size=64, random_frames=True, num_mixtures=2, fc_units=1024, iterations=300):
 	#Set up Reader and Preprocess Data
 	data_reader, train_dataset, validation_dataset = load_datasets('/home/conorfvedova_google_com/data/train/', '/home/conorfvedova_google_com/data/validate/', epochs, batch_size)
 
