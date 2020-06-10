@@ -250,6 +250,7 @@ class VideoClassifier(tf.keras.Model):
 		Returns:
 			A tensor with shape [batch_size, num_classes].
 		"""
+		print(inputs)
 		model_input = inputs[0]
 		num_frames = inputs[1]
 		print(tf.shape(num_frames))
