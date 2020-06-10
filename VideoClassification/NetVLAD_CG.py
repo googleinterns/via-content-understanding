@@ -253,7 +253,7 @@ class VideoClassifier:
 		frames_input = tf.keras.layers.Input(shape=num_frames_shape)
 		model_input = tf.keras.layers.Input(shape=input_shape)
 
-		num_frames = tf.cast(tf.expand_dims(num_frames, 1), tf.float32)
+		num_frames = tf.cast(tf.expand_dims(frames_input, 1), tf.float32)
 		if self.random_frames:
 			model_input = utils.SampleRandomFrames(model_input, num_frames, self.iterations)
 		else:
