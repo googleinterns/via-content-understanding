@@ -93,12 +93,11 @@ def train(epochs=15, lr=0.01, num_clusters=256, batch_size=64, random_frames=Tru
 		loss_val = model.train_on_batch(x=train_input, y=train_labels) #, train_frames]
 
 		batch_counter += 1
-		print(loss_val)
 		if batch_counter % 10000 == 0:
 			print(f"Batch number {batch_counter}.")
 			print(f"Current Loss value {loss_val}.")
 
-
+	print(f"Final Batch {batch_counter}")
 	#Evaluate model
 	test_model(model, data_reader, '/home/conorfvedova_google_com/data/train/', batch_size)
 
