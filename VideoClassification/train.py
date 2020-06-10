@@ -66,7 +66,7 @@ def test_model(model, data_reader, test_dir, batch_size):
 
 	return eval_dict
 
-def train(epochs=15, lr=0.01, num_clusters=256, batch_size=64, random_frames=True, num_mixtures=2, fc_units=1024, iterations=300):
+def train(epochs=15, lr=0.01, num_clusters=256, batch_size=512, random_frames=True, num_mixtures=2, fc_units=1024, iterations=300):
 	#Set up Reader and Preprocess Data
 	data_reader, train_dataset, validation_dataset = load_datasets('/home/conorfvedova_google_com/data/train/', '/home/conorfvedova_google_com/data/validate/', epochs, batch_size)
 
@@ -77,7 +77,7 @@ def train(epochs=15, lr=0.01, num_clusters=256, batch_size=64, random_frames=Tru
 
 	#Compile and train model
 	strategy = tf.distribute.MirroredStrategy()
-	train_dataset = strategy.experimental_distribute_dataset(train_dataset)
+	#train_dataset = strategy.experimental_distribute_dataset(train_dataset)
 	with strategy.scope():
 		model_generator = NetVLAD_CG.VideoClassifier(num_clusters, video_input_shape, audio_input_shape, fc_units=fc_units, num_classes=data_reader.num_classes, num_mixtures=num_mixtures, iterations=iterations, random_frames=random_frames)
 		
