@@ -79,5 +79,5 @@ class EncoderModel(tf.keras.Model):
             lambda src_id, data: (src_id, self.video_encoder(data)))
 
     def generate_text_embeddings(self, text_dataset, batch_size):
-        return video_dataset.batch(batch_size).map(
+        return text_dataset.batch(batch_size).map(
             lambda src_id, data: (src_id, self.text_encoder(data)))
