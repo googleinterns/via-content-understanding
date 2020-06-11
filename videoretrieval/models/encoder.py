@@ -42,7 +42,7 @@ class EncoderModel(tf.keras.Model):
         self.loss_fn = loss_fn
 
     def train_step(self, video_text_pair_batch):
-        video_features, text_features = video_text_pair_batch
+        _, video_features, text_features = video_text_pair_batch
 
         with tf.GradientTape() as video_tape, tf.GradientTape() as text_tape:
             video_results = self.video_encoder(video_features)
@@ -64,7 +64,7 @@ class EncoderModel(tf.keras.Model):
         return {"loss": loss}
 
     def test_step(self, video_text_pair_batch):
-        video_features, text_features = video_text_pair_batch
+        _, video_features, text_features = video_text_pair_batch
         
         video_results = self.video_encoder(video_features)
         text_results = self.text_encoder(text_features)
@@ -73,3 +73,11 @@ class EncoderModel(tf.keras.Model):
             video_results, text_results, self.loss_hyperparameter_m)
 
         return {"loss": loss}
+
+    def generate_video_embeddings(self, video_dataset, batch_size):
+        return video_dataset.batch(batch_size).map(
+            lambda src_id, data: (src_id, self.video_encoder(data)))
+
+    def generate_text_embeddings(self, text_dataset, batch_size):
+        return video_dataset.batch(batch_size).map(
+            lambda src_id, data: (src_id, self.text_encoder(data)))

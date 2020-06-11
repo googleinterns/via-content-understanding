@@ -37,7 +37,7 @@ def replace_video_id_with_expert_features_wrapper(precomputed_features):
         expert_features = tf.numpy_function(
             get_expert_features, [video_id], output_shape)
 
-        return (tuple(expert_features), ids)
+        return (video_id, tuple(expert_features), ids)
 
     return wrapper
 
@@ -45,13 +45,13 @@ def update_dataset_shape_wrapper(experts, language_model):
     expert_shapes = [expert.embedding_shape for expert in experts]
     contextual_embeddings_shape = language_model.contextual_embeddings_shape
 
-    def map_fn(expert_features, contextual_embeddings):
+    def map_fn(video_id, expert_features, contextual_embeddings):
         for expert_feature, shape in zip(expert_features, expert_shapes):
             expert_feature.set_shape(shape)
 
         contextual_embeddings.set_shape(contextual_embeddings_shape)
 
-        return expert_features, contextual_embeddings
+        return video_id, expert_features, contextual_embeddings
 
     return map_fn
 
@@ -90,3 +90,68 @@ def generate_encoder_datasets(language_model, source_dataset, experts):
 
     return match_cached_embeddings_with_experts(language_model, experts,
         precomputed_features, train_ds, valid_ds, test_ds)
+
+def get_unique_wrapper():
+    seen_video_ids = set()
+
+    def filter_fn(video_id, data):
+        if video_id in seen_video_ids:
+            return False
+
+        seen_video_ids.add(video_id)
+
+        return True
+
+    return lambda *args: tf.numpy_function(filter_fn, args, tf.bool)
+
+def get_video_and_text_dataset(dataset):
+    unique_videos_filter = get_unique_wrapper()
+
+    video_dataset = (dataset
+        .map(
+            lambda video_id, video_data, text_data: (video_id, video_data),
+            num_parallel_calls=tf.data.experimental.AUTOTUNE)
+        .filter(unique_videos_filter))
+    
+    text_dataset = dataset.map(
+        lambda video_id, video_data, text_data: (video_id, text_data),
+            num_parallel_calls=tf.data.experimental.AUTOTUNE)
+
+    return video_dataset, text_dataset
+
+def build_corresponding(video_dataset, text_dataset):
+    video_id_to_index_in_video_dataset = {}
+
+    def build_map(index, video_id):
+        video_id_to_index_in_video_dataset[video_id] = index
+
+        return index
+
+    def build_map_wrapper(index, data):
+        video_id, video_data = data
+        index = tf.numpy_function(build_map, [index, video_id], tf.int64)
+
+        return index, video_data
+
+    def get_index(video_id):
+        if video_id not in video_id_to_index_in_video_dataset:
+            raise ValueError()
+
+        return video_id_to_index_in_video_dataset[video_id]
+
+    def get_index_wrapper(video_id, text_data):
+        index = tf.numpy_function(get_index, [video_id], tf.int64)
+
+        return index, text_data
+
+    video_dataset = video_dataset.enumerate().map(build_map_wrapper)
+    text_dataset = text_dataset.map(get_index_wrapper)
+
+
+    return video_dataset, text_dataset
+
+def make_inference_dataset(dataset):
+    video_dataset, text_dataset = get_video_and_text_dataset(dataset)
+
+    return build_corresponding(video_dataset, text_dataset)
+
