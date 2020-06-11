@@ -94,7 +94,7 @@ def generate_encoder_datasets(language_model, source_dataset, experts):
 def get_unique_wrapper():
     seen_video_ids = set()
 
-    def filter_fn(video_id, data):
+    def filter_fn(video_id):
         if video_id in seen_video_ids:
             return False
 
@@ -102,7 +102,7 @@ def get_unique_wrapper():
 
         return True
 
-    return lambda *args: tf.numpy_function(filter_fn, args, tf.bool)
+    return lambda video_id, data: (tf.numpy_function(filter_fn, [video_id], tf.bool))
 
 def get_video_and_text_dataset(dataset):
     unique_videos_filter = get_unique_wrapper()
