@@ -120,7 +120,7 @@ class YT8MFrameFeatureDataset():
 		Returns:
 			dataset: TFRecordDataset of the input training data
 		"""
-		files = tf.io.matching_files(os.path.join(data_dir, '%s*', type))
+		files = tf.io.matching_files(os.path.join(data_dir, '*%s*' % '0000'))
 		
 		files_dataset = tf.data.Dataset.from_tensor_slices(files)
 		files_dataset = files_dataset.batch(tf.cast(tf.shape(files)[0], tf.int64))
