@@ -81,7 +81,7 @@ def train(epochs=15, lr=0.0002, num_clusters=256, batch_size=80, random_frames=T
 	model.summary()
 	
 	#Implement callbacks
-	tensor_board = tf.keras.callbacks.TensorBoard(log_dir="~/logs", historgram_freq=5)
+	tensor_board = tf.keras.callbacks.TensorBoard(log_dir="~/logs", histogram_freq=5)
 
 	model.fit(train_dataset, epochs=epochs, validation_data=validation_dataset, callbacks=[tensor_board])
 	# train_dataset = tfds.as_numpy(train_dataset)
