@@ -38,15 +38,14 @@ def test_model(model, data_reader, test_dir, batch_size):
 		eval_dict: dictionary containing important evaulation metrics
 	"""
 	batch_num = 0
-	print(batch_size)
 	test_dataset = data_reader.get_dataset(test_dir, batch_size=batch_size, type="train")
-	print(test_dataset)
+
 	test_dataset = tfds.as_numpy(test_dataset)
 	evaluation_metrics = eval_util.EvaluationMetrics(data_reader.num_classes, 20)
 	for batch in test_dataset:
 		test_input = tf.convert_to_tensor(batch[0])
 		test_labels = tf.convert_to_tensor(batch[1])
-		print(test_input)
+
 		predictions = model.predict(test_input)
 		
 		loss_vals = loss.eval_loss(test_labels, predictions)
@@ -80,8 +79,11 @@ def train(epochs=15, lr=0.0002, num_clusters=256, batch_size=80, random_frames=T
 	model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=lr), loss=loss.custom_crossentropy, metrics=['categorical_accuracy'])
 
 	model.summary()
-	print(model.losses)
-	model.fit(train_dataset, epochs=epochs, validation_data=validation_dataset)
+	
+	#Implement callbacks
+	tensor_board = tf.keras.callbacks.TensorBoard(log_dir="~/logs", historgram_freq=5)
+
+	model.fit(train_dataset, epochs=epochs, validation_data=validation_dataset, callbacks=[tensor_board])
 	# train_dataset = tfds.as_numpy(train_dataset)
 	# batch_counter = 0
 	# for batch in train_dataset:
