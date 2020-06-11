@@ -37,14 +37,16 @@ def test_model(model, data_reader, test_dir, batch_size):
 	Returns:
 		eval_dict: dictionary containing important evaulation metrics
 	"""
+	batch_num = 0
+	print(batch_size)
 	test_dataset = data_reader.get_dataset(test_dir, batch_size=batch_size, type="train")
+	print(test_dataset)
 	test_dataset = tfds.as_numpy(test_dataset)
 	evaluation_metrics = eval_util.EvaluationMetrics(data_reader.num_classes, 20)
 	for batch in test_dataset:
 		test_input = tf.convert_to_tensor(batch[0])
-		#test_frames = tf.convert_to_tensor(batch[1])
 		test_labels = tf.convert_to_tensor(batch[1])
-
+		print(test_input)
 		predictions = model.predict(test_input)
 		
 		loss_vals = loss.eval_loss(test_labels, predictions)
@@ -53,13 +55,15 @@ def test_model(model, data_reader, test_dir, batch_size):
 		loss_vals = loss_vals.numpy()
 
 		evaluation_metrics.accumulate(predictions, test_labels, loss_vals)
+		batch_num += 1
+		print(f"Batch Number {batch_num} with loss {tf.math.reduce_mean(loss_vals)}.")
 	eval_dict = evaluation_metrics.get()
 
 	print(eval_dict)
 
 	return eval_dict
 
-def train(epochs=1, lr=0.01, num_clusters=256, batch_size=64, random_frames=True, num_mixtures=2, fc_units=1024, iterations=300):
+def train(epochs=15, lr=0.0002, num_clusters=256, batch_size=80, random_frames=True, num_mixtures=2, fc_units=1024, iterations=300):
 	#Set up Reader and Preprocess Data
 	data_reader, train_dataset, validation_dataset = load_datasets('/home/conorfvedova_google_com/data/train/', '/home/conorfvedova_google_com/data/validate/', epochs, batch_size)
 
@@ -76,7 +80,8 @@ def train(epochs=1, lr=0.01, num_clusters=256, batch_size=64, random_frames=True
 	model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=lr), loss=loss.custom_crossentropy, metrics=['categorical_accuracy'])
 
 	model.summary()
-	model.fit(train_dataset, epochs=epochs)
+	print(model.losses)
+	model.fit(train_dataset, epochs=epochs, validation_data=validation_dataset)
 	# train_dataset = tfds.as_numpy(train_dataset)
 	# batch_counter = 0
 	# for batch in train_dataset:
