@@ -42,8 +42,8 @@ def test_model(model, data_reader, test_dir, batch_size):
 	evaluation_metrics = eval_util.EvaluationMetrics(data_reader.num_classes, 20)
 	for batch in test_dataset:
 		test_input = tf.convert_to_tensor(batch[0])
-		test_frames = tf.convert_to_tensor(batch[1])
-		test_labels = tf.convert_to_tensor(batch[2])
+		#test_frames = tf.convert_to_tensor(batch[1])
+		test_labels = tf.convert_to_tensor(batch[1])
 
 		predictions = model.predict(test_input)
 		
