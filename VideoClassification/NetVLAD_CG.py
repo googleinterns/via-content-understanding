@@ -255,9 +255,6 @@ class VideoClassifier:
 		#print(frames_input)
 		print(model_input)
 
-		feature_dim = len(model_input.get_shape()) - 1
-		model_input = tf.nn.l2_normalize(model_input, feature_dim)
-
 		#num_frames = tf.cast(tf.expand_dims(frames_input, 1), tf.float32)
 		#if self.random_frames:
 		#	model_input = utils.SampleRandomFrames(model_input, num_frames, self.iterations)
