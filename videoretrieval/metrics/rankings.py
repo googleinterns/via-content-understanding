@@ -69,12 +69,12 @@ def get_ranking_metrics(
     rankings = np.array(rankings_dataset.as_numpy_iterator())
     
 def get_ranking_metrics_for_batch(
-    static_embeddings, query_embeddings, recall_at_k_list):
+    static_embeddings, query_embeddings):
 
     similarities = tf.linalg.matmul(
         query_embeddings, static_embeddings, transpose_b=True)
 
-    similarities_sorted = tf.artsort(similarities,
+    similarities_sorted = tf.argsort(similarities,
         direction='DESCENDING')
 
     ranks = []

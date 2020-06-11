@@ -15,6 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 import tensorflow as tf
+import metrics.rankings
 
 class EncoderModel(tf.keras.Model):
     """An implementation of an Encoder model."""
@@ -61,7 +62,10 @@ class EncoderModel(tf.keras.Model):
         self.text_encoder_optimizer.apply_gradients(zip(
             text_gradients, self.text_encoder.trainable_variables))
 
-        return {"loss": loss}
+        mean_rank, median_rank = metrics.rankings.get_ranking_metrics_for_batch(
+            video_results, text_results)
+
+        return {"loss": loss, "MnR": mean_rank, "MdR": median_rank}
 
     def test_step(self, video_text_pair_batch):
         _, video_features, text_features = video_text_pair_batch
@@ -72,7 +76,10 @@ class EncoderModel(tf.keras.Model):
         loss = self.loss_fn(
             video_results, text_results, self.loss_hyperparameter_m)
 
-        return {"loss": loss}
+        mean_rank, median_rank = metrics.rankings.get_ranking_metrics_for_batch(
+            video_results, text_results)
+
+        return {"loss": loss, "MnR": mean_rank, "MdR": median_rank}
 
     def generate_video_embeddings(self, video_dataset, batch_size):
         return video_dataset.batch(batch_size).map(
