@@ -39,6 +39,7 @@ def compute_ranking_metrics_wrapper(recall_at_k_list):
         for i, element in enumerate(recall_at_k_list):
             if rank <= i:
                 recall_at_k_results += [1.0] * (len(recall_at_k_list) - i)
+                break
             else:
                 recall_at_k_results.append(0.0)
 
@@ -50,22 +51,38 @@ def get_ranking_metrics(
     static_embeddings, query_embeddings, recall_at_k_list):
     """Rankings for text to video lookup"""
 
-    batch_size = get_desired_batch_size(*static_embeddings.shape)
-
-    compute_similarities = lambda embeddings_batch, desired_indicies: (
+    compute_similarities_fn = lambda embeddings_batch, desired_indicies: (
         tf.linalg.matmul(
             embeddings_batch, static_embeddings, transpose_b=True),
         desired_indicies)
 
-    compute_ranks = compute_ranking_metrics_wrapper(recall_at_k_list)
+    compute_ranks_fn = compute_ranking_metrics_wrapper(recall_at_k_list)
 
     rankings_dataset = (query_embeddings
         .batch(batch_size)
-        .map(tf.function(compute_similarities))
+        .map(tf.function(compute_similarities_fn))
         .unbatch()
-        .map(compute_ranks))
+        .map(compute_ranks_fn))
 
     import ipdb; ipdb.set_trace();
 
     rankings = np.array(rankings_dataset.as_numpy_iterator())
     
+def get_ranking_metrics_for_batch(
+    static_embeddings, query_embeddings, recall_at_k_list):
+
+    similarities = tf.linalg.matmul(
+        query_embeddings, static_embeddings, transpose_b=True)
+
+    similarities_sorted = tf.artsort(similarities,
+        direction='DESCENDING')
+
+    ranks = []
+
+    for i, sorted_indexes in enumerate(tf.unstack(similarities_sorted)):
+        ranks.append(list(sorted_indexes).index(i) + 1)
+
+    mean_rank = sum(ranks) / len(ranks)
+    median_rank = sorted(ranks)[len(ranks) // 2]
+
+    return mean_rank, median_rank
