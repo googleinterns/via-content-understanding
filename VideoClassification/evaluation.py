@@ -7,7 +7,7 @@ import reader_utils
 import readers
 import loss
 
-def test(model_dir, num_clusters=64, batch_size=64, iterations=None, random_frames=True, num_mixtures=2, fc_units=2048):
+def test(model_dir, num_clusters=64, batch_size=80, iterations=300, random_frames=True, num_mixtures=2, fc_units=1024):
 	data_reader = reader_utils.get_reader()
 
 	test_dataset = data_reader.get_dataset('/home/conorfvedova_google_com/data/test/', batch_size=batch_size, num_workers=8, type="test")
@@ -20,29 +20,30 @@ def test(model_dir, num_clusters=64, batch_size=64, iterations=None, random_fram
 	audio_input_shape = (batch_size, num_frames, 128)
 
 	#Compile and train model
-	model = NetVLAD_CG.VideoClassifier(num_clusters, video_input_shape, audio_input_shape, fc_units=fc_units, iterations=iterations, random_frames=random_frames, num_classes=data_reader.num_classes, num_mixtures=num_mixtures)
+	model_generator = NetVLAD_CG.VideoClassifier(num_clusters, video_input_shape, audio_input_shape, fc_units=fc_units, num_classes=data_reader.num_classes, num_mixtures=num_mixtures, iterations=iterations, random_frames=random_frames)
 	print(model.layers)
 	model.load_weights(model_dir, by_name=True)
 	model.compile()
 
+	batch_num = 0
+	test_dataset = data_reader.get_dataset(test_dir, batch_size=batch_size, type="test")
+
+	test_dataset = tfds.as_numpy(test_dataset)
 	evaluation_metrics = eval_util.EvaluationMetrics(data_reader.num_classes, 20)
-	for batch in numpy_dataset:
+	for batch in test_dataset:
 		test_input = tf.convert_to_tensor(batch[0])
 		test_labels = tf.convert_to_tensor(batch[1])
 
 		predictions = model.predict(test_input)
 		
 		loss_vals = loss.eval_loss(test_labels, predictions)
-		print(loss_vals.shape)
-		print(predictions.shape)
-		print(test_labels.shape)
-		print(predictions)
-		print(test_labels)
-		print(loss_vals)
+
 		test_labels = test_labels.numpy()
 		loss_vals = loss_vals.numpy()
 
 		evaluation_metrics.accumulate(predictions, test_labels, loss_vals)
+		batch_num += 1
+		print(f"Batch Number {batch_num} with loss {tf.math.reduce_mean(loss_vals)}.")
 	eval_dict = evaluation_metrics.get()
 
 	print(eval_dict)
