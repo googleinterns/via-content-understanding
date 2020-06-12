@@ -68,6 +68,13 @@ def get_ranking_metrics(
 
     rankings = np.array(rankings_dataset.as_numpy_iterator())
     
+
+@tf.function
+def get_index_of_item_in_tensor(tensor_item_pair):
+    tensor, item = tensor_item_pair
+    return tf.where(tensor == item) 
+
+@tf.function
 def get_ranking_metrics_for_batch(
     static_embeddings, query_embeddings):
 
@@ -77,12 +84,10 @@ def get_ranking_metrics_for_batch(
     similarities_sorted = tf.argsort(similarities,
         direction='DESCENDING')
 
-    ranks = []
+    ranks = 1 + tf.map_fn(
+        get_index_of_item_in_tensor, 
+        (similarities_sorted, tf.range(query_embeddings.shape[0])),
+        dtype=tf.int64)
 
-    for i, sorted_indexes in enumerate(tf.unstack(similarities_sorted)):
-        ranks.append(list(sorted_indexes).index(i) + 1)
-
-    mean_rank = sum(ranks) / len(ranks)
-    median_rank = sorted(ranks)[len(ranks) // 2]
-
-    return mean_rank, median_rank
+    mean_rank = tf.reduce_sum(ranks) / len(ranks)
+    return mean_rank
