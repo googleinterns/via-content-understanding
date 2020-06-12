@@ -13,6 +13,7 @@ limitations under the License.
 Defines the training procedure. Run this python file to train a new model.
 """
 import os
+import time
 import tensorflow as tf
 import NetVLAD_CG
 import reader_utils
