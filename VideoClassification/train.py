@@ -61,14 +61,18 @@ def test_model(model, data_reader, test_dir, batch_size):
 		test_input = tf.convert_to_tensor(batch[0])
 		test_labels = tf.convert_to_tensor(batch[1])
 
+		curr_time = time.time()
 		predictions = model.predict(test_input)
-		
+		print(f"Prediction speed {time.time() - curr_time}")
 		loss_vals = loss.eval_loss(test_labels, predictions)
 
 		test_labels = test_labels.numpy()
 		loss_vals = loss_vals.numpy()
 
+		curr_time = time.time()
 		evaluation_metrics.accumulate(predictions, test_labels, loss_vals)
+		print(f"Accumulate time {time.time() - curr_time}")
+
 		batch_num += 1
 		print(f"Batch Number {batch_num} with loss {tf.math.reduce_mean(loss_vals)}.")
 	eval_dict = evaluation_metrics.get()
