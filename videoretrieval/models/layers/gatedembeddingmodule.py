@@ -45,12 +45,19 @@ class GatedEmbeddingModule(tf.keras.layers.Layer):
         self.linear_layer_one = tf.keras.layers.Dense(
             output_dimension, input_shape=(input_dimension,))
         self.linear_layer_two = tf.keras.layers.Dense(
-            output_dimension, input_shape=(output_dimension,), 
-            activation="sigmoid")
+            output_dimension, input_shape=(output_dimension,))
+        
+        self.layer_one_batch_norm = tf.keras.layers.BatchNormalization()
+        self.layer_two_batch_norm = tf.keras.layers.BatchNormalization()
 
     def call(self, inputs):
         layer_one_activations = self.linear_layer_one(inputs)
         layer_two_activations = self.linear_layer_two(layer_one_activations)
+
+        layer_one_activations = self.layer_one_batch_norm(
+            layer_one_activations)
+        layer_two_activations = tf.math.sigmoid(
+            self.layer_two_batch_norm(layer_two_activations))
 
         unscaled_activations = layer_one_activations * layer_two_activations
 
