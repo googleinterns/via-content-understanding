@@ -29,22 +29,24 @@ class VideoEncoder(tf.keras.Model):
         encoded_expert_dimensionality: the dimensionality experts embeddings
             are computed down to. Final output size is num of experts *
             encoded_expert_dimensionality.
-        g_mlp_layers: layers in the mlp labeled "g".
-        h_mlp_layers: layers in the mlp labeled "h".
         temporal_aggregation_layers: a list of temporal aggregation layers, one
             per expert.
         expert_projection: An expert projection modulation layer.
         g_mlp: A standard feedforward deep neural network, with g_mlp_layers.
         h_mlp: A standard feedforward deep neural network, with h_mlp_layers.
         gems: A list of gated embedding modules, one per network.
+        activiation_fn:
+        use_batch_norm: 
     """
 
     def __init__(self, 
-            experts, 
+            experts,
             expert_aggregated_size=768,
             encoded_expert_dimensionality=100,
             g_mlp_layers=5,
-            h_mlp_layers=5
+            h_mlp_layers=5,
+            make_activation_layer=tf.keras.layers.ReLU,
+            use_batch_norm=True
             ):
         """Initalize video encoder.
 
@@ -56,6 +58,7 @@ class VideoEncoder(tf.keras.Model):
                 encoded_expert_dimensionality.
             g_mlp_layers: layers in the mlp labeled "g".
             h_mlp_layers: layers in the mlp labeled "h".
+            a
         """
 
         super(VideoEncoder, self).__init__()
@@ -63,12 +66,12 @@ class VideoEncoder(tf.keras.Model):
         self.experts = experts
         self.expert_aggregated_size = expert_aggregated_size
         self.encoded_expert_dimensionality = encoded_expert_dimensionality
-        self.g_mlp_layers = g_mlp_layers
-        self.h_mlp_layers = h_mlp_layers
+        self.make_activation_layer = make_activation_layer
+        self.use_batch_norm = use_batch_norm
 
         self.make_temporal_aggregation_layers()
-        self.make_g_mlp()
-        self.make_h_mlp()
+        self.g_mlp = self.make_mlp(g_mlp_layers)
+        self.h_mlp = self.make_mlp(h_mlp_layers)
 
         self.expert_projection = ExpertProjectionModulationLayer()
 
@@ -86,22 +89,24 @@ class VideoEncoder(tf.keras.Model):
                 should_use_netvlad
                 ))
 
-    def make_g_mlp(self):
-        """Make g mlp."""
-        self.g_mlp = tf.keras.Sequential([
-            tf.keras.layers.Dense(
-                self.expert_aggregated_size,
-                activation="relu"
-            )] * self.g_mlp_layers)
+    def make_mlp(self, num_layers):
+        """Makes and returns an mlp with num_layers layers."""
+        sequential_layers = []
+        
+        for _ in range(num_layers):
+            if self.use_batch_norm:
+                sequential_layers.append(
+                    tf.keras.layers.BatchNormalization())
 
-    def make_h_mlp(self):
-        """Make h mlp."""
-        self.h_mlp = tf.keras.Sequential([
-            tf.keras.layers.Dense(
-                self.expert_aggregated_size, 
-                input_shape=(self.expert_aggregated_size,),
-                activation="relu"
-            )] * self.h_mlp_layers)
+            sequential_layers.append(
+                self.make_activation_layer())
+
+            sequential_layers.append(
+                tf.keras.layers.Dense(
+                    self.expert_aggregated_size,
+                    activation=None))
+
+        return tf.keras.Sequential(sequential_layers)
 
     def make_gem_layers(self):
         """Create gated embedding module layers."""
