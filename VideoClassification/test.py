@@ -67,3 +67,28 @@ def test_model(model, data_reader, test_dir, batch_size):
 	eval_dict = {"AUCPR": auc_pr, "precision": precision, "recall": recall}
 
 	return eval_dict
+
+def load_and_test(data_dir, epochs=6, lr=0.0002, num_clusters=256, batch_size=80, random_frames=True, num_mixtures=2, fc_units=1024, iterations=300):
+	train_dir = os.path.join(data_dir, "train")
+	validation_dir = os.path.join(data_dir, "validate")
+	test_dir = os.path.join(data_dir, "test")
+
+	#Set up Reader and Preprocess Data
+	data_reader, train_dataset, validation_dataset = load_datasets(train_dir, validation_dir, epochs, batch_size)
+
+	video_input_shape = (batch_size, iterations, 1024)
+	audio_input_shape = (batch_size, iterations, 128)
+	input_shape = (iterations, 1152)
+
+	#Compile and train model
+	model_generator = model_lib.VideoClassifier(num_clusters, video_input_shape, audio_input_shape, fc_units=fc_units, num_classes=data_reader.num_classes, num_mixtures=num_mixtures, iterations=iterations)
+	
+	model = model_generator.build_model(input_shape, batch_size)
+
+	model.load_weights("temp.h5")
+
+	eval_dict = test_model(model, data_reader, test_dir, batch_size)
+	print(eval_dict)
+
+if __name__ == "__main__":
+	load_and_test("/home/conorfvedova_google_com/data")
