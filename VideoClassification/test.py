@@ -15,8 +15,8 @@ Defines the testing procedure.
 import time
 import tensorflow as tf
 import tensorflow_datasets as tfds
+import tf.keras.metrics as metrics
 
-import eval_util
 
 def test_model(model, data_reader, test_dir, batch_size):
 	"""Test the model on test dataset attained from test_dir.
@@ -28,11 +28,16 @@ def test_model(model, data_reader, test_dir, batch_size):
 	Returns:
 		eval_dict: dictionary containing important evaulation metrics
 	"""
+	#Create evaluation metrics
+	auc_calculator = metrics.AUC(multi_label=True, curve='PR')
+	pr_calculator = metrics.PrecisionAtRecall(0.7)
+	rp_calculator = metrics.RecallAtPrecision(0.7)
+
+	#Prepare data
 	batch_num = 0
 	test_dataset = data_reader.get_dataset(test_dir, batch_size=batch_size, type="test")
-
 	test_dataset = tfds.as_numpy(test_dataset)
-	evaluation_metrics = eval_util.EvaluationMetrics(data_reader.num_classes, 20)
+
 	for batch in test_dataset:
 		test_input = tf.convert_to_tensor(batch[0])
 		test_labels = tf.convert_to_tensor(batch[1])
@@ -40,19 +45,25 @@ def test_model(model, data_reader, test_dir, batch_size):
 		curr_time = time.time()
 		predictions = model.predict(test_input)
 		print(f"Prediction speed {time.time() - curr_time}")
+
 		loss_vals = loss.eval_loss(test_labels, predictions)
 
-		test_labels = test_labels.numpy()
-		loss_vals = loss_vals.numpy()
-
+		#Update Metrics
 		curr_time = time.time()
-		evaluation_metrics.accumulate(predictions, test_labels, loss_vals)
+		auc_calculator.update_state(test_labels, predictions)
+		pr_calculator.update_state(test_labels, predictions)
+		rp_calculator.update_state(test_labels, predictions)
+
 		print(f"Accumulate time {time.time() - curr_time}")
 
-		batch_num += 1
 		print(f"Batch Number {batch_num} with loss {tf.math.reduce_mean(loss_vals)}.")
-	eval_dict = evaluation_metrics.get()
+		batch_num += 1
+	
+	#Get results
+	auc_pr = auc_calculator.result()
+	precision = pr_calculator.result()
+	recall = rp_calculator.result()
 
-	print(eval_dict)
+	eval_dict = {"AUCPR": auc_pr, "precision": precision, "recall": recall}
 
 	return eval_dict

@@ -80,6 +80,8 @@ def train(data_dir, epochs=6, lr=0.0002, num_clusters=256, batch_size=80, random
 	#Evaluate model
 	eval_dict = test.test_model(model, data_reader, test_dir, batch_size)
 
+	print(eval_dict)
+
 	return model
 
 if __name__ == "__main__":
