@@ -46,7 +46,7 @@ def test_model(model, data_reader, test_dir, batch_size):
 		predictions = model.predict(test_input)
 		print(f"Prediction speed {time.time() - curr_time}")
 
-		loss_vals = loss.eval_loss(test_labels, predictions)
+		loss_val = loss.custom_crossentropy(test_labels, predictions)
 
 		#Update Metrics
 		curr_time = time.time()
@@ -56,7 +56,7 @@ def test_model(model, data_reader, test_dir, batch_size):
 
 		print(f"Accumulate time {time.time() - curr_time}")
 
-		print(f"Batch Number {batch_num} with loss {tf.math.reduce_mean(loss_vals)}.")
+		print(f"Batch Number {batch_num} with loss {loss_val}.")
 		batch_num += 1
 	
 	#Get results

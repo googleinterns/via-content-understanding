@@ -129,7 +129,6 @@ class YT8MFrameFeatureDataset():
 		files_dataset = files_dataset.batch(tf.cast(tf.shape(files)[0], tf.int64))
 
 		dataset = files_dataset.interleave(lambda files: tf.data.TFRecordDataset(files, num_parallel_reads=tf.data.experimental.AUTOTUNE))
-		#dataset = dataset.shuffle(buffer_size=5*batch_size)
 
 		parser = partial(self._parse_fn, max_quantized_value=max_quantized_value, min_quantized_value=min_quantized_value)
 		dataset = dataset.map(parser, num_parallel_calls=tf.data.experimental.AUTOTUNE)
@@ -202,8 +201,3 @@ class YT8MFrameFeatureDataset():
 		batch_video_matrix = tf.nn.l2_normalize(batch_video_matrix, feature_dim)
 
 		return (batch_video_matrix, batch_labels)
- 
-
-#Ways to implement random frames. 
-#1. Simply add it in input and loop over dataset myself. Only issue is with validation but that can be fixed, maybe?
-#2. Do it in loading. I can simply do a random uniform between 0 and 1 (not included) and then multiply it by the num_frames, then round down.
