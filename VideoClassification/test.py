@@ -12,10 +12,15 @@ limitations under the License.
 
 Defines the testing procedure.
 """
+import os
 import time
 import tensorflow as tf
 import tensorflow_datasets as tfds
-import tensorflow.keras.metrics as metrics
+
+import readers
+import reader_utils
+import model as model_lib
+import loss
 
 
 def test_model(model, data_reader, test_dir, batch_size):
