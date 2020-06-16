@@ -15,7 +15,7 @@ Defines the testing procedure.
 import time
 import tensorflow as tf
 import tensorflow_datasets as tfds
-import tf.keras.metrics as metrics
+import tensorflow.keras.metrics as metrics
 
 
 def test_model(model, data_reader, test_dir, batch_size):
