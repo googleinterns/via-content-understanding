@@ -63,7 +63,7 @@ def train(data_dir, epochs=6, lr=0.0002, num_clusters=256, batch_size=80, random
 	input_shape = (iterations, 1152)
 
 	#Compile and train model
-	model_generator = model_lib.VideoClassifier(num_clusters, video_input_shape, audio_input_shape, fc_units=fc_units, num_classes=data_reader.num_classes, num_mixtures=num_mixtures, iterations=iterations, random_frames=random_frames)
+	model_generator = model_lib.VideoClassifier(num_clusters, video_input_shape, audio_input_shape, fc_units=fc_units, num_classes=data_reader.num_classes, num_mixtures=num_mixtures, iterations=iterations)
 	
 	model = model_generator.build_model(input_shape, batch_size)
 

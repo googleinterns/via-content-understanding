@@ -206,7 +206,7 @@ class VideoClassifier:
 		ValueError: If the batch sizes of the audio_input_shape and video_input_shape do not match.
 		ValueError: If the number of samples of the audio_input_shape and video_input_shape do not match.
 	"""
-	def __init__(self, num_clusters, video_input_shape, audio_input_shape, num_classes, num_mixtures, fc_units, iterations, random_frames, **kwargs):
+	def __init__(self, num_clusters, video_input_shape, audio_input_shape, num_classes, num_mixtures, fc_units, iterations, **kwargs):
 		super(VideoClassifier, self).__init__(**kwargs)
 		if num_clusters % 2 != 0:
 			raise ValueError("num_clusters must be divisible by 2.")
@@ -220,7 +220,6 @@ class VideoClassifier:
 		self.num_classes = num_classes
 		self.num_mixtures = num_mixtures
 		self.iterations = iterations
-		self.random_frames = random_frames
 
 		self.video_feature_dim = video_input_shape[2]
 
