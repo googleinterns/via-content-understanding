@@ -76,6 +76,10 @@ def train(data_dir, epochs=6, lr=0.0002, num_clusters=256, batch_size=80, random
 
 	model.fit(train_dataset, epochs=epochs, validation_data=validation_dataset, callbacks=[tensor_board])
 
+	model.save("temp.h5")
+
+	assert False
+
 	#Evaluate model
 	eval_dict = test.test_model(model, data_reader, test_dir, batch_size)
 
