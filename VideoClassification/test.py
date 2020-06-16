@@ -22,6 +22,24 @@ import reader_utils
 import model as model_lib
 import loss
 
+def load_datasets(train_dir, validate_dir, num_epochs, batch_size):
+	"""Set up data reader and load training and validation datasets
+	
+	Args:
+		train_dir: string representing the directory containing the train TfRecords files
+		validate_dir: string representing the directory containing the validate TfRecords files
+	Returns:
+		data_reader: the TfRecords datareader. Can be reused to load other datasets
+		train_dataset: training dataset after parsing
+		validation_dataset: validation dataset after parsing
+	"""
+	data_reader = reader_utils.get_reader()
+
+	train_dataset = data_reader.get_dataset(train_dir, batch_size=batch_size)
+
+	validation_dataset = data_reader.get_dataset(validate_dir, batch_size=batch_size, type="validate")
+
+	return data_reader, train_dataset, validation_dataset
 
 def test_model(model, data_reader, test_dir, batch_size):
 	"""Test the model on test dataset attained from test_dir.
