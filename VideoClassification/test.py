@@ -111,8 +111,6 @@ def load_and_test(data_dir, epochs=6, lr=0.0002, num_clusters=256, batch_size=80
 
 	model.load_weights("temp.h5")
 
-	print(model.predict(tf.zeros((batch_size, iterations, 1152))))
-
 	eval_dict = test_model(model, data_reader, test_dir, batch_size)
 	print(eval_dict)
 
