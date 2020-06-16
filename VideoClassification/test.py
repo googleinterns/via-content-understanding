@@ -66,19 +66,14 @@ def test_model(model, data_reader, test_dir, batch_size):
 		test_input = tf.convert_to_tensor(batch[0])
 		test_labels = tf.convert_to_tensor(batch[1])
 
-		curr_time = time.time()
 		predictions = model.predict(test_input)
-		print(f"Prediction speed {time.time() - curr_time}")
 
 		loss_val = loss.custom_crossentropy(test_labels, predictions)
 
 		#Update Metrics
-		curr_time = time.time()
 		auc_calculator.update_state(test_labels, predictions)
 		pr_calculator.update_state(test_labels, predictions)
 		rp_calculator.update_state(test_labels, predictions)
-
-		print(f"Accumulate time {time.time() - curr_time}")
 
 		print(f"Batch Number {batch_num} with loss {loss_val}.")
 		batch_num += 1
