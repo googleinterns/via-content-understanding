@@ -24,6 +24,7 @@ embeddings_per_file = 50
 decoding_schema = {
     "video_id": tf.io.FixedLenFeature([], tf.string),
     "seralized_embeddings": tf.io.FixedLenFeature([], tf.string),
+    "text": tf.io.FixedLenFeature([], tf.string),
 }
 
 
@@ -47,6 +48,7 @@ def seralize_to_protobuf(video_id, contextual_embeddings, text):
     """Seralizes the video_id, contextual_embeddings, and text as a protobuf."""
 
     video_id_feature = get_feature(video_id)
+    text_feature = get_feature(text)
 
     seralized_embedding = tf.io.serialize_tensor(contextual_embeddings)
     embeddings_feature = get_feature(seralized_embedding)
@@ -54,6 +56,7 @@ def seralize_to_protobuf(video_id, contextual_embeddings, text):
     feature = {
         "video_id": video_id_feature,
         "seralized_embeddings": embeddings_feature,
+        "text": text_feature
     }
 
     protobuf = tf.train.Example(features=tf.train.Features(feature=feature))
@@ -154,7 +157,16 @@ def unseralize_data(seralized_item):
     contextual_embeddings = tf.io.parse_tensor(
         example["seralized_embeddings"], tf.float32)
 
-    return (example["video_id"], contextual_embeddings)
+    return (example["video_id"], contextual_embeddings, example["text"])
+
+def truncate_contextual_embeddings_wrapper():
+    def truncate_contextual_embeddings(video_id, contextual_embeddings, text):
+        num_of_words = len(text.split(" "))
+
+        return video_id, contextual_embeddings[:num_of_words]
+
+    return lambda *args: tf.numpy_function(
+        truncate_contextual_embeddings, args, (tf.string, tf.float32))
 
 def get_cached_language_model_embeddings(
     source_dataset, language_model, split, shuffle_files=True):
@@ -176,5 +188,8 @@ def get_cached_language_model_embeddings(
     dataset = get_cached_records_dataset(
         source_dataset, language_model, split, shuffle_files)
 
-    return dataset.map(
-        unseralize_data, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+    return (dataset
+        .map(unseralize_data, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+        .map(
+            truncate_contextual_embeddings_wrapper(),
+            num_parallel_calls=tf.data.experimental.AUTOTUNE))

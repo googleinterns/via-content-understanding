@@ -42,7 +42,7 @@ class OpenAIGPTModel(BaseLanguageModel):
 
     @property
     def contextual_embeddings_shape(self):
-        return (324, 768)
+        return (None, 768)
     
 
     def pad_tokens(self, tokens):
