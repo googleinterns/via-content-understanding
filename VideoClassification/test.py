@@ -109,7 +109,7 @@ def load_and_test(data_dir, epochs=6, lr=0.0002, num_clusters=256, batch_size=80
 	
 	model = model_generator.build_model(input_shape, batch_size)
 
-	model.load_weights("temp.h5")
+	model.load_weights("model_weights.h5")
 
 	eval_dict = test_model(model, data_reader, test_dir, batch_size)
 	print(eval_dict)

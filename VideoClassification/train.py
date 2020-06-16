@@ -75,7 +75,7 @@ def train(data_dir, epochs=6, lr=0.0002, num_clusters=256, batch_size=80, random
 
 	model.fit(train_dataset, epochs=epochs)#, validation_data=validation_dataset, callbacks=[tensor_board])
 
-	model.save_weights("temp.h5")
+	model.save_weights("model_weights.h5")
 
 	assert False
 
