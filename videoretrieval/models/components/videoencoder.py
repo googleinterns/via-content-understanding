@@ -116,7 +116,7 @@ class VideoEncoder(tf.keras.Model):
             self.gems.append(GatedEmbeddingModule(
                 self.expert_aggregated_size,
                 self.encoded_expert_dimensionality
-            ))
+            ), True)
 
     def call(self, inputs):
         """Forward pass on the video encoder."""
