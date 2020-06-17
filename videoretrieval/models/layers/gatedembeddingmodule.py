@@ -39,19 +39,27 @@ class GatedEmbeddingModule(tf.keras.layers.Layer):
             applies a sigmoid.
 
     """
-    def __init__(self, input_dimension, output_dimension):
+    def __init__(self, input_dimension, output_dimension, include_projection):
         super(GatedEmbeddingModule, self).__init__()
 
-        self.linear_layer_one = tf.keras.layers.Dense(
-            output_dimension, input_shape=(input_dimension,))
+        self.include_projection = include_projection
+
+        if self.include_projection:
+            self.linear_layer_one = tf.keras.layers.Dense(
+                output_dimension, input_shape=(input_dimension,))
+
         self.linear_layer_two = tf.keras.layers.Dense(
             output_dimension, input_shape=(output_dimension,))
-        
+
         self.layer_one_batch_norm = tf.keras.layers.BatchNormalization()
         self.layer_two_batch_norm = tf.keras.layers.BatchNormalization()
 
     def call(self, inputs):
-        layer_one_activations = self.linear_layer_one(inputs)
+        if self.include_projection:
+            layer_one_activations = self.linear_layer_one(inputs)
+        else:
+            layer_one_activations = inputs
+
         layer_two_activations = self.linear_layer_two(layer_one_activations)
 
         layer_one_activations = self.layer_one_batch_norm(
