@@ -12,23 +12,29 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-__init__.py for experts package. Imports and initializes expert models.
+Class for managing OCR experts.
 """
 
-from .action import I3D, R2P1D
-from .objects import ResNext101, SeNet154
-from .speech import SpeechExpert
-from .ocr import OCRExpert
-from .scene import DenseNet161
-from .audio import AudioExpert
-from .face import FaceExpert
+from base import BaseExpert
 
-i3d = I3D()
-r2p1d = R2P1D()
-resnext = ResNext101()
-senet = SeNet154()
-speech_expert = SpeechExpert()
-ocr_expert = OCRExpert()
-audio_expert = AudioExpert()
-densenet = DenseNet161()
-face_expert = FaceExpert()
+class OCRExpert(BaseExpert):
+    """Implementation of the OCR expert class."""
+
+    @property
+    def name(self):
+        return "ocr"
+    
+    @property
+    def embedding_shape(self):
+        return (49, 300)
+
+    @property
+    def constant_length(self):
+        return False
+
+    @property
+    def max_frames(self):
+        return 49
+    
+    
+

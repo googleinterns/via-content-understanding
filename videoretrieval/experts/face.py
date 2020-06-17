@@ -12,18 +12,20 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-Class for managing OCR experts.
+Class for managing Face experts.
 """
 
 from base import BaseExpert
 
-class OCRExpert(BaseExpert):
-    """Implementation of the OCR expert class."""
+class FaceExpert(BaseExpert):
+    """Implementation of the Face expert class."""
 
     @property
     def name(self):
-        return "ocr"
+        return "face"
     
     @property
     def embedding_shape(self):
-        return (5, 300)
+        return (512,)
+    
+    

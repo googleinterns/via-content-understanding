@@ -26,4 +26,14 @@ class SpeechExpert(BaseExpert):
     
     @property
     def embedding_shape(self):
-        return (29, 300)
+        return (32, 300)
+
+    @property
+    def constant_length(self):
+        return False
+
+    @property
+    def max_frames(self):
+        return 32
+    
+    
