@@ -155,3 +155,27 @@ def make_inference_dataset(dataset):
 
     return build_corresponding(video_dataset, text_dataset)
 
+
+def filter_duplicate_video_ids(dataset):
+    seen_videos = set()
+
+    def filter_fn(video_id):
+        if video_id in seen_videos:
+            return False
+
+        seen_videos.add(video_id)
+
+        return True
+
+    return dataset.filter(
+        lambda video_id, *data: tf.numpy_function(
+            filter_fn, [video_id], tf.bool))
+
+def prepare_dataset_for_encoder(
+    dataset, shuffle_buffer, batch_size, one_caption_per_video):
+    dataset = dataset.shuffle(shuffle_buffer)
+
+    if one_caption_per_video:
+        dataset = filter_duplicate_captions(dataset)
+
+    return dataset.batch(batch_size).prefetch(tf.data.experimental.AUTOTUNE)
