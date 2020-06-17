@@ -54,12 +54,20 @@ ocr_path = precomputed_features_base_path + \
 densenet_path = precomputed_features_base_path + \
 	"aggregated_scene_25fps_256px_stride1_offset0/densenet161-avg.pickle"
 
+audio_path = precomputed_features_base_path + \
+	"aggregated_audio_feats/Audio_MSRVTT_new.pickle"
+
+face_path = precomputed_features_base_path + \
+	"aggregated_face_feats/facefeats-avg.pickle"
+
 expert_to_features = {
 	experts.i3d: i3d_path,
 	experts.resnext: resnext_path,
 	experts.senet: senet_path,
 	experts.speech_expert: speech_path,
 	experts.r2p1d: r2p1d_path,
-	experts.ocr: ocr_path,
-	experts.densenet: densenet_path
+	experts.ocr_expert: ocr_path,
+	experts.densenet: densenet_path,
+	experts.audio_expert: audio_path,
+	experts.face_expert: face_path
 }

@@ -29,7 +29,7 @@ def replace_video_id_with_expert_features_wrapper(precomputed_features):
         video_id = video_id_encoded.decode("utf-8")
 
         for feature_dict in precomputed_features:
-            expert_features.append(feature_dict[video_id].astype(np.float32))
+            expert_features.append(feature_dict[video_id])
 
         return expert_features
 
@@ -70,9 +70,33 @@ def get_precomputed_features(source_dataset, experts):
     precomputed_features = []
 
     for expert in experts:
-        precomputed_features.append(
-            cache.get_cached_features_by_expert_and_dataset(
-                source_dataset, expert))
+        processed_expert_features = {}
+
+        expert_features = cache.get_cached_features_by_expert_and_dataset(
+            source_dataset, expert)
+
+        for video_id, expert_value in expert_features.items():
+            if type(expert_value) == float and np.isnan(expert_value):
+                processed_expert_features[video_id] = np.zeros(
+                    expert.embedding_shape)
+            else:
+                expert_value = expert_value.astype(np.float32)
+                if expert.constant_length:
+                    processed_expert_features[video_id] = expert_value
+                    continue
+
+                frames = expert_value.shape[0]
+
+                if frames >= expert.max_frames:
+                    processed_expert_features[video_id] = \
+                        expert_value[:expert.max_frames]
+                else:
+                    processed_expert_features[video_id] = np.concatenate((
+                        expert_value, np.zeros((
+                            expert.max_frames - frames,
+                            *expert.embedding_shape[1:]), np.float32)))
+
+        precomputed_features.append(processed_expert_features)
 
     return precomputed_features
 
