@@ -19,7 +19,7 @@ import math
 from pathlib import Path
 import glob
 
-embeddings_per_file = 20 * 5
+embeddings_per_file = 100
 
 decoding_schema = {
     "video_id": tf.io.FixedLenFeature([], tf.string),
@@ -71,7 +71,7 @@ def seralize_to_protobuf_wrapper(*args):
 
 def write_dataset(dataset, records_directory, dataset_size):
     """Shards a tf.data Dataset and writes it to disk.""" 
-    for shard_index, batch in enumerate(dataset.batch(embeddings_per_file)):
+    for shard_index, batch in enumerate(dataset.batch(embeddings_per_file).prefetch(tf.data.experimental.AUTOTUNE)):
         file_path = records_directory / (f"lm_{shard_index}.tfrecord")
 
         shard = tf.data.Dataset.from_tensor_slices(batch)
@@ -142,7 +142,7 @@ def get_cached_records_dataset(
 
     dataset = dataset.batch(len(file_paths)).interleave(
         lambda files: tf.data.TFRecordDataset(
-            files, num_parallel_reads=tf.data.experimental.AUTOTUNE))
+            files))#, num_parallel_reads=tf.data.experimental.AUTOTUNE))
 
     return dataset
 
@@ -161,9 +161,13 @@ def unseralize_data(seralized_item):
 
 def truncate_contextual_embeddings_wrapper():
     def truncate_contextual_embeddings(video_id, contextual_embeddings, text):
-        num_of_words = len(text.decode("utf-8").split(" "))
+        num_words = len(text.decode("utf-8").split(" "))
+        if num_words >= 37:
+            return video_id, contextual_embeddings[:37]
 
-        return video_id, contextual_embeddings[:num_of_words]
+        output = tf.zeros((37 - num_words, 768), tf.float32)
+        output = tf.concat([contextual_embeddings[:num_words], output], axis=0)
+        return video_id, output
 
     return lambda *args: tf.numpy_function(
         truncate_contextual_embeddings, args, (tf.string, tf.float32))

@@ -149,19 +149,19 @@ def get_unique_wrapper():
 
         return True
 
-    return lambda video_id, data: (tf.numpy_function(filter_fn, [video_id], tf.bool))
+    return lambda video_id, data, _: (tf.numpy_function(filter_fn, [video_id], tf.bool))
 
 def get_video_and_text_dataset(dataset):
     unique_videos_filter = get_unique_wrapper()
 
     video_dataset = (dataset
         .map(
-            lambda video_id, video_data, text_data: (video_id, video_data),
+            lambda video_id, video_data, text_data, missing: (video_id, video_data, missing),
             num_parallel_calls=tf.data.experimental.AUTOTUNE)
         .filter(unique_videos_filter))
     
     text_dataset = dataset.map(
-        lambda video_id, video_data, text_data: (video_id, text_data),
+        lambda video_id, video_data, text_data, _: (video_id, text_data),
             num_parallel_calls=tf.data.experimental.AUTOTUNE)
 
     return video_dataset, text_dataset
@@ -175,10 +175,10 @@ def build_corresponding(video_dataset, text_dataset):
         return index
 
     def build_map_wrapper(index, data):
-        video_id, video_data = data
+        video_id, video_data, missing = data
         index = tf.numpy_function(build_map, [index, video_id], tf.int64)
 
-        return index, video_data
+        return index, video_data, missing
 
     def get_index(video_id):
         if video_id not in video_id_to_index_in_video_dataset:

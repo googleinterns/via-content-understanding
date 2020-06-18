@@ -21,8 +21,8 @@ from transformers import TFOpenAIGPTModel, OpenAIGPTTokenizer
 class OpenAIGPTModel(BaseLanguageModel):
     """An implementation of BaseLanguageModel for the openai-gpt1 model."""
 
-    max_input_length = 324
-    _batch_size = 3
+    max_input_length = 37
+    _batch_size = 42
 
     def __init__(self):
         self.model = TFOpenAIGPTModel.from_pretrained("openai-gpt")
@@ -42,7 +42,7 @@ class OpenAIGPTModel(BaseLanguageModel):
 
     @property
     def contextual_embeddings_shape(self):
-        return (None, 768)
+        return (37, 768)
     
 
     def pad_tokens(self, tokens):

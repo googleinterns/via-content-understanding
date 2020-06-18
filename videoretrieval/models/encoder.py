@@ -89,7 +89,7 @@ class EncoderModel(tf.keras.Model):
 
     def generate_video_embeddings(self, video_dataset, batch_size):
         return video_dataset.batch(batch_size).map(
-            lambda src_id, data: (src_id, self.video_encoder(data)))
+            lambda src_id, data, missing: (src_id, self.video_encoder(data), missing))
 
     def generate_text_embeddings(self, text_dataset, batch_size):
         return text_dataset.batch(batch_size).map(
@@ -98,7 +98,7 @@ class EncoderModel(tf.keras.Model):
     def build_missing_modalities_mask(self, missing_experts):
         num_experts = self.text_encoder.num_of_experts
 
-        return tf.cast(tf.repeat(
+        return 1 - tf.cast(tf.repeat(
             missing_experts,
             [self.text_encoder.encoded_expert_dimensionality] * num_experts, 
             axis=-1), tf.float32)
