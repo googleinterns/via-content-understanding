@@ -92,14 +92,9 @@ def get_precomputed_features(source_dataset, experts):
             missing_modalities = False
 
             if type(expert_value) == float and np.isnan(expert_value):
-<<<<<<< HEAD
-                processed_expert_features[video_id] = np.zeros(
-                    expert.embedding_shape, np.float32)
-=======
                 video_expert_features = np.zeros(
                     expert.embedding_shape, np.float32)
                 missing_modalities = True
->>>>>>> ryan-ce-model-train-loop
             else:
                 expert_value = expert_value.astype(np.float32)
                 if expert.constant_length:
