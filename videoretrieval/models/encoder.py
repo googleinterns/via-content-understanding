@@ -62,10 +62,10 @@ class EncoderModel(tf.keras.Model):
         self.text_encoder_optimizer.apply_gradients(zip(
             text_gradients, self.text_encoder.trainable_variables))
 
-        mean_rank, median_rank = metrics.rankings.get_ranking_metrics_for_batch(
+        mean_rank = metrics.rankings.get_ranking_metrics_for_batch(
             video_results, text_results)
 
-        return {"loss": loss, "MnR": mean_rank, "MdR": median_rank}
+        return {"loss": loss, "MnR": mean_rank}
 
     def test_step(self, video_text_pair_batch):
         _, video_features, text_features = video_text_pair_batch
@@ -76,10 +76,10 @@ class EncoderModel(tf.keras.Model):
         loss = self.loss_fn(
             video_results, text_results, self.loss_hyperparameter_m)
 
-        mean_rank, median_rank = metrics.rankings.get_ranking_metrics_for_batch(
+        mean_rank = metrics.rankings.get_ranking_metrics_for_batch(
             video_results, text_results)
 
-        return {"loss": loss, "MnR": mean_rank, "MdR": median_rank}
+        return {"loss": loss, "MnR": mean_rank}
 
     def generate_video_embeddings(self, video_dataset, batch_size):
         return video_dataset.batch(batch_size).map(
