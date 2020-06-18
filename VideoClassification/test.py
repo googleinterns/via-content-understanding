@@ -17,6 +17,7 @@ import time
 import tensorflow as tf
 import tensorflow_datasets as tfds
 import tensorflow.keras.metrics as metrics
+import numpy as np
 
 import readers
 import reader_utils
@@ -43,36 +44,43 @@ def test_model(model, data_reader, test_dir, batch_size):
 	test_dataset = data_reader.get_dataset(test_dir, batch_size=batch_size, type="test")
 	test_dataset = tfds.as_numpy(test_dataset)
 
+	num_samples = 0
+	total_true = 0
 	for batch in test_dataset:
 		test_input = tf.convert_to_tensor(batch[0])
 		test_labels = tf.convert_to_tensor(batch[1])
 
 		predictions = model.predict(test_input)
 
-		loss_val = loss.custom_crossentropy(test_labels, predictions)
+		#loss_val = loss.custom_crossentropy(test_labels, predictions)
 
 		#Update Metrics
-		auc_calculator.update_state(test_labels, predictions)
-		pr_calculator.update_state(test_labels, predictions)
-		rp_calculator.update_state(test_labels, predictions)
+		# auc_calculator.update_state(test_labels, predictions)
+		# pr_calculator.update_state(test_labels, predictions)
+		# rp_calculator.update_state(test_labels, predictions)
 
-		auc_pr = auc_calculator.result()
-		precision = pr_calculator.result()
-		recall = rp_calculator.result()
+		# auc_pr = auc_calculator.result()
+		# precision = pr_calculator.result()
+		# recall = rp_calculator.result()
 
-		eval_dict = {"AUCPR": auc_pr, "precision": precision, "recall": recall}
+		# eval_dict = {"AUCPR": auc_pr, "precision": precision, "recall": recall}
 
-		print(eval_dict)
-		
-		print(f"Batch Number {batch_num} with loss {loss_val}.")
+		#print(eval_dict)
+
+		num_true = np.sum(test_labels[np.argmax(predictions, 1)])
+		total_true += num_true
+		num_samples += 80
+		print(f"Batch Number {batch_num} with num_true {num_true / 80}.")
 		batch_num += 1
 	
 	#Get results
-	auc_pr = auc_calculator.result()
-	precision = pr_calculator.result()
-	recall = rp_calculator.result()
+	# auc_pr = auc_calculator.result()
+	# precision = pr_calculator.result()
+	# recall = rp_calculator.result()
 
-	eval_dict = {"AUCPR": auc_pr, "precision": precision, "recall": recall}
+	# eval_dict = {"AUCPR": auc_pr, "precision": precision, "recall": recall}
+
+	eval_duct = {"prec": total_true / num_samples}
 
 	return eval_dict
 
