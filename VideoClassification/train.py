@@ -48,7 +48,6 @@ def train(data_dir, epochs=6, lr=0.0002, num_clusters=256, batch_size=80, random
 		data_dir: path to data directory. Must have train, validate, test as subdirectories containing the respective data
 	Returns:
 		model: trained video classifier
-
 	"""
 	train_dir = os.path.join(data_dir, "train")
 	validation_dir = os.path.join(data_dir, "validate")
@@ -71,13 +70,11 @@ def train(data_dir, epochs=6, lr=0.0002, num_clusters=256, batch_size=80, random
 	model.summary()
 	
 	#Implement callbacks
-	#tensor_board = tf.keras.callbacks.TensorBoard(log_dir="logs2", update_freq=100)
+	tensor_board = tf.keras.callbacks.TensorBoard(log_dir="logs2", update_freq=100)
 
-	model.fit(train_dataset, epochs=epochs)#, validation_data=validation_dataset, callbacks=[tensor_board])
+	model.fit(train_dataset, epochs=epochs, validation_data=validation_dataset, callbacks=[tensor_board])
 
 	model.save_weights("model_weights.h5")
-
-	assert False
 
 	#Evaluate model
 	eval_dict = test.test_model(model, data_reader, test_dir, batch_size)

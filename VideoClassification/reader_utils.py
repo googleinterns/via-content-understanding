@@ -5,16 +5,14 @@ from tensorflow.io import gfile
 
 def get_reader(feature_names='rgb,audio', feature_sizes='1024,128'):
 	# Convert feature_names and feature_sizes to lists of values.
-	feature_names, feature_sizes = GetListOfFeatureNamesAndSizes(feature_names, feature_sizes)
+	feature_names, feature_sizes = _get_list_of_feature_names_and_sizes(feature_names, feature_sizes)
 
 	reader = readers.YT8MFrameFeatureDataset(feature_names=feature_names, feature_sizes=feature_sizes)
 
 	return reader
 
-def GetListOfFeatureNamesAndSizes(feature_names, feature_sizes):
-	"""Extract the list of feature names and the dimensionality of each feature
-
-		 from string of comma separated values.
+def _get_list_of_feature_names_and_sizes(feature_names, feature_sizes):
+	"""Extract the list of feature names and the dimensionality of each feature from string of comma separated values.
 
 	Args:
 		feature_names: string containing comma separated list of feature names
@@ -37,7 +35,7 @@ def GetListOfFeatureNamesAndSizes(feature_names, feature_sizes):
 
 	return list_of_feature_names, list_of_feature_sizes
 
-def Dequantize(feat_vector, max_quantized_value=2, min_quantized_value=-2):
+def dequantize(feat_vector, max_quantized_value=2, min_quantized_value=-2):
   """Dequantize the feature from the byte format to the float format.
 
   Args:

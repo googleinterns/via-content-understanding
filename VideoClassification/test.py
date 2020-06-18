@@ -23,25 +23,6 @@ import reader_utils
 import model as model_lib
 import loss
 
-def load_datasets(train_dir, validate_dir, num_epochs, batch_size):
-	"""Set up data reader and load training and validation datasets
-	
-	Args:
-		train_dir: string representing the directory containing the train TfRecords files
-		validate_dir: string representing the directory containing the validate TfRecords files
-	Returns:
-		data_reader: the TfRecords datareader. Can be reused to load other datasets
-		train_dataset: training dataset after parsing
-		validation_dataset: validation dataset after parsing
-	"""
-	data_reader = reader_utils.get_reader()
-
-	train_dataset = data_reader.get_dataset(train_dir, batch_size=batch_size)
-
-	validation_dataset = data_reader.get_dataset(validate_dir, batch_size=batch_size, type="validate")
-
-	return data_reader, train_dataset, validation_dataset
-
 def test_model(model, data_reader, test_dir, batch_size):
 	"""Test the model on test dataset attained from test_dir.
 	
@@ -75,6 +56,14 @@ def test_model(model, data_reader, test_dir, batch_size):
 		pr_calculator.update_state(test_labels, predictions)
 		rp_calculator.update_state(test_labels, predictions)
 
+		auc_pr = auc_calculator.result()
+		precision = pr_calculator.result()
+		recall = rp_calculator.result()
+
+		eval_dict = {"AUCPR": auc_pr, "precision": precision, "recall": recall}
+
+		print(eval_dict)
+		
 		print(f"Batch Number {batch_num} with loss {loss_val}.")
 		batch_num += 1
 	
@@ -87,13 +76,17 @@ def test_model(model, data_reader, test_dir, batch_size):
 
 	return eval_dict
 
-def load_and_test(data_dir, epochs=6, lr=0.0002, num_clusters=256, batch_size=80, random_frames=True, num_mixtures=2, fc_units=1024, iterations=300):
-	train_dir = os.path.join(data_dir, "train")
-	validation_dir = os.path.join(data_dir, "validate")
+def load_and_test(data_dir, model_path, epochs=6, lr=0.0002, num_clusters=256, batch_size=80, random_frames=True, num_mixtures=2, fc_units=1024, iterations=300):
+	"""Load and test the video classifier model.
+
+	Args:
+		data_dir: path to data directory. Must have test as a subdirectory containing the respective data
+		model_path: path to the model weights save file. Must be a .h5 file
+	"""
 	test_dir = os.path.join(data_dir, "test")
 
 	#Set up Reader and Preprocess Data
-	data_reader, train_dataset, validation_dataset = load_datasets(train_dir, validation_dir, epochs, batch_size)
+	data_reader = reader_utils.get_reader()
 
 	video_input_shape = (batch_size, iterations, 1024)
 	audio_input_shape = (batch_size, iterations, 128)
@@ -104,10 +97,10 @@ def load_and_test(data_dir, epochs=6, lr=0.0002, num_clusters=256, batch_size=80
 	
 	model = model_generator.build_model(input_shape, batch_size)
 
-	model.load_weights("model_weights.h5")
+	model.load_weights(model_path)
 
 	eval_dict = test_model(model, data_reader, test_dir, batch_size)
 	print(eval_dict)
 
 if __name__ == "__main__":
-	load_and_test("/home/conorfvedova_google_com/data")
+	load_and_test("/home/conorfvedova_google_com/data", "model_weights.h5")

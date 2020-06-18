@@ -55,7 +55,7 @@ class NetVLAD(tf.keras.layers.Layer):
 		Args:
 			frames: A tensor with shape [batch_size, max_frames, feature_dim].
 		Returns:
-			A tensor with shape [batch_size, feature_dim * num_clusters].
+			vlad_out: A tensor with shape [batch_size, feature_dim * num_clusters].
 		Raises:
 			ValueError: If the `feature_dim` of input is not defined.
 		"""
@@ -66,20 +66,20 @@ class NetVLAD(tf.keras.layers.Layer):
 		activation = self.fc(frames)
 		activation = tf.reshape(activation, (-1, max_frames, self.num_clusters))
 		
-		a_sum = tf.math.reduce_sum(activation, axis=-2, keepdims=True)
-		a = a_sum * self.cluster_centers
+		activation_sum = tf.math.reduce_sum(activation, axis=-2, keepdims=True)
+		cluster_activation = activation_sum * self.cluster_centers
 
 		frames = tf.reshape(frames, (-1, max_frames, feature_dim))
-		b = tf.transpose(
+		activation = tf.transpose(
 			tf.matmul(tf.transpose(activation, perm=(0, 2, 1)), frames), perm=(0, 2, 1)
 		)
 		
-		vlad = b - a
-		vlad = tf.nn.l2_normalize(vlad, 1)
-		vlad = tf.reshape(vlad, (-1, feature_dim * self.num_clusters))
-		vlad = tf.nn.l2_normalize(vlad, 1)
+		vlad_out = activation - cluster_activation
+		vlad_out = tf.nn.l2_normalize(vlad_out, 1)
+		vlad_out = tf.reshape(vlad_out, (-1, feature_dim * self.num_clusters))
+		vlad_out = tf.nn.l2_normalize(vlad_out, 1)
 
-		return vlad
+		return vlad_out
 
 	def compute_output_shape(self, input_shape):
 		input_shape = tf.TensorShape(input_shape).as_list()

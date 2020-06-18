@@ -74,8 +74,8 @@ class YT8MFrameFeatureDataset():
 
 		Args:
 			num_classes: a positive integer for the number of classes.
-			feature_sizes: positive integer(s) for the feature dimensions as a list.
-			feature_names: the feature name(s) in the tensorflow record as a list.
+			feature_sizes: positive integer(s) for the feature dimensions as a list. Must be same size as feature_names
+			feature_names: the feature name(s) in the tensorflow record as a list. Must be same size as feature_sizes
 			max_frames: the maximum number of frames to process.
 		"""
 
@@ -107,7 +107,7 @@ class YT8MFrameFeatureDataset():
 				[-1, feature_size])
 
 		num_frames = tf.minimum(tf.shape(decoded_features)[0], max_frames)
-		feature_matrix = utils.Dequantize(decoded_features, max_quantized_value,
+		feature_matrix = utils.dequantize(decoded_features, max_quantized_value,
 																			min_quantized_value)
 		feature_matrix = resize_axis(feature_matrix, 0, max_frames)
 		return feature_matrix, num_frames
