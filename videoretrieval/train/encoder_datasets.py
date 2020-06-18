@@ -21,37 +21,49 @@ import tensorflow as tf
 import numpy as np
 
 def replace_video_id_with_expert_features_wrapper(precomputed_features):
-    output_shape = len(precomputed_features) * (tf.float32,)
+    output_shape = (tf.bool, len(precomputed_features) * (tf.float32,))
 
     def get_expert_features(video_id_encoded):
         expert_features = []
+        missing_modalities = []
 
         video_id = video_id_encoded.decode("utf-8")
 
         for feature_dict in precomputed_features:
-            expert_features.append(feature_dict[video_id])
+            features, data_exists = feature_dict[video_id]
+            expert_features.append(features)
+
+            missing_modalities.append(data_exists)
 
         return expert_features
 
     def wrapper(video_id, ids):
-        expert_features = tf.numpy_function(
+        missing_modalities, expert_features = tf.numpy_function(
             get_expert_features, [video_id], output_shape)
 
-        return (video_id, tuple(expert_features), ids)
+        return (video_id, tuple(expert_features), ids, missing_modalities)
+
 
     return wrapper
 
 def update_dataset_shape_wrapper(experts, language_model):
+    num_experts = len(experts)
     expert_shapes = [expert.embedding_shape for expert in experts]
     contextual_embeddings_shape = language_model.contextual_embeddings_shape
 
-    def map_fn(video_id, expert_features, contextual_embeddings):
+    def map_fn(
+        video_id, expert_features, contextual_embeddings, missing_modalities):
         for expert_feature, shape in zip(expert_features, expert_shapes):
             expert_feature.set_shape(shape)
 
         contextual_embeddings.set_shape(contextual_embeddings_shape)
+        missing_modalities.set_shape(num_experts)
 
-        return video_id, expert_features, contextual_embeddings
+        return (
+            video_id, 
+            expert_features,
+            contextual_embeddings,
+            missing_modalities)
 
     return map_fn
 
@@ -76,25 +88,39 @@ def get_precomputed_features(source_dataset, experts):
             source_dataset, expert)
 
         for video_id, expert_value in expert_features.items():
+            video_expert_features = None
+            missing_modalities = False
+
             if type(expert_value) == float and np.isnan(expert_value):
+<<<<<<< HEAD
                 processed_expert_features[video_id] = np.zeros(
                     expert.embedding_shape, np.float32)
+=======
+                video_expert_features = np.zeros(
+                    expert.embedding_shape, np.float32)
+                missing_modalities = True
+>>>>>>> ryan-ce-model-train-loop
             else:
                 expert_value = expert_value.astype(np.float32)
                 if expert.constant_length:
-                    processed_expert_features[video_id] = expert_value
+                    video_expert_features = expert_value
                     continue
 
                 frames = expert_value.shape[0]
 
                 if frames >= expert.max_frames:
-                    processed_expert_features[video_id] = \
+                    video_expert_features = \
                         expert_value[:expert.max_frames]
                 else:
-                    processed_expert_features[video_id] = np.concatenate((
+                    video_expert_features = np.concatenate((
                         expert_value, np.zeros((
                             expert.max_frames - frames,
                             *expert.embedding_shape[1:]), np.float32)))
+
+            processed_expert_features[video_id] = (
+                video_expert_features,
+                missing_modalities
+            )
 
         precomputed_features.append(processed_expert_features)
 
