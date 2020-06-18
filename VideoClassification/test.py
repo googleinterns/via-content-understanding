@@ -67,7 +67,9 @@ def test_model(model, data_reader, test_dir, batch_size):
 
 		#print(eval_dict)
 
-		num_true = np.sum(np.array(test_labels)[:,np.argmax(predictions, 1)])
+		num_true = np.array(test_labels)[:,np.argmax(predictions, 1)]
+		print(num_true)
+		num_true = np.sum(num_true)
 		total_true += num_true
 		num_samples += 80
 		print(f"Batch Number {batch_num} with num_true {num_true / 80}.")
