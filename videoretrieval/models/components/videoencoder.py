@@ -165,5 +165,6 @@ class VideoEncoder(tf.keras.Model):
 
             gated_embeddings.append(gated_embedding)
 
-        return tf.concat(gated_embeddings, axis=1)
+        return tf.math.l2_normalize(
+            tf.concat(gated_embeddings, axis=1), axis=1)
 

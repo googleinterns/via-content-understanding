@@ -90,7 +90,8 @@ class TextEncoder(tf.keras.Model):
         expert_embeddings = []
 
         for i in range(self.num_of_experts):
-            gated_embeddings = self.gems[i](aggregated_embeddings)
-            expert_embeddings.append(self.dense_layers[i](gated_embeddings))
+            expert_embeddings.append(self.gems[i](aggregated_embeddings))
+            # expert_embeddings.append(self.dense_layers[i](gated_embeddings))
 
-        return tf.concat(expert_embeddings, axis=1)
+        return tf.math.l2_normalize(
+            tf.concat(expert_embeddings, axis=1), axis=1)

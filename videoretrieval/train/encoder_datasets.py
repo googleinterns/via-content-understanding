@@ -78,7 +78,7 @@ def get_precomputed_features(source_dataset, experts):
         for video_id, expert_value in expert_features.items():
             if type(expert_value) == float and np.isnan(expert_value):
                 processed_expert_features[video_id] = np.zeros(
-                    expert.embedding_shape)
+                    expert.embedding_shape, np.float32)
             else:
                 expert_value = expert_value.astype(np.float32)
                 if expert.constant_length:
