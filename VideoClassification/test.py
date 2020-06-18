@@ -75,6 +75,7 @@ def test_model(model, data_reader, test_dir, batch_size):
 		num_samples += 80
 		print(f"Batch Number {batch_num} with num_true {num_true / 80}.")
 		batch_num += 1
+		assert False
 	
 	#Get results
 	# auc_pr = auc_calculator.result()
