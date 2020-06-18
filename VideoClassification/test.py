@@ -51,7 +51,7 @@ def test_model(model, data_reader, test_dir, batch_size):
 		test_labels = tf.convert_to_tensor(batch[1])
 
 		predictions = model.predict(test_input)
-		print(np.any(test_labels, 1))
+		print(np.any(test_labels))
 		#loss_val = loss.custom_crossentropy(test_labels, predictions)
 
 		#Update Metrics
