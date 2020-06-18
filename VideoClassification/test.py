@@ -68,7 +68,7 @@ def test_model(model, data_reader, test_dir, batch_size):
 		#print(eval_dict)
 
 		num_true = np.array(test_labels)[:,np.argmax(predictions, 1)]
-		print(num_true)
+		print(num_true.shape)
 		num_true = np.sum(num_true)
 		total_true += num_true
 		num_samples += 80
