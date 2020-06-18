@@ -66,6 +66,7 @@ def test_model(model, data_reader, test_dir, batch_size):
 		# eval_dict = {"AUCPR": auc_pr, "precision": precision, "recall": recall}
 
 		#print(eval_dict)
+		print(pedictions)
 		print(np.argmax(predictions, 1))
 		num_true = np.array(test_labels)[np.arange(80),np.argmax(predictions, 1)]
 		print(num_true)
