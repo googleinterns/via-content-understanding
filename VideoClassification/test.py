@@ -35,7 +35,7 @@ def test_model(model, data_reader, test_dir, batch_size):
 		eval_dict: dictionary containing important evaulation metrics
 	"""
 	#Create evaluation metrics
-	auc_calculator = metrics.AUC(multi_label=True, curve='PR')
+	auc_calculator = metrics.AUC(multi_label=True)#, curve='PR')
 	pr_calculator = metrics.PrecisionAtRecall(0.7)
 	rp_calculator = metrics.RecallAtPrecision(0.7)
 
@@ -54,19 +54,19 @@ def test_model(model, data_reader, test_dir, batch_size):
 
 		#Update Metrics
 		auc_calculator.update_state(test_labels, predictions)
-		pr_calculator.update_state(test_labels, predictions)
-		rp_calculator.update_state(test_labels, predictions)
+		#pr_calculator.update_state(test_labels, predictions)
+		#rp_calculator.update_state(test_labels, predictions)
 
 		print(f"Batch Number {batch_num} with loss {loss_val}.")
 		batch_num += 1
 	
 	#Get results
 	auc_pr = auc_calculator.result()
-	precision = pr_calculator.result()
-	recall = rp_calculator.result()
+	#precision = pr_calculator.result()
+	#recall = rp_calculator.result()
 
-	eval_dict = {"AUCPR": auc_pr, "precision": precision, "recall": recall}
-
+	#eval_dict = {"AUCPR": auc_pr, "precision": precision, "recall": recall}
+	eval_dict = {"AUCROC": auc_pr}
 	return eval_dict
 
 def load_and_test(data_dir, model_path, epochs=6, lr=0.0002, num_clusters=256, batch_size=80, random_frames=True, num_mixtures=2, fc_units=1024, iterations=300):
@@ -96,4 +96,4 @@ def load_and_test(data_dir, model_path, epochs=6, lr=0.0002, num_clusters=256, b
 	print(eval_dict)
 
 if __name__ == "__main__":
-	load_and_test("/home/conorfvedova_google_com/data", "model_weights.h5")
+	load_and_test("~/data", "model_weights.h5")

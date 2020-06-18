@@ -51,7 +51,9 @@ def train(data_dir, epochs=6, lr=0.0002, num_clusters=256, batch_size=80, random
 	"""
 	train_dir = os.path.join(data_dir, "train")
 	validation_dir = os.path.join(data_dir, "validate")
-	test_dir = os.path.join(data_dir, "test")
+	
+	
+	test_dir = os.path.join(data_dir, "validate")
 
 	#Set up Reader and Preprocess Data
 	data_reader, train_dataset, validation_dataset = load_datasets(train_dir, validation_dir, epochs, batch_size)
@@ -84,4 +86,4 @@ def train(data_dir, epochs=6, lr=0.0002, num_clusters=256, batch_size=80, random
 	return model
 
 if __name__ == "__main__":
-	model = train("/home/conorfvedova_google_com/data")
+	model = train("~/data")
