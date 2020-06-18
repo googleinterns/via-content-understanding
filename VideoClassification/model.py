@@ -13,7 +13,6 @@ limitations under the License.
 Defines the architecture of the Video Classifier.
 """
 import tensorflow as tf
-import model_utils as utils
 import math
 
 class NetVLAD(tf.keras.layers.Layer):
