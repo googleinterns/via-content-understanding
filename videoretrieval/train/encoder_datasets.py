@@ -21,7 +21,7 @@ import tensorflow as tf
 import numpy as np
 
 def replace_video_id_with_expert_features_wrapper(precomputed_features):
-    output_shape = (tf.bool, len(precomputed_features) * (tf.float32,))
+    output_shape = (tf.bool,) + len(precomputed_features) * (tf.float32,)
 
     def get_expert_features(video_id_encoded):
         expert_features = []
@@ -35,11 +35,14 @@ def replace_video_id_with_expert_features_wrapper(precomputed_features):
 
             missing_modalities.append(data_exists)
 
-        return expert_features
+        return [np.array(missing_modalities)] +  expert_features
 
     def wrapper(video_id, ids):
-        missing_modalities, expert_features = tf.numpy_function(
+        expert_data = tf.numpy_function(
             get_expert_features, [video_id], output_shape)
+
+        missing_modalities = expert_data[0]
+        expert_features = expert_data[1:]
 
         return (video_id, tuple(expert_features), ids, missing_modalities)
 
@@ -99,18 +102,17 @@ def get_precomputed_features(source_dataset, experts):
                 expert_value = expert_value.astype(np.float32)
                 if expert.constant_length:
                     video_expert_features = expert_value
-                    continue
-
-                frames = expert_value.shape[0]
-
-                if frames >= expert.max_frames:
-                    video_expert_features = \
-                        expert_value[:expert.max_frames]
                 else:
-                    video_expert_features = np.concatenate((
-                        expert_value, np.zeros((
-                            expert.max_frames - frames,
-                            *expert.embedding_shape[1:]), np.float32)))
+                    frames = expert_value.shape[0]
+
+                    if frames >= expert.max_frames:
+                        video_expert_features = \
+                            expert_value[:expert.max_frames]
+                    else:
+                        video_expert_features = np.concatenate((
+                            expert_value, np.zeros((
+                                expert.max_frames - frames,
+                                *expert.embedding_shape[1:]), np.float32)))
 
             processed_expert_features[video_id] = (
                 video_expert_features,

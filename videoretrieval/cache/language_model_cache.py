@@ -38,7 +38,7 @@ def get_records_directory(dataset, language_model, split):
     dataset_name = dataset.dataset_name
     language_model_name = language_model.name
 
-    path = Path(f"cached_data/{dataset_name}/{language_model_name}/{split}")
+    path = Path(f"/mnt/disks/fast_ssd/cached_data/{dataset_name}/{language_model_name}/{split}")
 
     path.mkdir(parents=True, exist_ok=True)
 
@@ -161,7 +161,7 @@ def unseralize_data(seralized_item):
 
 def truncate_contextual_embeddings_wrapper():
     def truncate_contextual_embeddings(video_id, contextual_embeddings, text):
-        num_of_words = len(text.split(" "))
+        num_of_words = len(text.decode("utf-8").split(" "))
 
         return video_id, contextual_embeddings[:num_of_words]
 

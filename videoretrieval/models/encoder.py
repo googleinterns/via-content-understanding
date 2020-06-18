@@ -98,10 +98,10 @@ class EncoderModel(tf.keras.Model):
     def build_missing_modalities_mask(self, missing_experts):
         num_experts = self.text_encoder.num_of_experts
 
-        return tf.repeat(
+        return tf.cast(tf.repeat(
             missing_experts,
             [self.text_encoder.encoded_expert_dimensionality] * num_experts, 
-            axis=-1)
+            axis=-1), tf.float32)
 
     def zero_missing_modalities(
         self, text_results, missing_experts):
