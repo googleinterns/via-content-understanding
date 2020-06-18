@@ -96,4 +96,4 @@ def load_and_test(data_dir, model_path, epochs=6, lr=0.0002, num_clusters=256, b
 	print(eval_dict)
 
 if __name__ == "__main__":
-	load_and_test("~/data", "model_weights.h5")
+	load_and_test("/home/conorfvedova_google_com/data", "model_weights.h5")
