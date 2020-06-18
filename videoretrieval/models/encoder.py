@@ -42,11 +42,14 @@ class EncoderModel(tf.keras.Model):
         self.loss_fn = loss_fn
 
     def train_step(self, video_text_pair_batch):
-        video_features, text_features = video_text_pair_batch
+        video_features, text_features, missing_experts = video_text_pair_batch
 
         with tf.GradientTape() as video_tape, tf.GradientTape() as text_tape:
             video_results = self.video_encoder(video_features)
             text_results = self.text_encoder(text_features)
+
+            text_results = self.zero_missing_modalities(
+                text_results, missing_experts)
 
             loss = self.loss_fn(
                 video_results, text_results, self.loss_hyperparameter_m)
@@ -64,12 +67,29 @@ class EncoderModel(tf.keras.Model):
         return {"loss": loss}
 
     def test_step(self, video_text_pair_batch):
-        video_features, text_features = video_text_pair_batch
+        video_features, text_features, missing_experts = video_text_pair_batch
         
         video_results = self.video_encoder(video_features)
         text_results = self.text_encoder(text_features)
+
+        text_results = self.zero_missing_modalities(
+            text_results, missing_experts)
 
         loss = self.loss_fn(
             video_results, text_results, self.loss_hyperparameter_m)
 
         return {"loss": loss}
+
+    def build_missing_modalities_mask(self, missing_experts):
+        num_experts = self.text_encoder.num_of_experts
+
+        return tf.repeat(
+            missing_experts,
+            [self.text_encoder.encoded_expert_dimensionality] * num_experts, 
+            axis=-1)
+
+    def zero_missing_modalities(
+        self, text_results, missing_experts):
+        zero_mask = self.build_missing_modalities_mask(missing_experts)
+
+        return tf.math.l2_normalize(text_results * zero_mask, axis=-1)
