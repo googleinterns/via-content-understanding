@@ -45,15 +45,16 @@ class EncoderModel(tf.keras.Model):
     def train_step(self, video_text_pair_batch):
         _, video_features, text_features, missing_experts = video_text_pair_batch
 
+        missing_modality_mask = self.build_missing_modalities_mask(
+            missing_experts)
+
         with tf.GradientTape() as video_tape, tf.GradientTape() as text_tape:
             video_results = self.video_encoder(video_features)
             text_results = self.text_encoder(text_features)
 
-            text_results = self.zero_missing_modalities(
-                text_results, missing_experts)
-
             loss = self.loss_fn(
-                video_results, text_results, self.loss_hyperparameter_m)
+                video_results, missing_modality_mask, text_results,
+                self.loss_hyperparameter_m)
 
         video_gradients = video_tape.gradient(
             loss, self.video_encoder.trainable_variables)
@@ -76,11 +77,12 @@ class EncoderModel(tf.keras.Model):
         video_results = self.video_encoder(video_features)
         text_results = self.text_encoder(text_features)
 
-        text_results = self.zero_missing_modalities(
-            text_results, missing_experts)
+        missing_modality_mask = self.build_missing_modalities_mask(
+            missing_experts)
 
         loss = self.loss_fn(
-            video_results, text_results, self.loss_hyperparameter_m)
+            video_results, missing_modality_mask, text_results,
+            self.loss_hyperparameter_m)
 
         mean_rank = metrics.rankings.get_ranking_metrics_for_batch(
             video_results, text_results)
@@ -102,10 +104,4 @@ class EncoderModel(tf.keras.Model):
             missing_experts,
             [self.text_encoder.encoded_expert_dimensionality] * num_experts, 
             axis=-1), tf.float32)
-
-    def zero_missing_modalities(
-        self, text_results, missing_experts):
-        zero_mask = self.build_missing_modalities_mask(missing_experts)
-
-        return tf.math.l2_normalize(text_results * zero_mask, axis=-1)
 

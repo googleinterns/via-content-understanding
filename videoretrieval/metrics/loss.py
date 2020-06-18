@@ -17,8 +17,31 @@ Defines the loss function needed to train the model.
 
 import tensorflow as tf
 
+def build_similaritiy_matrix(
+    video_embeddings, text_embeddings, missing_video_modalities):
+
+    batch_size = video_embeddings.shape[0]
+
+    video_embeddings = tf.expand_dims(video_embeddings, 1)
+    missing_video_modalities = tf.expand_dims(missing_video_modalities, 1)
+    text_embeddings = tf.expand_dims(text_embeddings, 0)
+
+    video_embeddings = tf.tile(video_embeddings, [1, batch_size, 1])
+    missing_video_modalities = tf.tile(
+        missing_video_modalities, [1, batch_size, 1])
+    text_embeddings = tf.tile(text_embeddings, [batch_size, 1, 1])
+
+    video_embeddings = tf.math.l2_normalize(
+        video_embeddings * missing_video_modalities, axis=-1)
+    text_embeddings = tf.math.l2_normalize(
+        text_embeddings * missing_video_modalities, axis=-1)
+
+    return tf.reduce_sum(video_embeddings * text_embeddings, axis=-1)
+
+
 def bidirectional_max_margin_ranking_loss(
-    video_embeddings, text_embeddings, embedding_distance_parameter):
+    video_embeddings, missing_video_modalities, text_embeddings,
+    embedding_distance_parameter):
     """Implementation of the Bidirectional max margin ranking loss.
 
     Arguments:
@@ -37,8 +60,10 @@ def bidirectional_max_margin_ranking_loss(
 
     batch_size = video_embeddings.shape[0]
 
-    similarities = tf.linalg.matmul(
-        video_embeddings, text_embeddings, transpose_b=True)
+
+    similarities = build_similaritiy_matrix(
+        video_embeddings, text_embeddings, missing_video_modalities)
+
     similarities_transpose = tf.transpose(similarities)
 
     matching_similarities = tf.linalg.tensor_diag_part(similarities)

@@ -40,12 +40,12 @@ class TestBidirectionalMaxMarginRankingLoss(unittest.TestCase):
         ])
 
         loss = bidirectional_max_margin_ranking_loss(mock_video_embeddings,
-            mock_text_embeddings, 1.0)
+            tf.ones_like(mock_video_embeddings), mock_text_embeddings, 1.0)
 
         self.assertTrue(abs(loss.numpy() - 0.0) < self.error)
 
         loss = bidirectional_max_margin_ranking_loss(mock_video_embeddings,
-            mock_text_embeddings, 100.0)
+            tf.ones_like(mock_video_embeddings), mock_text_embeddings, 100.0)
 
         self.assertTrue(abs(loss.numpy() - 132.0) < self.error)
 
@@ -64,7 +64,7 @@ class TestBidirectionalMaxMarginRankingLoss(unittest.TestCase):
         ])
 
         loss = bidirectional_max_margin_ranking_loss(mock_video_embeddings,
-            mock_text_embeddings, 1.0)
+            tf.ones_like(mock_video_embeddings), mock_text_embeddings, 1.0)
 
         expected_value = 0.6779908
 
@@ -88,6 +88,6 @@ class TestBidirectionalMaxMarginRankingLoss(unittest.TestCase):
         ])
 
         loss = bidirectional_max_margin_ranking_loss(mock_video_embeddings,
-            mock_text_embeddings, 1.5)
+            tf.ones_like(mock_video_embeddings), mock_text_embeddings, 1.5)
 
         self.assertTrue(abs(loss.numpy() - 1.815000005) < self.error)
