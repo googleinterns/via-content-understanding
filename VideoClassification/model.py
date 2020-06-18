@@ -177,7 +177,8 @@ class MOELogistic(tf.keras.layers.Layer):
 		#Calculate the distribution across mixtures
 		gate_dist = tf.nn.softmax(tf.reshape(gate_activations, [-1, self.num_mixtures+1]))
 		expert_dist = tf.nn.sigmoid(tf.reshape(expert_activations, [-1, self.num_mixtures]))
-
+		print(f"Expert distribution {expert_dist}")
+		print(f"Gate distribution {gate_dist}")
 		probs = tf.reduce_sum(tf.math.multiply(gate_dist[:,:self.num_mixtures], expert_dist),1)
 		probs = tf.reshape(probs, [-1, self.num_classes])
 
@@ -260,6 +261,7 @@ class VideoClassifier:
 		fc_out = self.fc(vlad_out)
 		cg_out = self.first_cg(fc_out)
 		moe_out = self.moe(cg_out)
+		print(f"Moe Output {moe_out}")
 		final_out = self.second_cg(moe_out)
 		
 		final_model = tf.keras.models.Model(inputs=model_input, outputs=final_out)
