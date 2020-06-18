@@ -57,7 +57,7 @@ def test_model(model, data_reader, test_dir, batch_size):
 		pr_calculator.update_state(test_labels, predictions)
 		rp_calculator.update_state(test_labels, predictions)
 
-		print(f"Batch Number {batch_num} with num_true {num_true / 80}.")
+		print(f"Batch Number {batch_num} with loss {loss_val}.")
 		batch_num += 1
 	
 	#Get results
