@@ -76,7 +76,7 @@ def load_and_test(data_dir, model_path, epochs=6, lr=0.0002, num_clusters=256, b
 		data_dir: path to data directory. Must have test as a subdirectory containing the respective data
 		model_path: path to the model weights save file. Must be a .h5 file
 	"""
-	test_dir = os.path.join(data_dir, "test")
+	test_dir = os.path.join(data_dir, "validate")
 
 	#Set up Reader and Preprocess Data
 	data_reader = reader_utils.get_reader()
