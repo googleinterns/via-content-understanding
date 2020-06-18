@@ -41,51 +41,31 @@ def test_model(model, data_reader, test_dir, batch_size):
 
 	#Prepare data
 	batch_num = 0
-	test_dataset = data_reader.get_dataset(test_dir, batch_size=batch_size, type="test")
+	test_dataset = data_reader.get_dataset(test_dir, batch_size=batch_size, type="validate")
 	test_dataset = tfds.as_numpy(test_dataset)
 
-	num_samples = 0
-	total_true = 0
 	for batch in test_dataset:
 		test_input = tf.convert_to_tensor(batch[0])
 		test_labels = tf.convert_to_tensor(batch[1])
 
 		predictions = model.predict(test_input)
-		print(np.any(test_labels))
-		#loss_val = loss.custom_crossentropy(test_labels, predictions)
+
+		loss_val = loss.custom_crossentropy(test_labels, predictions)
 
 		#Update Metrics
-		# auc_calculator.update_state(test_labels, predictions)
-		# pr_calculator.update_state(test_labels, predictions)
-		# rp_calculator.update_state(test_labels, predictions)
+		auc_calculator.update_state(test_labels, predictions)
+		pr_calculator.update_state(test_labels, predictions)
+		rp_calculator.update_state(test_labels, predictions)
 
-		# auc_pr = auc_calculator.result()
-		# precision = pr_calculator.result()
-		# recall = rp_calculator.result()
-
-		# eval_dict = {"AUCPR": auc_pr, "precision": precision, "recall": recall}
-
-		#print(eval_dict)
-		print(predictions)
-		print(np.argmax(predictions, 1))
-		print(np.max(predictions, 1))
-		num_true = np.array(test_labels)[np.arange(80),np.argmax(predictions, 1)]
-		print(num_true)
-		num_true = np.sum(num_true)
-		total_true += num_true
-		num_samples += 80
 		print(f"Batch Number {batch_num} with num_true {num_true / 80}.")
 		batch_num += 1
-		assert False
 	
 	#Get results
-	# auc_pr = auc_calculator.result()
-	# precision = pr_calculator.result()
-	# recall = rp_calculator.result()
+	auc_pr = auc_calculator.result()
+	precision = pr_calculator.result()
+	recall = rp_calculator.result()
 
-	# eval_dict = {"AUCPR": auc_pr, "precision": precision, "recall": recall}
-
-	eval_duct = {"prec": total_true / num_samples}
+	eval_dict = {"AUCPR": auc_pr, "precision": precision, "recall": recall}
 
 	return eval_dict
 
@@ -117,5 +97,3 @@ def load_and_test(data_dir, model_path, epochs=6, lr=0.0002, num_clusters=256, b
 
 if __name__ == "__main__":
 	load_and_test("/home/conorfvedova_google_com/data", "model_weights.h5")
-
-	#Logits, display input tensors, 
