@@ -74,13 +74,9 @@ class TextEncoder(tf.keras.Model):
 
     def make_dense_layers(self):
         """Make dense + softmax layers."""
-        self.dense_layers = []
-
-        for _ in range(self.num_of_experts):
-            self.dense_layers.append(tf.keras.layers.Dense(
-                self.encoded_expert_dimensionality,
-                activation="softmax"
-                ))
+        self.moe_dense = tf.keras.layers.Dense(
+            self.encoded_expert_dimensionality * self.num_of_experts,
+            activation="softmax")
 
     def call(self, input_):
         """Forward pass."""
@@ -91,7 +87,10 @@ class TextEncoder(tf.keras.Model):
 
         for i in range(self.num_of_experts):
             expert_embeddings.append(self.gems[i](aggregated_embeddings))
-            # expert_embeddings.append(self.dense_layers[i](gated_embeddings))
+            expert_embeddings.append(self.dense_layers[i](gated_embeddings))
 
-        return tf.math.l2_normalize(
-            tf.concat(expert_embeddings, axis=1), axis=1)
+        mixture_weights = self.moe_dense(aggregated_embeddings)
+
+        embedding = mixture_weights * tf.concat(expert_embeddings, axis=1)
+
+        return embedding
