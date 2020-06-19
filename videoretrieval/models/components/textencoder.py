@@ -87,10 +87,7 @@ class TextEncoder(tf.keras.Model):
 
         for i in range(self.num_of_experts):
             expert_embeddings.append(self.gems[i](aggregated_embeddings))
-            expert_embeddings.append(self.dense_layers[i](gated_embeddings))
 
         mixture_weights = self.moe_dense(aggregated_embeddings)
 
-        embedding = mixture_weights * tf.concat(expert_embeddings, axis=1)
-
-        return embedding
+        return embedding, mixture_weights

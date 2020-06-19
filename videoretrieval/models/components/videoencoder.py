@@ -41,12 +41,14 @@ class VideoEncoder(tf.keras.Model):
 
     def __init__(self, 
             experts,
+            experts_use_netvlad,
+            experts_netvlad_shape,
             expert_aggregated_size=768,
             encoded_expert_dimensionality=100,
             g_mlp_layers=5,
             h_mlp_layers=5,
             make_activation_layer=tf.keras.layers.ReLU,
-            use_batch_norm=True
+            use_batch_norm=True,
             ):
         """Initalize video encoder.
 
@@ -64,6 +66,8 @@ class VideoEncoder(tf.keras.Model):
         super(VideoEncoder, self).__init__()
 
         self.experts = experts
+        self.experts_use_netvlad = experts_use_netvlad
+        self.experts_netvlad_shape = experts_netvlad_shape
         self.expert_aggregated_size = expert_aggregated_size
         self.encoded_expert_dimensionality = encoded_expert_dimensionality
         self.make_activation_layer = make_activation_layer
@@ -81,13 +85,13 @@ class VideoEncoder(tf.keras.Model):
         """Make temporal aggregation layers."""
         self.temporal_aggregation_layers = []
 
-        for expert in self.experts:
-            should_use_netvlad = len(expert.embedding_shape) > 1
+        for should_use_netvlad, clusters in zip(
+            self.should_use_netvlad, self.experts_netvlad_shape):
             
             self.temporal_aggregation_layers.append(TemporalAggregationLayer(
                 self.expert_aggregated_size,
-                should_use_netvlad
-                ))
+                should_use_netvlad,
+                netvlad_clusters=clusters))
 
     def make_mlp(self, num_layers):
         """Makes and returns an mlp with num_layers layers."""
@@ -166,6 +170,4 @@ class VideoEncoder(tf.keras.Model):
 
             gated_embeddings.append(gated_embedding)
 
-        return tf.math.l2_normalize(
-            tf.concat(gated_embeddings, axis=1), axis=1)
-
+        return gated_embeddings

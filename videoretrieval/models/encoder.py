@@ -43,17 +43,18 @@ class EncoderModel(tf.keras.Model):
         self.loss_fn = loss_fn
 
     def train_step(self, video_text_pair_batch):
-        _, video_features, text_features, missing_experts = video_text_pair_batch
-
-        missing_modality_mask = self.build_missing_modalities_mask(
-            missing_experts)
+        _, video_features, text_features, missing_experts = \
+            video_text_pair_batch
 
         with tf.GradientTape() as video_tape, tf.GradientTape() as text_tape:
             video_results = self.video_encoder(video_features)
-            text_results = self.text_encoder(text_features)
+            text_results, mixture_weights = self.text_encoder(text_features)
+
+            mixture_weights = self.scale_mixture_weights(
+                mixture_weights, missing_experts)
 
             loss = self.loss_fn(
-                video_results, missing_modality_mask, text_results,
+                video_results, text_results, missing_experts, mixture_weights,
                 self.loss_hyperparameter_m)
 
         video_gradients = video_tape.gradient(
@@ -72,16 +73,14 @@ class EncoderModel(tf.keras.Model):
         return {"loss": loss, "MnR": mean_rank}
 
     def test_step(self, video_text_pair_batch):
-        _, video_features, text_features, missing_experts = video_text_pair_batch
+        _, video_features, text_features, missing_experts = \
+            video_text_pair_batch
         
         video_results = self.video_encoder(video_features)
-        text_results = self.text_encoder(text_features)
-
-        missing_modality_mask = self.build_missing_modalities_mask(
-            missing_experts)
+        text_results, mixture_weights = self.text_encoder(text_features)
 
         loss = self.loss_fn(
-            video_results, missing_modality_mask, text_results,
+            video_results, text_results, mixture_weights, missing_experts
             self.loss_hyperparameter_m)
 
         mean_rank = metrics.rankings.get_ranking_metrics_for_batch(
@@ -96,12 +95,3 @@ class EncoderModel(tf.keras.Model):
     def generate_text_embeddings(self, text_dataset, batch_size):
         return text_dataset.batch(batch_size).map(
             lambda src_id, data: (src_id, self.text_encoder(data)))
-
-    def build_missing_modalities_mask(self, missing_experts):
-        num_experts = self.text_encoder.num_of_experts
-
-        return 1 - tf.cast(tf.repeat(
-            missing_experts,
-            [self.text_encoder.encoded_expert_dimensionality] * num_experts, 
-            axis=-1), tf.float32)
-
