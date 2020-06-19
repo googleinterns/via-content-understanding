@@ -24,7 +24,7 @@ import reader_utils
 import model as model_lib
 import loss
 
-def test_model(model, data_reader, test_dir, batch_size):
+def evaluate_model(model, data_reader, test_dir, batch_size):
   """Test the model on test dataset attained from test_dir.
   
   Args:
@@ -72,7 +72,7 @@ def test_model(model, data_reader, test_dir, batch_size):
   
   return eval_dict
 
-def load_and_test(data_dir, model_path, epochs=6, lr=0.0002, num_clusters=256, batch_size=80, random_frames=True, num_mixtures=2, fc_units=1024, iterations=300):
+def load_and_evaluate(data_dir, model_path, epochs=6, lr=0.0002, num_clusters=256, batch_size=80, random_frames=True, num_mixtures=2, fc_units=1024, iterations=300):
   """Load and test the video classifier model.
 
   Args:
@@ -95,8 +95,8 @@ def load_and_test(data_dir, model_path, epochs=6, lr=0.0002, num_clusters=256, b
 
   model.load_weights(model_path)
 
-  eval_dict = test_model(model, data_reader, test_dir, batch_size)
+  eval_dict = evaluate_model(model, data_reader, test_dir, batch_size)
   print(eval_dict)
 
 if __name__ == "__main__":
-  load_and_test("/home/conorfvedova_google_com/data", "model_weights.h5")
+  load_and_evaluate("/home/conorfvedova_google_com/data", "model_weights.h5")

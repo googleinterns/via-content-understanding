@@ -20,7 +20,7 @@ import readers
 import reader_utils
 import model as model_lib
 import loss
-import test
+import evaluate
 
 def load_datasets(train_dir, validate_dir, num_epochs, batch_size):
   """Set up data reader and load training and validation datasets
@@ -79,7 +79,7 @@ def train(data_dir, epochs=6, lr=0.0002, num_clusters=256, batch_size=80, random
   model.save_weights("model_weights.h5")
 
   #Evaluate model
-  eval_dict = test.test_model(model, data_reader, test_dir, batch_size)
+  eval_dict = evaluate.evaluate_model(model, data_reader, test_dir, batch_size)
 
   print(eval_dict)
 
