@@ -17,43 +17,7 @@ import tensorflow as tf
 import reader_utils as utils
 import os
 from functools import partial
-
-def resize_axis(tensor, axis, new_size, fill_value=0):
-	"""Truncates or pads a tensor to new_size on on a given axis.
-
-	Truncate or extend tensor such that tensor.shape[axis] == new_size. If the
-	size increases, the padding will be performed at the end, using fill_value.
-
-	Args:
-		tensor: The tensor to be resized.
-		axis: An integer representing the dimension to be sliced.
-		new_size: An integer or 0d tensor representing the new value for
-			tensor.shape[axis].
-		fill_value: Value to use to fill any new entries in the tensor. Will be cast
-			to the type of tensor.
-
-	Returns:
-		The resized tensor.
-	"""
-	tensor = tf.convert_to_tensor(tensor)
-	shape = tf.unstack(tf.shape(tensor))
-
-	pad_shape = shape[:]
-	pad_shape[axis] = tf.maximum(0, new_size - shape[axis])
-
-	shape[axis] = tf.minimum(shape[axis], new_size)
-	shape = tf.stack(shape)
-
-	resized = tf.concat([
-			tf.slice(tensor, tf.zeros_like(shape), shape),
-			tf.fill(tf.stack(pad_shape), tf.cast(fill_value, tensor.dtype))
-	], axis)
-
-	# Update shape.
-	new_shape = tensor.get_shape().as_list()  # A copy is being made.
-	new_shape[axis] = new_size
-	resized.set_shape(new_shape)
-	return resized
+import reader_utils as utils
 
 class YT8MFrameFeatureDataset():
 	"""Reads TFRecords of SequenceExamples.
@@ -109,7 +73,7 @@ class YT8MFrameFeatureDataset():
 		num_frames = tf.minimum(tf.shape(decoded_features)[0], max_frames)
 		feature_matrix = utils.dequantize(decoded_features, max_quantized_value,
 																			min_quantized_value)
-		feature_matrix = resize_axis(feature_matrix, 0, max_frames)
+		feature_matrix = utils.resize_axis(feature_matrix, 0, max_frames)
 		return feature_matrix, num_frames
 
 	def get_dataset(self, data_dir, batch_size, type="train", max_quantized_value=2, min_quantized_value=-2):
