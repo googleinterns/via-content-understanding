@@ -26,7 +26,7 @@ class NetVLAD(tf.keras.layers.Layer):
 	"""
 	def __init__(self, num_clusters, input_shape, **kwargs):
 		super().__init__(**kwargs)
-		if num_clusters <= 0:
+		if num_clusters < 1:
 			raise ValueError("`num_clusters` must be greater than 1: %i" % num_clusters)
 		self.num_clusters = num_clusters
 		feature_dim = input_shape[-1]
