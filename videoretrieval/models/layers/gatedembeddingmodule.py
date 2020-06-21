@@ -69,6 +69,6 @@ class GatedEmbeddingModule(tf.keras.layers.Layer):
 
         unscaled_activations = layer_one_activations * layer_two_activations
 
-        scaled_activations = tf.keras.backend.l2_normalize(unscaled_activations)
+        scaled_activations = tf.math.l2_normalize(unscaled_activations, axis=-1)
 
         return scaled_activations

@@ -75,7 +75,7 @@ class TextEncoder(tf.keras.Model):
     def make_dense_layers(self):
         """Make dense + softmax layers."""
         self.moe_dense = tf.keras.layers.Dense(
-            self.encoded_expert_dimensionality * self.num_of_experts,
+            self.num_of_experts,
             activation="softmax")
 
     def call(self, input_):

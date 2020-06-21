@@ -16,6 +16,7 @@ Defines the loss function needed to train the model.
 """
 
 import tensorflow as tf
+import numpy as np
 
 def build_similaritiy_matrix(
     video_embeddings,
@@ -23,50 +24,44 @@ def build_similaritiy_matrix(
     text_embeddings,
     mixture_weights):
 
-    num_videos = video_embeddings.shape[0]
-    num_text = text_embeddings.shape[0]
+    missing_experts_weights = 1 - tf.cast(missing_experts, tf.float32)
+    mixture_weights = tf.ones_like(mixture_weights)
 
-    batch_index = 0
-    num_of_experts_index = 1
-    expert_dimensionality_index = 2
+    missing_experts_weights = tf.expand_dims(missing_experts_weights, 0)
+    mixture_weights = tf.expand_dims(mixture_weights, 1)
 
-    text_embeddings = tf.transpose(
-        text_embeddings, [
-            num_of_experts_index,
-            batch_index,
-            expert_dimensionality_index
-        ])
+    weights = mixture_weights * missing_experts_weights
+    weights, _ = tf.linalg.normalize(weights, axis=-1, ord=1)
 
-    video_embeddings = tf.transpose(
-        video_embeddings, [
-            num_of_experts_index,
-            expert_dimensionality_index,
-            batch_index
-        ])
+    similarity_matrix = None
 
-    expert_wise_similarity = tf.matmul(text_embeddings, video_embeddings)
+    for i, (expert_video_embeddings, expert_text_embeddings) in enumerate(zip(
+        video_embeddings, text_embeddings)):
 
+        similarities = tf.matmul(
+            expert_text_embeddings, expert_video_embeddings, transpose_b=True)
+        similarities = expert_sims * weights[:, :, i]
 
-    missing_weight_multipliers = 1 - tf.cast(mixture_weights, tf.float32)
-
-    tiled_mixture_weights = tf.tile(
-        tf.expand_dims(mixture_weights, 1), [1, num_videos, 1])
-
-    tiled_missing_weights = tf.tile(
-        tf.expand_dims(missing_weight_multipliers, 0), [num_text, 1, 1])
-
-    weight_multipliers, _ = tf.normalize(
-        tiled_mixture_weights * tiled_missing_weights,
-        ord=1, axis=-1)
-
-    similarity_matrix = tf.reduce_sum(
-        expert_wise_similarity * weight_multipliers, axis=-1)
+        if similarity_matrix is None:
+            similarity_matrix = similarities
+        else:
+            similarity_matrix = similarities + similarity_matrix
 
     return similarity_matrix
 
+def same_mask(video_ids, batch_size):
+    results = np.ones((batch_size, batch_size)).astype(np.float32)
+
+    for row_index in range(batch_size):
+        for col_index in range(batch_size):
+            if video_ids[row_index] == video_index[col_index]:
+                results[i][j] = 0.0
+
+    return results
+
 def bidirectional_max_margin_ranking_loss(
     video_embeddings, text_embeddings, mixture_weights, missing_experts,
-    embedding_distance_parameter):
+    embedding_distance_parameter, video_ids):
     """Implementation of the Bidirectional max margin ranking loss.
 
     Arguments:
@@ -83,8 +78,7 @@ def bidirectional_max_margin_ranking_loss(
     Returns: a tensor with one element, the loss.
     """
 
-    batch_size = video_embeddings.shape[0]
-
+    batch_size = video_embeddings[0].shape[0]
 
     similarities = build_similaritiy_matrix(
         video_embeddings, missing_experts, text_embeddings, mixture_weights)
@@ -103,6 +97,11 @@ def bidirectional_max_margin_ranking_loss(
 
     computed_similarities = computed_similarities *  (1 - tf.eye(batch_size))
 
-    loss = tf.reduce_sum(computed_similarities) / (batch_size**2)
+    same_video_mask = tf.numpy_function(
+        same_mask, [video_ids, batch_size], tf.float32)
+
+    computed_similarities = computed_similarities * same_video_mask
+
+    loss = tf.reduce_sum(computed_similarities) / (2 * batch_size**2)
 
     return loss

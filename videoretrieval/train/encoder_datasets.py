@@ -94,6 +94,9 @@ def get_precomputed_features(source_dataset, experts):
             video_expert_features = None
             missing_modalities = False
 
+            if expert.name == "densenet":
+                expert_value = expert_value[0]
+
             if type(expert_value) == float and np.isnan(expert_value):
                 video_expert_features = np.zeros(
                     expert.embedding_shape, np.float32)

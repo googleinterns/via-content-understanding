@@ -43,19 +43,16 @@ class EncoderModel(tf.keras.Model):
         self.loss_fn = loss_fn
 
     def train_step(self, video_text_pair_batch):
-        _, video_features, text_features, missing_experts = \
+        video_ids, video_features, text_features, missing_experts = \
             video_text_pair_batch
 
         with tf.GradientTape() as video_tape, tf.GradientTape() as text_tape:
             video_results = self.video_encoder(video_features)
             text_results, mixture_weights = self.text_encoder(text_features)
 
-            mixture_weights = self.scale_mixture_weights(
-                mixture_weights, missing_experts)
-
             loss = self.loss_fn(
-                video_results, text_results, missing_experts, mixture_weights,
-                self.loss_hyperparameter_m)
+                video_results, text_results, mixture_weights, missing_experts,
+                self.loss_hyperparameter_m, video_ids)
 
         video_gradients = video_tape.gradient(
             loss, self.video_encoder.trainable_variables)
@@ -73,7 +70,7 @@ class EncoderModel(tf.keras.Model):
         return {"loss": loss, "MnR": mean_rank}
 
     def test_step(self, video_text_pair_batch):
-        _, video_features, text_features, missing_experts = \
+        video_ids, video_features, text_features, missing_experts = \
             video_text_pair_batch
         
         video_results = self.video_encoder(video_features)
@@ -81,7 +78,7 @@ class EncoderModel(tf.keras.Model):
 
         loss = self.loss_fn(
             video_results, text_results, mixture_weights, missing_experts
-            self.loss_hyperparameter_m)
+            self.loss_hyperparameter_m, video_ids)
 
         mean_rank = metrics.rankings.get_ranking_metrics_for_batch(
             video_results, text_results)

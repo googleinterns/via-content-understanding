@@ -86,7 +86,7 @@ class VideoEncoder(tf.keras.Model):
         self.temporal_aggregation_layers = []
 
         for should_use_netvlad, clusters in zip(
-            self.should_use_netvlad, self.experts_netvlad_shape):
+            self.experts_use_netvlad, self.experts_netvlad_shape):
             
             self.temporal_aggregation_layers.append(TemporalAggregationLayer(
                 self.expert_aggregated_size,

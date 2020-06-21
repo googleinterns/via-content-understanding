@@ -26,4 +26,4 @@ class DenseNet161(BaseExpert):
     
     @property
     def embedding_shape(self):
-        return (1, 2208)
+        return (2208,)
