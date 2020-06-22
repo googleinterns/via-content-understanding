@@ -40,7 +40,7 @@ def build_similaritiy_matrix(
 
         similarities = tf.matmul(
             expert_text_embeddings, expert_video_embeddings, transpose_b=True)
-        similarities = expert_sims * weights[:, :, i]
+        similarities = similarities * weights[:, :, i]
 
         if similarity_matrix is None:
             similarity_matrix = similarities
@@ -55,7 +55,7 @@ def same_mask(video_ids, batch_size):
     for row_index in range(batch_size):
         for col_index in range(batch_size):
             if video_ids[row_index] == video_ids[col_index]:
-                results[row_index][col_indes] = 0.0
+                results[row_index][col_index] = 0.0
 
     return results
 
