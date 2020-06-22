@@ -62,6 +62,8 @@ class TextEncoder(tf.keras.Model):
         self.make_gems()
         self.make_dense_layers()
 
+        self.batch_norm = tf.keras.layers.BatchNormalization(0.1)
+
     def make_gems(self):
         """Initalize gated embedding modules."""
         self.gems = []
@@ -82,6 +84,7 @@ class TextEncoder(tf.keras.Model):
         """Forward pass."""
 
         aggregated_embeddings = self.netvlad(input_)
+        aggregated_embeddings = self.batch_norm(aggregated_embeddings)
 
         expert_embeddings = []
 

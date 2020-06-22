@@ -97,18 +97,21 @@ class VideoEncoder(tf.keras.Model):
         """Makes and returns an mlp with num_layers layers."""
         sequential_layers = []
         
-        for _ in range(num_layers):
-            if self.use_batch_norm:
-                sequential_layers.append(
-                    tf.keras.layers.BatchNormalization())
-
-            sequential_layers.append(
-                self.make_activation_layer())
-
+        for i in range(num_layers):
             sequential_layers.append(
                 tf.keras.layers.Dense(
                     self.expert_aggregated_size,
                     activation=None))
+
+            if i == num_layers - 1:
+                break
+
+            if self.use_batch_norm:
+                sequential_layers.append(
+                    tf.keras.layers.BatchNormalization(0.1))
+
+            sequential_layers.append(
+                self.make_activation_layer())
 
         return tf.keras.Sequential(sequential_layers)
 
