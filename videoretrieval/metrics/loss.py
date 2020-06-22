@@ -54,8 +54,8 @@ def same_mask(video_ids, batch_size):
 
     for row_index in range(batch_size):
         for col_index in range(batch_size):
-            if video_ids[row_index] == video_index[col_index]:
-                results[i][j] = 0.0
+            if video_ids[row_index] == video_ids[col_index]:
+                results[row_index][col_indes] = 0.0
 
     return results
 
