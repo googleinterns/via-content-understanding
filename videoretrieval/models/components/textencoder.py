@@ -62,7 +62,7 @@ class TextEncoder(tf.keras.Model):
         self.make_gems()
         self.make_dense_layers()
 
-        self.batch_norm = tf.keras.layers.BatchNormalization(0.1)
+        self.batch_norm = tf.keras.layers.BatchNormalization()
 
     def make_gems(self):
         """Initalize gated embedding modules."""

@@ -108,7 +108,7 @@ class VideoEncoder(tf.keras.Model):
 
             if self.use_batch_norm:
                 sequential_layers.append(
-                    tf.keras.layers.BatchNormalization(0.1))
+                    tf.keras.layers.BatchNormalization())
 
             sequential_layers.append(
                 self.make_activation_layer())
