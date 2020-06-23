@@ -45,9 +45,8 @@ class GatedEmbeddingModule(tf.keras.layers.Layer):
     def __init__(self, input_dimension, output_dimension):
         super(GatedEmbeddingModule, self).__init__()
 
-        if self.include_projection:
-            self.linear_layer_one = tf.keras.layers.Dense(
-                output_dimension, input_shape=(input_dimension,))
+        self.linear_layer_one = tf.keras.layers.Dense(
+            output_dimension, input_shape=(input_dimension,))
 
         self.linear_layer_two = tf.keras.layers.Dense(
             output_dimension, input_shape=(output_dimension,))
