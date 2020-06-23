@@ -42,10 +42,8 @@ class GatedEmbeddingModule(tf.keras.layers.Layer):
         layer_two_batch_norm: a Batch Normalization layer for the activations
             from layer two.
     """
-    def __init__(self, input_dimension, output_dimension, include_projection):
+    def __init__(self, input_dimension, output_dimension):
         super(GatedEmbeddingModule, self).__init__()
-
-        self.include_projection = include_projection
 
         if self.include_projection:
             self.linear_layer_one = tf.keras.layers.Dense(
@@ -58,11 +56,7 @@ class GatedEmbeddingModule(tf.keras.layers.Layer):
         self.layer_two_batch_norm = tf.keras.layers.BatchNormalization()
 
     def call(self, inputs):
-        if self.include_projection:
-            layer_one_activations = self.linear_layer_one(inputs)
-        else:
-            layer_one_activations = inputs
-
+        layer_one_activations = self.linear_layer_one(inputs)
         layer_one_activations = self.layer_one_batch_norm(
             layer_one_activations)
 

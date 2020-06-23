@@ -73,7 +73,7 @@ class TextEncoder(tf.keras.Model):
         for _ in range(self.num_of_experts):
             self.gems.append(GatedEmbeddingModule(
                 self.language_model_dimensionality * self.num_netvlad_clusters,
-                self.encoded_expert_dimensionality, True))
+                self.encoded_expert_dimensionality))
 
 
     def make_dense_layers(self):
