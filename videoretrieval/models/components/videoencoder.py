@@ -162,6 +162,9 @@ class VideoEncoder(tf.keras.Model):
             for other_expert_index, other_embedding in enumerate(
                 aggregated_embeddings):
 
+                if other_expert_index == expert_index:
+                    continue
+
                 attentions = self.g_mlp(tf.concat(
                     [embedding, other_embedding],
                     axis=1,
@@ -170,7 +173,7 @@ class VideoEncoder(tf.keras.Model):
                 availability = expert_availability * experts_availability[:,
                     other_expert_index]
 
-                summed_pairwise_attentions += attentions
+                summed_pairwise_attentions += attentions * availability
                 num_attentions += availability
 
             attentions = tf.math.divide_no_nan(
