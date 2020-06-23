@@ -34,8 +34,14 @@ class EncoderModel(tf.keras.Model):
         self.text_encoder = text_encoder
         self.loss_hyperparameter_m = loss_hyperparameter_m
 
-    def compile(self, video_encoder_optimizer, text_encoder_optimizer, loss_fn,
-            text_data_shape=None):
+    def compile(self, video_encoder_optimizer, text_encoder_optimizer, loss_fn):
+        """Complies the encoder.
+
+        Arguments:
+            video_encoder_optimizer: the optimizer for the video encoder.
+            text_encoder_optimizer: the optimizer for the text encoder.
+            loss_fn: the loss function for this model.
+        """
         super(EncoderModel, self).compile()
 
         self.video_encoder_optimizer = video_encoder_optimizer
@@ -43,6 +49,7 @@ class EncoderModel(tf.keras.Model):
         self.loss_fn = loss_fn
 
     def train_step(self, video_text_pair_batch):
+        """Executes one step of training."""
         video_ids, video_features, text_features, missing_experts = \
             video_text_pair_batch
 
@@ -64,12 +71,10 @@ class EncoderModel(tf.keras.Model):
         self.text_encoder_optimizer.apply_gradients(zip(
             text_gradients, self.text_encoder.trainable_variables))
 
-        #mean_rank = metrics.rankings.get_ranking_metrics_for_batch(
-        #    video_results, text_results)
-
-        return {"loss": loss}#, "MnR": mean_rank}
+        return {"loss": loss}
 
     def test_step(self, video_text_pair_batch):
+        """Executes one test step."""
         video_ids, video_features, text_features, missing_experts = \
             video_text_pair_batch
         
@@ -80,15 +85,4 @@ class EncoderModel(tf.keras.Model):
             video_results, text_results, mixture_weights, missing_experts,
             self.loss_hyperparameter_m, video_ids)
 
-        #mean_rank = metrics.rankings.get_ranking_metrics_for_batch(
-        #    video_results, text_results)
-
-        return {"loss": loss}#, "MnR": mean_rank}
-
-    def generate_video_embeddings(self, video_dataset, batch_size):
-        return video_dataset.batch(batch_size).map(
-            lambda src_id, data, missing: (src_id, self.video_encoder(data), missing))
-
-    def generate_text_embeddings(self, text_dataset, batch_size):
-        return text_dataset.batch(batch_size).map(
-            lambda src_id, data: (src_id, self.text_encoder(data)))
+        return {"loss": loss}

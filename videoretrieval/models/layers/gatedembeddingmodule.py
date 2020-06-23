@@ -37,7 +37,10 @@ class GatedEmbeddingModule(tf.keras.layers.Layer):
         linear_layer_one: a Dense layer that performs W_1 * Z_0 + B_1.
         linear_layer_two: a Dense layer that performs W_2 * Z_1 + B_2 and
             applies a sigmoid.
-
+        layer_one_batch_norm: a Batch Normalization layer for the activiations
+            from layer one.
+        layer_two_batch_norm: a Batch Normalization layer for the activations
+            from layer two.
     """
     def __init__(self, input_dimension, output_dimension, include_projection):
         super(GatedEmbeddingModule, self).__init__()
@@ -60,10 +63,10 @@ class GatedEmbeddingModule(tf.keras.layers.Layer):
         else:
             layer_one_activations = inputs
 
-        layer_two_activations = self.linear_layer_two(layer_one_activations)
-
         layer_one_activations = self.layer_one_batch_norm(
             layer_one_activations)
+
+        layer_two_activations = self.linear_layer_two(layer_one_activations)
         layer_two_activations = tf.math.sigmoid(
             self.layer_two_batch_norm(layer_two_activations))
 

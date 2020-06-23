@@ -128,10 +128,15 @@ class VideoEncoder(tf.keras.Model):
 
     def call(self, inputs):
         """Forward pass on the video encoder."""
-        assert len(inputs) == len(self.experts)
+        assert len(inputs) == 2
 
-        aggregated_embeddings = self.temporal_aggreagation(inputs)
-        output_embedding = self.collaborative_gating(aggregated_embeddings)
+        expert_embeddings, missing_experts = inputs
+
+        assert len(expert_embeddings) == len(self.experts)
+
+        aggregated_embeddings = self.temporal_aggreagation(expert_embeddings)
+        output_embedding = self.collaborative_gating(
+            aggregated_embeddings, missing_experts)
 
         return output_embedding
 
@@ -145,27 +150,34 @@ class VideoEncoder(tf.keras.Model):
 
         return aggregated_embeddings
 
-    def collaborative_gating(self, aggregated_embeddings):
+    def collaborative_gating(self, aggregated_embeddings, missing_experts):
         """Run collaboartive gating module."""
         gated_embeddings = []
+        experts_availability = 1 - tf.cast(missing_experts, tf.float32)
 
-        for i, embedding in enumerate(aggregated_embeddings):
-            summed_pairwise_attentions = None
+        for expert_index, embedding in enumerate(aggregated_embeddings):
+            summed_pairwise_attentions = 0
+            num_attentions = 0
+            
+            expert_availability = experts_availability[:, expert_index]
 
-            for j, other_embedding in enumerate(aggregated_embeddings):
-                if i != j:
-                    
-                    attentions = self.g_mlp(tf.concat(
-                        [embedding, other_embedding],
-                        axis=1,
-                    ))
+            for other_expert_index, other_embedding in enumerate(
+                aggregated_embeddings):
 
-                    if summed_pairwise_attentions is None:
-                        summed_pairwise_attentions = attentions
-                    else:
-                        summed_pairwise_attentions += attentions
+                attentions = self.g_mlp(tf.concat(
+                    [embedding, other_embedding],
+                    axis=1,
+                ))
+                
+                availability = expert_availability * experts_availability[:,
+                    other_expert_index]
 
-            attentions = self.h_mlp(summed_pairwise_attentions)
+                summed_pairwise_attentions += attentions
+                num_attentions += availability
+
+            attentions = tf.math.divide_no_nan(
+                summed_pairwise_attentions, tf.expand_dims(num_attentions, -1)) 
+            attentions = self.h_mlp(attentions)
 
             embeddings = self.expert_projection([embedding, attentions])
 

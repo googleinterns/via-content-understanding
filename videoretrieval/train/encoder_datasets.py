@@ -73,6 +73,7 @@ def update_dataset_shape_wrapper(experts, language_model):
 
 def match_cached_embeddings_with_experts(
     language_model, experts, precomputed_features, *datasets):
+    """Matches the cached"""
     map_fn = replace_video_id_with_expert_features_wrapper(precomputed_features)
     set_shape_fn = update_dataset_shape_wrapper(experts, language_model)
 
@@ -82,6 +83,15 @@ def match_cached_embeddings_with_experts(
         ) for dataset in datasets]
 
 def get_precomputed_features(source_dataset, experts):
+    """Get precomputed features from a set of experts and a dataset.
+
+    Arguments:
+        source_dataset: 
+        experts:
+
+    Returns:
+
+    
     precomputed_features = []
 
     for expert in experts:
@@ -127,6 +137,16 @@ def get_precomputed_features(source_dataset, experts):
     return precomputed_features
 
 def generate_encoder_datasets(language_model, source_dataset, experts):
+    """Generates datasets necessary to train encoders.
+
+    Arguments:
+        language_model: an instance of BaseLanguageModel
+        source_dataset:
+        experts:
+
+    Returns:
+
+    """
     train_ds = cache.get_cached_language_model_embeddings(
         source_dataset, language_model, "train")
 
@@ -140,92 +160,3 @@ def generate_encoder_datasets(language_model, source_dataset, experts):
 
     return match_cached_embeddings_with_experts(language_model, experts,
         precomputed_features, train_ds, valid_ds, test_ds)
-
-def get_unique_wrapper():
-    seen_video_ids = set()
-
-    def filter_fn(video_id):
-        if video_id in seen_video_ids:
-            return False
-
-        seen_video_ids.add(video_id)
-
-        return True
-
-    return lambda video_id, data, _: (tf.numpy_function(filter_fn, [video_id], tf.bool))
-
-def get_video_and_text_dataset(dataset):
-    unique_videos_filter = get_unique_wrapper()
-
-    video_dataset = (dataset
-        .map(
-            lambda video_id, video_data, text_data, missing: (video_id, video_data, missing),
-            num_parallel_calls=tf.data.experimental.AUTOTUNE)
-        .filter(unique_videos_filter))
-    
-    text_dataset = dataset.map(
-        lambda video_id, video_data, text_data, _: (video_id, text_data),
-            num_parallel_calls=tf.data.experimental.AUTOTUNE)
-
-    return video_dataset, text_dataset
-
-def build_corresponding(video_dataset, text_dataset):
-    video_id_to_index_in_video_dataset = {}
-
-    def build_map(index, video_id):
-        video_id_to_index_in_video_dataset[video_id] = index
-
-        return index
-
-    def build_map_wrapper(index, data):
-        video_id, video_data, missing = data
-        index = tf.numpy_function(build_map, [index, video_id], tf.int64)
-
-        return index, video_data, missing
-
-    def get_index(video_id):
-        if video_id not in video_id_to_index_in_video_dataset:
-            raise ValueError()
-
-        return video_id_to_index_in_video_dataset[video_id]
-
-    def get_index_wrapper(video_id, text_data):
-        index = tf.numpy_function(get_index, [video_id], tf.int64)
-
-        return index, text_data
-
-    video_dataset = video_dataset.enumerate().map(build_map_wrapper)
-    text_dataset = text_dataset.map(get_index_wrapper)
-
-
-    return video_dataset, text_dataset
-
-def make_inference_dataset(dataset):
-    video_dataset, text_dataset = get_video_and_text_dataset(dataset)
-
-    return build_corresponding(video_dataset, text_dataset)
-
-
-def filter_duplicate_video_ids(dataset):
-    seen_videos = set()
-
-    def filter_fn(video_id):
-        if video_id in seen_videos:
-            return False
-
-        seen_videos.add(video_id)
-
-        return True
-
-    return dataset.filter(
-        lambda video_id, *data: tf.numpy_function(
-            filter_fn, [video_id], tf.bool))
-
-def prepare_dataset_for_encoder(
-    dataset, shuffle_buffer, batch_size, one_caption_per_video):
-    dataset = dataset.shuffle(shuffle_buffer)
-
-    if one_caption_per_video:
-        dataset = filter_duplicate_captions(dataset)
-
-    return dataset.batch(batch_size).prefetch(tf.data.experimental.AUTOTUNE)

@@ -33,6 +33,8 @@ class TextEncoder(tf.keras.Model):
             final embedding.
         gems: A list of gated embedding modules, one per expert.
         dense_layers: A list of dense layers, one per expert.
+        batch_norm: a batch normalization layer for the aggregated text
+            embeddings.
 
     """
     def __init__(self,
@@ -88,8 +90,11 @@ class TextEncoder(tf.keras.Model):
 
         expert_embeddings = []
 
-        for i in range(self.num_of_experts):
-            expert_embeddings.append(self.gems[i](aggregated_embeddings))
+        for expert_gated_embedding_module in self.gems:
+            expert_embedding = expert_gated_embedding_module(
+                aggregated_embeddings)
+
+            expert_embeddings.append(expert_embedding)
 
         mixture_weights = self.moe_dense(aggregated_embeddings)
 

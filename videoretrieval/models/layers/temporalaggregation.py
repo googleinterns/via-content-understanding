@@ -19,7 +19,16 @@ import tensorflow as tf
 from tensorflow_addons.layers.netvlad import NetVLAD
 
 class TemporalAggregationLayer(tf.keras.layers.Layer):
+	"""A layer that aggregates expert features to a common dimensionality."""
+
 	def __init__(self, output_dim, use_netvlad, netvlad_clusters=5):
+		"""Initalizes this temporal aggregation layer.
+
+		Arguments:
+			output_dim: the dimensionality to project the experts to.
+			use_netvlad: if NetVLAD should be used to aggregate features
+			netvlad_clusers: the number of clusters NetVLAD should have.
+		"""
 		super(TemporalAggregationLayer, self).__init__()
 
 		self.output_dim = output_dim
