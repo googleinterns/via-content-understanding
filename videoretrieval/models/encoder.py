@@ -34,18 +34,16 @@ class EncoderModel(tf.keras.Model):
         self.text_encoder = text_encoder
         self.loss_hyperparameter_m = loss_hyperparameter_m
 
-    def compile(self, video_encoder_optimizer, text_encoder_optimizer, loss_fn):
+    def compile(self, optimizer, loss_fn):
         """Complies the encoder.
 
         Arguments:
-            video_encoder_optimizer: the optimizer for the video encoder.
-            text_encoder_optimizer: the optimizer for the text encoder.
+            optimizer: the optimizer for the video encoder.
             loss_fn: the loss function for this model.
         """
         super(EncoderModel, self).compile()
 
-        self.video_encoder_optimizer = video_encoder_optimizer
-        self.text_encoder_optimizer = text_encoder_optimizer
+        self.optimizer = optimizer
         self.loss_fn = loss_fn
 
     def train_step(self, video_text_pair_batch):
@@ -53,7 +51,7 @@ class EncoderModel(tf.keras.Model):
         video_ids, video_features, text_features, missing_experts = \
             video_text_pair_batch
 
-        with tf.GradientTape() as video_tape, tf.GradientTape() as text_tape:
+        with tf.GradientTape() as gradient_tape:
             video_results = self.video_encoder(
                 [video_features, missing_experts])
             text_results, mixture_weights = self.text_encoder(text_features)
@@ -62,15 +60,9 @@ class EncoderModel(tf.keras.Model):
                 video_results, text_results, mixture_weights, missing_experts,
                 self.loss_hyperparameter_m, video_ids)
 
-        video_gradients = video_tape.gradient(
-            loss, self.video_encoder.trainable_variables)
-        text_gradients = text_tape.gradient(
-            loss, self.text_encoder.trainable_variables)
+        gradients = gradient_tape.gradient(loss, self.trainable_variables)
 
-        self.video_encoder_optimizer.apply_gradients(zip(
-            video_gradients, self.video_encoder.trainable_variables))
-        self.text_encoder_optimizer.apply_gradients(zip(
-            text_gradients, self.text_encoder.trainable_variables))
+        self.optimizer.apply_gradients(zip(gradients, self.trainable_variables))
 
         return {"loss": loss}
 
