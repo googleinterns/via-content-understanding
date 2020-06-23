@@ -179,7 +179,7 @@ class VideoEncoder(tf.keras.Model):
 
             embeddings = self.expert_projection([embedding, attentions])
 
-            gated_embedding = self.gems[i](embeddings)
+            gated_embedding = self.gems[expert_index](embeddings)
 
             gated_embeddings.append(gated_embedding)
 
