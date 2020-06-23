@@ -54,7 +54,8 @@ class EncoderModel(tf.keras.Model):
             video_text_pair_batch
 
         with tf.GradientTape() as video_tape, tf.GradientTape() as text_tape:
-            video_results = self.video_encoder(video_features)
+            video_results = self.video_encoder(
+                [video_features, missing_experts])
             text_results, mixture_weights = self.text_encoder(text_features)
 
             loss = self.loss_fn(
@@ -78,7 +79,7 @@ class EncoderModel(tf.keras.Model):
         video_ids, video_features, text_features, missing_experts = \
             video_text_pair_batch
         
-        video_results = self.video_encoder(video_features)
+        video_results = self.video_encoder([video_features, missing_experts])
         text_results, mixture_weights = self.text_encoder(text_features)
 
         loss = self.loss_fn(
