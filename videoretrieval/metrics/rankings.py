@@ -14,8 +14,11 @@ Defines the loss function needed to train the model.
 import tensorflow as tf
 from .loss import build_similaritiy_matrix
 
+parallel_iterations = 8
+
 @tf.function
-def compute_rank(similarities, index):
+def compute_rank(input_):
+    similarities, index = input_
     pair_similarity = similarities[index]
     rank = tf.reduce_sum(tf.cast(similarities >= pair_similarity, tf.int32))
     return rank
@@ -24,13 +27,14 @@ def compute_rank(similarities, index):
 def compute_ranks(
     query_embeddings, mixture_weights, static_embeddings, missing_experts):
 
-    similarty_matrix = build_similaritiy_matrix(
+    similarity_matrix = build_similaritiy_matrix(
         static_embeddings, missing_experts, query_embeddings, mixture_weights)
 
     ranks_tensor = tf.map_fn(
-        (compute_rank, tf.range(similarty_matrix.shape[0])), 
+        compute_rank,
+        (similarity_matrix, tf.range(similarity_matrix.shape[0])), 
         dtype=tf.int32,
-        parallel_iterations=8)
+        parallel_iterations=parallel_iterations)
 
     return ranks_tensor
 

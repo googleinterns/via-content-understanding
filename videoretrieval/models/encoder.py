@@ -47,7 +47,7 @@ class EncoderModel(tf.keras.Model):
         self.loss_fn = loss_fn
         self.recall_at_k_bounds = recall_at_k_bounds
 
-        self.recall_at_k_labels = [f"R@{k}" for k in recall_at_k_bounds]
+        self.recall_at_k_labels = [f"R_{k}" for k in recall_at_k_bounds]
 
     def train_step(self, video_text_pair_batch):
         """Executes one step of training."""
@@ -67,12 +67,15 @@ class EncoderModel(tf.keras.Model):
 
         self.optimizer.apply_gradients(zip(gradients, self.trainable_variables))
 
-        return {
-            "loss": loss,
-            "median_rank": None,
-            "mean_rank": None} + {
-                label: None for label in self.recall_at_k_labels
-            }
+        batch_metrics = {
+            label: float("nan") for label in self.recall_at_k_labels}
+
+        batch_metrics["median_rank"] = float("nan")
+        batch_metrics["mean_rank"] = flot("nan")
+
+        batch_metrics["loss"] = loss        
+
+        return batch_metrics
 
     def test_step(self, video_text_pair_batch):
         """Executes one test step."""
@@ -82,19 +85,19 @@ class EncoderModel(tf.keras.Model):
         video_results = self.video_encoder([video_features, missing_experts])
         text_results, mixture_weights = self.text_encoder(text_features)
 
-        metrics = {}
+        valid_metrics = {}
 
-        metrics["loss"] = self.loss_fn(
+        valid_metrics["loss"] = self.loss_fn(
             video_results, text_results, mixture_weights, missing_experts,
             self.loss_hyperparameter_m, video_ids)
 
         ranks = metrics.rankings.compute_ranks(
             text_results, mixture_weights, video_results, missing_experts)
 
-        metrics["mean_rank"] = metrics.rankings.get_mean_rank(ranks)
-        metrics["median_rank"] = metrics.rankings.get_median_rank(ranks)
+        valid_metrics["mean_rank"] = metrics.rankings.get_mean_rank(ranks)
+        valid_metrics["median_rank"] = metrics.rankings.get_median_rank(ranks)
 
         for k, label in zip(self.recall_at_k_bounds, recall_at_k_labels):
-            metrics[label] = metrics.rankings.get_recall_at_k(ranks, k)
+            valid_metrics[label] = metrics.rankings.get_recall_at_k(ranks, k)
 
-        return metrics
+        return valid_metrics

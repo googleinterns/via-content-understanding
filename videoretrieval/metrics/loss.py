@@ -23,6 +23,22 @@ def build_similaritiy_matrix(
     missing_experts,
     text_embeddings,
     mixture_weights):
+    """Builds a similarity matrix between text_embeddings and video_embeddings.
+
+    Arguments:
+        video_embeddings: a tensor of video embeddings.
+        text_embeddings: a tensor of text embeddings.
+        mixture_weights: a tensor of mixture weights, where each element
+            contains the text embedding for the corresponding text embedding.
+        missing_experts: a boolean tensor where each element corresponds to a
+            video embedding and indicates the missing experts. 
+        embedding_distance_parameter: a positive marign hyperparameter,called
+            "m" by the authors of the paper. This parameter is added to the
+            difference between each pairwise similarity between embeddings.
+    
+    Returns:
+    """
+
 
     missing_experts_weights = 1 - tf.cast(missing_experts, tf.float32)
 
@@ -49,6 +65,17 @@ def build_similaritiy_matrix(
     return similarity_matrix
 
 def same_mask(video_ids, batch_size):
+    """Generates a matrix indicating matching video ids.
+
+    Parameters:
+        video_ids: a numpy array of video ids.
+        batch_size: the number of video ids in `video_ids`.
+
+    Returns:
+        A batch_size x batch_size float32 matrix, where the element at row i and
+        col j is a 0 if videos_ids[i] == video_ids[j] and 1 otherwise.
+    """
+
     results = np.ones((batch_size, batch_size)).astype(np.float32)
 
     for row_index in range(batch_size):
@@ -64,15 +91,19 @@ def bidirectional_max_margin_ranking_loss(
     """Implementation of the Bidirectional max margin ranking loss.
 
     Arguments:
-        video_embeddings: a tensor of dimension (batch size x embedding space
-            size) where the element at index i is the video embedding
-            corresponding to the text embedding at index i in text_embeddings.
-        text_embeddings: a tensor of dimension (batch size x embedding space
-            size) where the element at index i is the text embedding
-            corresponding to the video embedding at index i in video_embedding. 
-        embedding_distance_parameter: a positive hyperparameter, called "m" by
-            the authors of the paper. This parameter is added to the difference
-            between each pairwise similarity between embeddings.
+        video_embeddings: a list of video embedding tensors, where each element
+            of the list is of shape batch_size x embedding dimensionality.
+        text_embeddings: a list of text embedding tensors, where each element of
+            the list is of shape batch_size x embedding dimensionality.
+        mixture_weights: a tensor of mixture weights of shape batch_size x
+            number of experts, where each element contains the mixture weights
+            for the corresponding text embedding.
+        missing_experts: a boolean tensor of shape batch_size x number of
+            experts, where each element corresponds to a video embedding and
+            indicates the missing experts. 
+        embedding_distance_parameter: a positive marign hyperparameter,called
+            "m" by the authors of the paper. This parameter is added to the
+            difference between each pairwise similarity between embeddings.
 
     Returns: a tensor with one element, the loss.
     """

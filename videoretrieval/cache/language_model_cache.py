@@ -207,5 +207,5 @@ def get_cached_language_model_embeddings(
         .map(unseralize_data, num_parallel_calls=tf.data.experimental.AUTOTUNE)
         .map(
             truncate_contextual_embeddings_wrapper(
-                *contextual_embeddings_shape),
+                *language_model.contextual_embeddings_shape),
             num_parallel_calls=tf.data.experimental.AUTOTUNE))
