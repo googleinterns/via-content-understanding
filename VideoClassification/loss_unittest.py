@@ -20,7 +20,7 @@ class TestLoss(unittest.TestCase):
     loss_out = loss.custom_crossentropy(y_actual, y_predicted)
     loss_out = tf.round((10**3)*loss_out)/10**3
     comparison = tf.convert_to_tensor(-1*tf.math.log(0.5))
-    comparison = tf.round((10**3)*comparison)/comparison
+    comparison = tf.round((10**3)*comparison)/10**3
     self.assertEqual(loss_out, comparison)
 
   def test_alpha(self):
@@ -30,7 +30,7 @@ class TestLoss(unittest.TestCase):
     loss_out = loss.custom_crossentropy(y_actual, y_predicted, alpha=0.7)
     loss_out = tf.round((10**3)*loss_out)/10**3
     comparison = tf.convert_to_tensor(-1*2*0.7*tf.math.log(0.5))
-    comparison = tf.round((10**3)*comparison)/comparison
+    comparison = tf.round((10**3)*comparison)/10**3
     self.assertEqual(loss_out, comparison)
 
   def test_epsilon(self):
