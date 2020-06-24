@@ -33,3 +33,17 @@ def compute_ranks(
         parallel_iterations=8)
 
     return ranks_tensor
+
+@tf.function
+def get_mean_rank(ranks_tensor):
+    return tf.reduce_mean(ranks_tensor)
+
+@tf.function
+def get_median_rank(ranks_tensor):
+    return tf.reduce_min(
+        tf.math.top_k(ranks_tensor, ranks_tensor.shape[0] // 2, sorted=False))
+
+@tf.function
+def get_recall_at_k(ranks_tensor, k):
+    recalled_correctly_mask = tf.cast(ranks_tensor <= k, tf.float32)
+    return tf.reduce_mean(recalled_correctly_mask)

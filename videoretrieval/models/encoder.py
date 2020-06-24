@@ -34,7 +34,7 @@ class EncoderModel(tf.keras.Model):
         self.text_encoder = text_encoder
         self.loss_hyperparameter_m = loss_hyperparameter_m
 
-    def compile(self, optimizer, loss_fn):
+    def compile(self, optimizer, loss_fn, recall_at_k_bounds):
         """Complies the encoder.
 
         Arguments:
@@ -45,6 +45,9 @@ class EncoderModel(tf.keras.Model):
 
         self.optimizer = optimizer
         self.loss_fn = loss_fn
+        self.recall_at_k_bounds = recall_at_k_bounds
+
+        self.recall_at_k_labels = [f"R@{k}" for k in recall_at_k_bounds]
 
     def train_step(self, video_text_pair_batch):
         """Executes one step of training."""
@@ -64,7 +67,12 @@ class EncoderModel(tf.keras.Model):
 
         self.optimizer.apply_gradients(zip(gradients, self.trainable_variables))
 
-        return {"loss": loss}
+        return {
+            "loss": loss,
+            "median_rank": None,
+            "mean_rank": None} + {
+                label: None for label in self.recall_at_k_labels
+            }
 
     def test_step(self, video_text_pair_batch):
         """Executes one test step."""
@@ -74,8 +82,19 @@ class EncoderModel(tf.keras.Model):
         video_results = self.video_encoder([video_features, missing_experts])
         text_results, mixture_weights = self.text_encoder(text_features)
 
-        loss = self.loss_fn(
+        metrics = {}
+
+        metrics["loss"] = self.loss_fn(
             video_results, text_results, mixture_weights, missing_experts,
             self.loss_hyperparameter_m, video_ids)
 
-        return {"loss": loss}
+        ranks = metrics.rankings.compute_ranks(
+            text_results, mixture_weights, video_results, missing_experts)
+
+        metrics["mean_rank"] = metrics.rankings.get_mean_rank(ranks)
+        metrics["median_rank"] = metrics.rankings.get_median_rank(ranks)
+
+        for k, label in zip(self.recall_at_k_bounds, recall_at_k_labels):
+            metrics[label] = metrics.rankings.get_recall_at_k(ranks, k)
+
+        return metrics
