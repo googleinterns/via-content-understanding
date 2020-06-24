@@ -26,17 +26,20 @@ def build_similaritiy_matrix(
     """Builds a similarity matrix between text_embeddings and video_embeddings.
 
     Arguments:
-        video_embeddings: a tensor of video embeddings.
-        text_embeddings: a tensor of text embeddings.
-        mixture_weights: a tensor of mixture weights, where each element
-            contains the text embedding for the corresponding text embedding.
-        missing_experts: a boolean tensor where each element corresponds to a
-            video embedding and indicates the missing experts. 
-        embedding_distance_parameter: a positive marign hyperparameter,called
-            "m" by the authors of the paper. This parameter is added to the
-            difference between each pairwise similarity between embeddings.
+        video_embeddings: a list of video embedding tensors, where each element
+            of the list is of shape batch_size x embedding dimensionality.
+        missing_experts: a boolean tensor of shape batch_size x number of
+            experts, where each element corresponds to a video embedding and
+            indicates the missing experts. 
+        text_embeddings: a list of text embedding tensors, where each element of
+            the list is of shape batch_size x embedding dimensionality.
+        mixture_weights: a tensor of mixture weights of shape batch_size x
+            number of experts, where each element contains the mixture weights
+            for the corresponding text embedding.
     
-    Returns:
+    Returns: A batch_size x batch_size tensor, where the value in the ith row
+        and jth column is the similarity between the ith text embedding and the
+        jth video embedding. 
     """
 
 

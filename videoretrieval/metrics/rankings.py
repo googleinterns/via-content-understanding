@@ -18,6 +18,13 @@ parallel_iterations = 8
 
 @tf.function
 def compute_rank(input_):
+    """Compute and returns the position that an item of a tensor is ranked at.
+
+    Arguments: 
+        input_: a tuple of two elements. First, a tensor of similarities,
+            second, the index of the correct similarity.
+    """
+
     similarities, index = input_
     pair_similarity = similarities[index]
     rank = tf.reduce_sum(tf.cast(similarities >= pair_similarity, tf.int32))
@@ -25,10 +32,27 @@ def compute_rank(input_):
 
 @tf.function
 def compute_ranks(
-    query_embeddings, mixture_weights, static_embeddings, missing_experts):
+    text_embddings, mixture_weights, video_embeddings, missing_experts):
+    """Computes a ranks for a batch of video and text embeddings.
+
+    Arguments:
+        text_embeddings: a list of text embedding tensors, where each element of
+            the list is of shape batch_size x embedding dimensionality.
+        mixture_weights: a tensor of mixture weights of shape batch_size x
+            number of experts, where each element contains the mixture weights
+            for the corresponding text embedding. 
+        video_embeddings: a list of video embedding tensors, where each element
+            of the list is of shape batch_size x embedding dimensionality.
+        missing_experts: a boolean tensor of shape batch_size x number of
+            experts, where each element corresponds to a video embedding and
+            indicates the missing experts. 
+
+    Returns: a tensor of shape batch_size containg the rank of each element in
+        the batch. 
+    """
 
     similarity_matrix = build_similaritiy_matrix(
-        static_embeddings, missing_experts, query_embeddings, mixture_weights)
+        static_embeddings, missing_experts, text_embddings, mixture_weights)
 
     ranks_tensor = tf.map_fn(
         compute_rank,
@@ -40,14 +64,17 @@ def compute_ranks(
 
 @tf.function
 def get_mean_rank(ranks_tensor):
+    """Gets the mean rank given a tensor of ranks."""
     return tf.reduce_mean(ranks_tensor)
 
 @tf.function
 def get_median_rank(ranks_tensor):
+    """Gets the mean rank given a tensor of ranks."""
     return tf.reduce_min(
         tf.math.top_k(ranks_tensor, ranks_tensor.shape[0] // 2, sorted=False))
 
 @tf.function
 def get_recall_at_k(ranks_tensor, k):
+    """Gets the recall at k given a tensor of ranks and a k."""
     recalled_correctly_mask = tf.cast(ranks_tensor <= k, tf.float32)
     return tf.reduce_mean(recalled_correctly_mask)
