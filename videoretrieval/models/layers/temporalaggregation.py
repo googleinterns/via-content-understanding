@@ -48,4 +48,5 @@ class TemporalAggregationLayer(tf.keras.layers.Layer):
 		else:
 			features = input_
 
-		return self.projection_layer(features)
+		output = self.projection_layer(features)
+		return tf.math.l2_normalize(output, axis=-1)

@@ -151,13 +151,9 @@ class VideoEncoder(tf.keras.Model):
     def collaborative_gating(self, aggregated_embeddings, missing_experts):
         """Run collaboartive gating module."""
         gated_embeddings = []
-        experts_availability = 1 - tf.cast(missing_experts, tf.float32)
 
         for expert_index, embedding in enumerate(aggregated_embeddings):
             summed_pairwise_attentions = 0
-            num_attentions = 0
-            
-            expert_availability = experts_availability[:, expert_index]
 
             for other_expert_index, other_embedding in enumerate(
                 aggregated_embeddings):
@@ -170,15 +166,9 @@ class VideoEncoder(tf.keras.Model):
                     axis=1,
                 ))
                 
-                availability = expert_availability * experts_availability[:,
-                    other_expert_index]
+                summed_pairwise_attentions += attentions
 
-                summed_pairwise_attentions += attentions * availability
-                num_attentions += availability
-
-            attentions = tf.math.divide_no_nan(
-                summed_pairwise_attentions, tf.expand_dims(num_attentions, -1)) 
-            attentions = self.h_mlp(attentions)
+            attentions = self.h_mlp(summed_pairwise_attentions)
 
             embeddings = self.expert_projection([embedding, attentions])
 
