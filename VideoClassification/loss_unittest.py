@@ -1,5 +1,6 @@
-import unittest
 import loss
+import tensorflow as tf
+import unittest
 
 class TestLoss(unittest.TestCase):
   """Class used to test the loss function defined in loss.py"""
