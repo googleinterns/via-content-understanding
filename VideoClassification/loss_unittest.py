@@ -24,7 +24,7 @@ class TestLoss(unittest.TestCase):
     y_predicted = tf.convert_to_tensor([[0.5,0]])
 
     loss_out = loss.custom_crossentropy(y_actual, y_predicted, alpha=0.7)
-    self.assertEqual(loss_out, tf.convert_to_tensor(-1*0.7*tf.math.log(0.5)))
+    self.assertEqual(loss_out, tf.convert_to_tensor(-1*2*0.7*tf.math.log(0.5)))
 
   def test_epsilon(self):
     y_actual = tf.convert_to_tensor([[1,0],[0,1], [1,1]])
