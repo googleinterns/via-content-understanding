@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
+Defines a base class for language models.
 """
 
 
@@ -20,6 +21,8 @@ from abc import abstractmethod
 
 class BaseLanguageModel(AbstractClass):
     """Base class for language models."""
+
+    max_input_length = None
 
     def __call__(self, ids):
         """Does a forward pass on the language model."""
@@ -60,4 +63,3 @@ class BaseLanguageModel(AbstractClass):
             A python list of ids zero padded to the appropriate size. 
         """
         pass
-

@@ -27,6 +27,8 @@ decoding_schema = {
     "text": tf.io.FixedLenFeature([], tf.string),
 }
 
+base_path = Path(f"/mnt/disks/fast_ssd/cached_data/")
+
 
 def get_feature(value):
     """Gets a tf.train.Feature from the parameter value as a bytes list."""
@@ -38,7 +40,7 @@ def get_records_directory(dataset, language_model, split):
     dataset_name = dataset.dataset_name
     language_model_name = language_model.name
 
-    path = Path(f"/mnt/disks/fast_ssd/cached_data/{dataset_name}/{language_model_name}/{split}")
+    path = base_path / f"{dataset_name}/{language_model_name}/{split}"
 
     path.mkdir(parents=True, exist_ok=True)
 
@@ -70,8 +72,11 @@ def seralize_to_protobuf_wrapper(*args):
     return tf.py_function(seralize_to_protobuf, args, tf.string)
 
 def write_dataset(dataset, records_directory, dataset_size):
-    """Shards a tf.data Dataset and writes it to disk.""" 
-    for shard_index, batch in enumerate(dataset.batch(embeddings_per_file).prefetch(tf.data.experimental.AUTOTUNE)):
+    """Shards a tf.data Dataset and writes it to disk."""
+    dataset = dataset.batch(embeddings_per_file).prefetch(
+        tf.data.experimental.AUTOTUNE)
+
+    for shard_index, batch in enumerate(dataset):
         file_path = records_directory / (f"lm_{shard_index}.tfrecord")
 
         shard = tf.data.Dataset.from_tensor_slices(batch)
@@ -159,14 +164,20 @@ def unseralize_data(seralized_item):
 
     return (example["video_id"], contextual_embeddings, example["text"])
 
-def truncate_contextual_embeddings_wrapper():
+def truncate_contextual_embeddings_wrapper(
+    text_max_length, contextual_embeddings_dim):
+    """Generates a function that returns."""
+    
     def truncate_contextual_embeddings(video_id, contextual_embeddings, text):
         num_words = len(text.decode("utf-8").split(" "))
-        if num_words >= 37:
-            return video_id, contextual_embeddings[:37]
+        if num_words >= text_max_length:
+            return video_id, contextual_embeddings[:text_max_length]
 
-        output = tf.zeros((37 - num_words, 768), tf.float32)
+        output = tf.zeros(
+            (text_max_length - num_words, contextual_embeddings_dim),
+            tf.float32)
         output = tf.concat([contextual_embeddings[:num_words], output], axis=0)
+        
         return video_id, output
 
     return lambda *args: tf.numpy_function(
@@ -195,5 +206,6 @@ def get_cached_language_model_embeddings(
     return (dataset
         .map(unseralize_data, num_parallel_calls=tf.data.experimental.AUTOTUNE)
         .map(
-            truncate_contextual_embeddings_wrapper(),
+            truncate_contextual_embeddings_wrapper(
+                *contextual_embeddings_shape),
             num_parallel_calls=tf.data.experimental.AUTOTUNE))

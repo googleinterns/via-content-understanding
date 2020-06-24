@@ -35,10 +35,13 @@ class BaseExpert(AbstractClass):
 
     @property
     def constant_length(self):
+        """A boolean indicating if the expert features are constant length."""
         return True
 
     @property
     def max_frames(self):
+        """The maximum number of frames to use. None if the features are
+        constant length."""
         return None
     
     
