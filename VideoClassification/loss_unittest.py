@@ -10,21 +10,21 @@ class TestLoss(unittest.TestCase):
     y_predicted = tf.convert_to_tensor([[1.0,0],[0,1], [1,1]])
 
     loss_out = loss.custom_crossentropy(y_actual, y_predicted)
-    self.assertEqual(loss_out, tf.zeros(()))
+    self.assertAlmostEqual(loss_out, tf.zeros(()))
 
   def test_incorrect(self):
     y_actual = tf.convert_to_tensor([[1,0]])
     y_predicted = tf.convert_to_tensor([[0.5,0]])
 
     loss_out = loss.custom_crossentropy(y_actual, y_predicted)
-    self.assertEqual(loss_out, tf.convert_to_tensor(-1*tf.math.log(0.5)))
+    self.assertAlmostEqual(loss_out, tf.convert_to_tensor(-1*tf.math.log(0.5)), places=3)
 
   def test_alpha(self):
     y_actual = tf.convert_to_tensor([[1,0]])
     y_predicted = tf.convert_to_tensor([[0.5,0]])
 
     loss_out = loss.custom_crossentropy(y_actual, y_predicted, alpha=0.7)
-    self.assertEqual(loss_out, tf.convert_to_tensor(-1*2*0.7*tf.math.log(0.5)))
+    self.assertAlmostEqual(loss_out, tf.convert_to_tensor(-1*2*0.7*tf.math.log(0.5)), places=3)
 
   def test_epsilon(self):
     y_actual = tf.convert_to_tensor([[1,0],[0,1], [1,1]])
