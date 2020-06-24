@@ -12,17 +12,16 @@ limitations under the License.
 
 Defines the testing procedure.
 """
+import loss
+import model as model_lib
+import numpy as np
 import os
+import readers
+import reader_utils
 import time
 import tensorflow as tf
 import tensorflow_datasets as tfds
 import tensorflow.keras.metrics as metrics
-import numpy as np
-
-import readers
-import reader_utils
-import model as model_lib
-import loss
 
 def evaluate_model(model, data_reader, test_dir, batch_size):
   """Test the model on test dataset attained from test_dir.

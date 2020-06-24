@@ -13,11 +13,10 @@ limitations under the License.
 Certain utility functions used to create the model.
 """
 
-import tensorflow as tf
-import reader_utils as utils
-import os
 from functools import partial
+import os
 import reader_utils as utils
+import tensorflow as tf
 
 class YT8MFrameFeatureDataset():
   """Reads TFRecords of SequenceExamples.
@@ -73,6 +72,7 @@ class YT8MFrameFeatureDataset():
     num_frames = tf.minimum(tf.shape(decoded_features)[0], max_frames)
     feature_matrix = utils.dequantize(decoded_features, max_quantized_value,
                                       min_quantized_value)
+
     feature_matrix = utils.resize_axis(feature_matrix, 0, max_frames)
     return feature_matrix, num_frames
 

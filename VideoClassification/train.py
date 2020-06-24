@@ -12,15 +12,15 @@ limitations under the License.
 
 Defines the training procedure. Run this python file to train a new model.
 """
+import evaluate
+import loss
+import model as model_lib
 import os
+import readers
+import reader_utils
 import tensorflow as tf
 import tensorflow_datasets as tfds
 
-import readers
-import reader_utils
-import model as model_lib
-import loss
-import evaluate
 
 def load_datasets(train_dir, validate_dir, num_epochs, batch_size):
   """Set up data reader and load training and validation datasets
