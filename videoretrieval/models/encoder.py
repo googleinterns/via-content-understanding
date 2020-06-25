@@ -106,7 +106,7 @@ class EncoderModel(tf.keras.Model):
             loss.append(self.loss_fn(
                 shard_video_results,
                 shard_text_results,
-                shard_mixture_weights
+                shard_mixture_weights,
                 shard_missing_experts,
                 self.loss_hyperparameter_m, shard_video_ids))
 
