@@ -32,7 +32,7 @@ def compute_rank(input_):
 
 @tf.function
 def compute_ranks(
-    text_embddings, mixture_weights, video_embeddings, missing_experts):
+    text_embeddings, mixture_weights, video_embeddings, missing_experts):
     """Computes a ranks for a batch of video and text embeddings.
 
     Arguments:
@@ -52,7 +52,7 @@ def compute_ranks(
     """
 
     similarity_matrix = build_similaritiy_matrix(
-        static_embeddings, missing_experts, text_embddings, mixture_weights)
+        video_embeddings, missing_experts, text_embeddings, mixture_weights)
 
     ranks_tensor = tf.map_fn(
         compute_rank,
@@ -71,7 +71,8 @@ def get_mean_rank(ranks_tensor):
 def get_median_rank(ranks_tensor):
     """Gets the mean rank given a tensor of ranks."""
     return tf.reduce_min(
-        tf.math.top_k(ranks_tensor, ranks_tensor.shape[0] // 2, sorted=False))
+        tf.math.top_k(
+            ranks_tensor, ranks_tensor.shape[0] // 2, sorted=False)[0])
 
 @tf.function
 def get_recall_at_k(ranks_tensor, k):

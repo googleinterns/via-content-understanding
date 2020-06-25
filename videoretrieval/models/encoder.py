@@ -34,7 +34,8 @@ class EncoderModel(tf.keras.Model):
         self.text_encoder = text_encoder
         self.loss_hyperparameter_m = loss_hyperparameter_m
 
-    def compile(self, optimizer, loss_fn, recall_at_k_bounds):
+    def compile(
+            self, optimizer, loss_fn, recall_at_k_bounds, captions_per_video):
         """Complies the encoder.
 
         Arguments:
@@ -48,6 +49,7 @@ class EncoderModel(tf.keras.Model):
         self.recall_at_k_bounds = recall_at_k_bounds
 
         self.recall_at_k_labels = [f"R_{k}" for k in recall_at_k_bounds]
+        self.captions_per_video = captions_per_video
 
     def train_step(self, video_text_pair_batch):
         """Executes one step of training."""
@@ -71,7 +73,7 @@ class EncoderModel(tf.keras.Model):
             label: float("nan") for label in self.recall_at_k_labels}
 
         batch_metrics["median_rank"] = float("nan")
-        batch_metrics["mean_rank"] = flot("nan")
+        batch_metrics["mean_rank"] = float("nan")
 
         batch_metrics["loss"] = loss        
 
@@ -86,18 +88,39 @@ class EncoderModel(tf.keras.Model):
         text_results, mixture_weights = self.text_encoder(text_features)
 
         valid_metrics = {}
+        loss = []
+        ranks = []
 
-        valid_metrics["loss"] = self.loss_fn(
-            video_results, text_results, mixture_weights, missing_experts,
-            self.loss_hyperparameter_m, video_ids)
+        shard_video_results = [embed[::self.captions_per_video]
+            for embed in video_results]
+        shard_missing_experts = missing_experts[::self.captions_per_video]
+        shard_video_ids = video_ids[::self.captions_per_video]
 
-        ranks = metrics.rankings.compute_ranks(
-            text_results, mixture_weights, video_results, missing_experts)
+        for caption_index in range(self.captions_per_video):
+            shard_text_results = [embed[caption_index::self.captions_per_video]
+                for embed in text_results]
+
+            shard_mixture_weights = mixture_weights[
+                caption_index::self.captions_per_video]
+
+            loss.append(self.loss_fn(
+                shard_video_results,
+                shard_text_results,
+                shard_mixture_weights
+                shard_missing_experts,
+                self.loss_hyperparameter_m, shard_video_ids))
+
+            ranks.append(metrics.rankings.compute_ranks(
+                shard_text_results, shard_mixture_weights, shard_video_results,
+                shard_missing_experts))
+
+        valid_metrics["loss"] = tf.reduce_mean(tf.stack(loss))
+        ranks = tf.concat(ranks, axis=0)
 
         valid_metrics["mean_rank"] = metrics.rankings.get_mean_rank(ranks)
         valid_metrics["median_rank"] = metrics.rankings.get_median_rank(ranks)
 
-        for k, label in zip(self.recall_at_k_bounds, recall_at_k_labels):
+        for k, label in zip(self.recall_at_k_bounds, self.recall_at_k_labels):
             valid_metrics[label] = metrics.rankings.get_recall_at_k(ranks, k)
 
         return valid_metrics
