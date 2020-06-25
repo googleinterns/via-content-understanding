@@ -34,9 +34,9 @@ class VideoEncoder(tf.keras.Model):
         expert_projection: An expert projection modulation layer.
         g_mlp: A standard feedforward deep neural network, with g_mlp_layers.
         h_mlp: A standard feedforward deep neural network, with h_mlp_layers.
-        gems: A list of gated embedding modules, one per network.
-        activiation_fn:
-        use_batch_norm: 
+        gems: A list of gated embedding modules, one per embedding.
+        activation_layer: the type of activation to be used.
+        use_batch_norm: if we use batch normalization in the network
     """
 
     def __init__(self, 
@@ -53,7 +53,7 @@ class VideoEncoder(tf.keras.Model):
         """Initalize video encoder.
 
         Parameters:
-            experts: a list of experts (that implement BaseExpert)
+            experts: a list of experts (that implement BaseExpert).
             expert_aggregated_size: the dimensionality we'll project experts to.
             encoded_expert_dimensionality: the dimensionality experts embeddings
                 are computed down to. Final output size is num of experts * 

@@ -33,8 +33,6 @@ class TextEncoder(tf.keras.Model):
             final embedding.
         gems: A list of gated embedding modules, one per expert.
         dense_layers: A list of dense layers, one per expert.
-        batch_norm: a batch normalization layer for the aggregated text
-            embeddings.
 
     """
     def __init__(self,
