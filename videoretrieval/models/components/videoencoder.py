@@ -49,6 +49,8 @@ class VideoEncoder(tf.keras.Model):
             h_mlp_layers=5,
             make_activation_layer=tf.keras.layers.ReLU,
             use_batch_norm=True,
+            remove_missing_modalities=True,
+            include_self=True
             ):
         """Initalize video encoder.
 
@@ -80,6 +82,8 @@ class VideoEncoder(tf.keras.Model):
         self.expert_projection = ExpertProjectionModulationLayer()
 
         self.make_gem_layers()
+        self.remove_missing_modalities = remove_missing_modalities
+        self.include_self = include_self
 
     def make_temporal_aggregation_layers(self):
         """Make temporal aggregation layers."""
@@ -151,14 +155,17 @@ class VideoEncoder(tf.keras.Model):
     def collaborative_gating(self, aggregated_embeddings, missing_experts):
         """Run collaboartive gating module."""
         gated_embeddings = []
+        experts_availability = 1 - tf.cast(missing_experts, tf.float32)
 
         for expert_index, embedding in enumerate(aggregated_embeddings):
             summed_pairwise_attentions = 0
+            experts_used = 0
+            expert_availability = experts_availability[expert_index, :]
 
             for other_expert_index, other_embedding in enumerate(
                 aggregated_embeddings):
-
-                if other_expert_index == expert_index:
+                
+                if not self.include_self and other_expert_index == expert_index:
                     continue
 
                 attentions = self.g_mlp(tf.concat(
@@ -166,7 +173,19 @@ class VideoEncoder(tf.keras.Model):
                     axis=1,
                 ))
                 
+                if self.remove_missing_modalities:
+                    availability = expert_availability * experts_availability[
+                        other_expert_index, :]
+                    availability = tf.expand_dims(availability, -1)
+
+                    attentions = attentions * availability
+                    experts_used = experts_used + availability
+
                 summed_pairwise_attentions += attentions
+
+            if self.remove_missing_modalities:
+                summed_pairwise_attentions = tf.math.divide_no_nan(
+                    summed_pairwise_attentions, experts_used)
 
             attentions = self.h_mlp(summed_pairwise_attentions)
 

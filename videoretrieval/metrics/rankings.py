@@ -65,7 +65,7 @@ def compute_ranks(
 @tf.function
 def get_mean_rank(ranks_tensor):
     """Gets the mean rank given a tensor of ranks."""
-    return tf.reduce_mean(ranks_tensor)
+    return tf.reduce_mean(tf.cast(ranks_tensor, tf.float32))
 
 @tf.function
 def get_median_rank(ranks_tensor):

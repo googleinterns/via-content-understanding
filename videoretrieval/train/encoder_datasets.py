@@ -138,16 +138,16 @@ def get_precomputed_features(source_dataset, experts):
     return precomputed_features
 
 def sample_captions(ds):
-    def random_index(length):
-        return np.random.randint(0, length) 
+    def random_index(sample):
+        return np.random.randint(0, sample.shape[0]) 
 
     def sample_caption_wrapper(video_ids_batch, contextual_embeddings_batch):
         index = tf.numpy_function(
             random_index,
-            [contextual_embeddings_batch.shape[0]],
-            tf.int32)
+            [contextual_embeddings_batch],
+            tf.int64)
 
-        return video_ids_batch[index, :], contextual_embeddings_batch[index, :]
+        return video_ids_batch[index], contextual_embeddings_batch[index, :, :]
     
     return ds.batch(20).map(sample_caption_wrapper,
         num_parallel_calls=tf.data.experimental.AUTOTUNE)
