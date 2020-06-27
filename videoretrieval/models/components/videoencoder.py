@@ -160,7 +160,7 @@ class VideoEncoder(tf.keras.Model):
         for expert_index, embedding in enumerate(aggregated_embeddings):
             summed_pairwise_attentions = 0
             experts_used = 0
-            expert_availability = experts_availability[expert_index, :]
+            expert_availability = experts_availability[:, expert_index]
 
             for other_expert_index, other_embedding in enumerate(
                 aggregated_embeddings):
@@ -175,7 +175,7 @@ class VideoEncoder(tf.keras.Model):
                 
                 if self.remove_missing_modalities:
                     availability = expert_availability * experts_availability[
-                        other_expert_index, :]
+                        :, other_expert_index]
                     availability = tf.expand_dims(availability, -1)
 
                     attentions = attentions * availability
