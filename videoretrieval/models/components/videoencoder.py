@@ -159,7 +159,7 @@ class VideoEncoder(tf.keras.Model):
         for expert_index, embedding in enumerate(aggregated_embeddings):
             summed_pairwise_attentions = 0
             experts_used = 0
-            expert_availability = experts_availability[:, expert_index]
+            #expert_availability = experts_availability[:, expert_index]
 
             for other_expert_index, other_embedding in enumerate(
                 aggregated_embeddings):
@@ -172,19 +172,19 @@ class VideoEncoder(tf.keras.Model):
                     axis=1,
                 ))
                 
-                if self.remove_missing_modalities:
-                    availability = expert_availability * experts_availability[
-                        :, other_expert_index]
-                    availability = tf.expand_dims(availability, -1)
+                #if self.remove_missing_modalities:
+                #    availability = expert_availability * experts_availability[
+                #        :, other_expert_index]
+                #    availability = tf.expand_dims(availability, -1)
 
-                    attentions = attentions * availability
-                    experts_used = experts_used + availability
+                #    attentions = attentions * availability
+                #    experts_used = experts_used + availability
 
                 summed_pairwise_attentions += attentions
 
-            if self.remove_missing_modalities:
-                summed_pairwise_attentions = tf.math.divide_no_nan(
-                    summed_pairwise_attentions, experts_used)
+            #if self.remove_missing_modalities:
+            #    summed_pairwise_attentions = tf.math.divide_no_nan(
+            #        summed_pairwise_attentions, experts_used)
 
             attentions = self.h_mlp(summed_pairwise_attentions)
 
