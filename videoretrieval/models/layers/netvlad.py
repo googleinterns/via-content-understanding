@@ -55,8 +55,9 @@ class NetVLAD(tf.keras.layers.Layer):
             units=self.num_clusters + self.ghost_clusters,
             kernel_regularizer=tf.keras.regularizers.l2(1e-5),
         )
-        self.batch_norm = tf.keras.layers.BatchNormalization(
-            axis=-1, momentum=0.1)
+        self.batch_norm = tf.keras.layers.BatchNormalization(momentum=0.1)
+        self.softmax = tf.keras.layers.Softmax(axis=1)
+
         self.cluster_centers = self.add_weight(
             name="cluster_centers",
             shape=(1, feature_dim, self.num_clusters),
@@ -91,7 +92,7 @@ class NetVLAD(tf.keras.layers.Layer):
         activation = self.fc(frames)
 
         activation = self.batch_norm(activation)
-        activation = tf.nn.softmax(activation, axis=-1)
+        activation = self.softmax(activation)
 
         # remove ghost clusters
         activation = activation[:, :self.num_clusters]
