@@ -17,8 +17,7 @@ limitations under the License.
 
 import tensorflow as tf
 
-from tensorflow_addons.layers.netvlad import NetVLAD
-from models.layers import GatedEmbeddingModule
+from models.layers import GatedEmbeddingModule, NetVLAD
 
 class TextEncoder(tf.keras.Model):
     """Implementation of Text Encoder.
@@ -38,6 +37,7 @@ class TextEncoder(tf.keras.Model):
     def __init__(self,
             num_of_experts,
             num_netvlad_clusters=25,
+            ghost_clusters=1
             language_model_dimensionality=768,
             encoded_expert_dimensionality=100):
         """Initalize TextEncoder.
@@ -56,7 +56,7 @@ class TextEncoder(tf.keras.Model):
         self.num_of_experts = num_of_experts
         self.num_netvlad_clusters = num_netvlad_clusters
         self.language_model_dimensionality = language_model_dimensionality
-        self.netvlad = NetVLAD(num_netvlad_clusters)
+        self.netvlad = NetVLAD(num_netvlad_clusters, ghost_clusters)
         self.encoded_expert_dimensionality = encoded_expert_dimensionality
 
         self.make_gems()

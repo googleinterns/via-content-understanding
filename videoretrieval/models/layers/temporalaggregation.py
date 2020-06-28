@@ -16,12 +16,13 @@ limitations under the License.
 """
 
 import tensorflow as tf
-from tensorflow_addons.layers.netvlad import NetVLAD
+from .netvlad import NetVLAD
 
 class TemporalAggregationLayer(tf.keras.layers.Layer):
 	"""A layer that aggregates expert features to a common dimensionality."""
 
-	def __init__(self, output_dim, use_netvlad, netvlad_clusters=5):
+	def __init__(
+		self, output_dim, use_netvlad, netvlad_clusters=5, ghost_clusters=1):
 		"""Initalizes this temporal aggregation layer.
 
 		Arguments:
@@ -36,7 +37,7 @@ class TemporalAggregationLayer(tf.keras.layers.Layer):
 		self.netvlad_clusters = netvlad_clusters
 
 		if self.use_netvlad:
-			self.netvlad = NetVLAD(self.netvlad_clusters)
+			self.netvlad = NetVLAD(self.netvlad_clusters, ghost_clusters)
 
 			self.projection_layer = tf.keras.layers.Dense(self.output_dim)
 		else:

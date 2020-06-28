@@ -19,3 +19,4 @@ from .expertprojectionmodulation import ExpertProjectionModulationLayer
 from .gatedembeddingmodule import \
 	GatedEmbeddingModule, GatedEmbeddingUnitReasoning
 from .temporalaggregation import TemporalAggregationLayer
+from .netvlad import NetVLAD
