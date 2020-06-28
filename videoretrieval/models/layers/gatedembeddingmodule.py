@@ -49,15 +49,40 @@ class GatedEmbeddingModule(tf.keras.layers.Layer):
             output_dimension, input_shape=(input_dimension,))
 
         self.linear_layer_two = tf.keras.layers.Dense(
-            output_dimension, input_shape=(output_dimension,), 
-            activation="sigmoid")
+            output_dimension, input_shape=(output_dimension,))
+
+        self.batch_norm = tf.keras.layers.BatchNormalization(momentum=0.1)
 
     def call(self, inputs):
         layer_one_activations = self.linear_layer_one(inputs)
         layer_two_activations = self.linear_layer_two(layer_one_activations)
+
+        layer_two_activations = self.batch_norm(layer_two_activations)
+        layer_two_activations = tf.nn.sigmoid(layer_two_activations)
 
         unscaled_activations = layer_one_activations * layer_two_activations
 
         scaled_activations = tf.math.l2_normalize(unscaled_activations, axis=-1)
 
         return scaled_activations
+
+class GatedEmbeddingUnitReasoning(tf.keras.layers.Layer):
+    def __init__(self, output_dimension):
+        self.fully_connected = tf.keras.layers.Dense(output_dimension)
+
+        self.batch_norm_one = tf.keras.layers.BatchNormalization(momentum=0.1)
+        self.batch_norm_two = tf.keras.layers.BatchNormalization(momentum=0.1)
+
+    def call(self, inputs):
+        assert len(inputs) == 2
+
+        embedding, mask = inputs
+
+        activations = self.fully_connected(activations)
+
+        activations = self.batch_norm_one(activations)
+        mask = self.batch_norm_two(mask)
+
+        output = embedding * tf.nn.sigmoid(activations + mask)
+
+        return tf.math.l2_normalize(output, axis=-1)

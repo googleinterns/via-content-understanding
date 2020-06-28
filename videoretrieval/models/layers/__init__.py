@@ -16,5 +16,6 @@ limitations under the License.
 """
 
 from .expertprojectionmodulation import ExpertProjectionModulationLayer
-from .gatedembeddingmodule import GatedEmbeddingModule
+from .gatedembeddingmodule import \
+	GatedEmbeddingModule, GatedEmbeddingUnitReasoning
 from .temporalaggregation import TemporalAggregationLayer
