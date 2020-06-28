@@ -68,6 +68,7 @@ class GatedEmbeddingModule(tf.keras.layers.Layer):
 
 class GatedEmbeddingUnitReasoning(tf.keras.layers.Layer):
     def __init__(self, output_dimension):
+        super(GatedEmbeddingUnitReasoning, self).__init__()
         self.fully_connected = tf.keras.layers.Dense(output_dimension)
 
         self.batch_norm_one = tf.keras.layers.BatchNormalization(momentum=0.1)
