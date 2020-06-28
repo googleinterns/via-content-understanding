@@ -17,7 +17,7 @@ limitations under the License.
 
 import tensorflow as tf
 from models.layers import TemporalAggregationLayer, \
-    ExpertProjectionModulationLayer, GatedEmbeddingUnitReasoning
+    ExpertProjectionModulationLayer, GatedEmbeddingModule
 
 
 class VideoEncoder(tf.keras.Model):
@@ -79,7 +79,7 @@ class VideoEncoder(tf.keras.Model):
         self.g_mlp = self.make_mlp(g_mlp_layers)
         self.h_mlp = self.make_mlp(h_mlp_layers)
 
-        #self.expert_projection = ExpertProjectionModulationLayer()
+        self.expert_projection = ExpertProjectionModulationLayer()
 
         self.make_gem_layers()
         self.remove_missing_modalities = remove_missing_modalities
@@ -124,7 +124,8 @@ class VideoEncoder(tf.keras.Model):
         self.gems = []
         
         for _ in self.experts:
-            self.gems.append(GatedEmbeddingUnitReasoning(
+            self.gems.append(GatedEmbeddingModule(
+                self.expert_aggregated_size,
                 self.encoded_expert_dimensionality))
 
     def call(self, inputs):
@@ -188,9 +189,9 @@ class VideoEncoder(tf.keras.Model):
 
             attentions = self.h_mlp(summed_pairwise_attentions)
 
-            #embeddings = self.expert_projection([embedding, attentions])
+            embeddings = self.expert_projection([embedding, attentions])
 
-            gated_embedding = self.gems[expert_index]([embedding, attentions])
+            gated_embedding = self.gems[expert_index](embeddings)
 
             gated_embeddings.append(gated_embedding)
 

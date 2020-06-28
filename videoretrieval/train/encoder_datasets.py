@@ -172,7 +172,7 @@ def generate_encoder_datasets(language_model, source_dataset, experts):
     test_ds = cache.get_cached_language_model_embeddings(
         source_dataset, language_model, "test")
 
-    train_ds = sample_captions(train_ds)
+    #train_ds = sample_captions(train_ds)
 
     precomputed_features = get_precomputed_features(source_dataset, experts)
 

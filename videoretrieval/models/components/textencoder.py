@@ -37,7 +37,7 @@ class TextEncoder(tf.keras.Model):
     def __init__(self,
             num_of_experts,
             num_netvlad_clusters=25,
-            ghost_clusters=1
+            ghost_clusters=1,
             language_model_dimensionality=768,
             encoded_expert_dimensionality=100):
         """Initalize TextEncoder.
