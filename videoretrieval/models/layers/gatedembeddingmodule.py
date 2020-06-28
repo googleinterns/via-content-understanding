@@ -79,7 +79,7 @@ class GatedEmbeddingUnitReasoning(tf.keras.layers.Layer):
 
         embedding, mask = inputs
 
-        activations = self.fully_connected(activations)
+        activations = self.fully_connected(mask)
 
         activations = self.batch_norm_one(activations)
         mask = self.batch_norm_two(mask)
