@@ -125,7 +125,7 @@ class VideoEncoder(tf.keras.Model):
         
         for _ in self.experts:
             self.gems.append(GatedEmbeddingUnitReasoning(
-                self.expert_aggregated_size,
+                #self.expert_aggregated_size,
                 self.encoded_expert_dimensionality))
 
     def call(self, inputs):
