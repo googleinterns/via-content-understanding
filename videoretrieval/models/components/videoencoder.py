@@ -179,7 +179,7 @@ class VideoEncoder(tf.keras.Model):
                 attention_available = tf.expand_dims(attention_available, -1)
                 attention = attention * attention_available 
                 experts_used = experts_used + attention_available
-                summed_attentions = summed_attentions + attention_available
+                summed_attentions = summed_attentions + attention
 
             attentions = tf.math.divide_no_nan(summed_attentions, experts_used) 
             attentions = self.h_mlp(attentions)
