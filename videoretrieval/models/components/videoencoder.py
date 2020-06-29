@@ -17,7 +17,7 @@ limitations under the License.
 
 import tensorflow as tf
 from models.layers import TemporalAggregationLayer, \
-    ExpertProjectionModulationLayer, GatedEmbeddingModule
+    ExpertProjectionModulationLayer, GatedEmbeddingUnitReasoning
 
 
 class VideoEncoder(tf.keras.Model):
@@ -124,7 +124,7 @@ class VideoEncoder(tf.keras.Model):
         self.gems = []
         
         for _ in self.experts:
-            self.gems.append(GatedEmbeddingModule(
+            self.gems.append(GatedEmbeddingUnitReasoning(
                 self.expert_aggregated_size,
                 self.encoded_expert_dimensionality))
 
