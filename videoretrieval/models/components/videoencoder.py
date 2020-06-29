@@ -158,25 +158,34 @@ class VideoEncoder(tf.keras.Model):
         experts_availability = 1 - tf.cast(missing_experts, tf.float32)
 
         for expert_index, embedding in enumerate(aggregated_embeddings):
-            summed_pairwise_attentions = 0
+            summed_attentions = 0
+            experts_used = 0
+
+            expert_available = experts_availability[:, expert_index]
+
             for other_expert_index, other_embedding in enumerate(
                 aggregated_embeddings):
+                attention_available = expert_available * experts_availability[
+                    :, other_expert_index]
                 
                 if other_expert_index == expert_index:
                     continue
 
-                attentions = self.g_mlp(tf.concat(
+                attention = self.g_mlp(tf.concat(
                     [embedding, other_embedding],
                     axis=1,
                 ))
 
-                summed_pairwise_attentions += attentions
+                attention = attention * attention_available 
+                experts_used = experts_used + attention_available
+                summed_attentions = summed_attentions + attentions
 
-            attentions = self.h_mlp(summed_pairwise_attentions)
+            attentions = tf.math.divide_no_nan(summed_attentions, experts_used) 
+            attentions = self.h_mlp(attentions)
 
-            embeddings = self.expert_projection([embedding, attentions])
+            #embedding = self.expert_projection([embedding, attentions])
 
-            gated_embedding = self.gems[expert_index](embeddings)
+            gated_embedding = self.gems[expert_index]([embedding, attentions])
 
             gated_embeddings.append(gated_embedding)
 
