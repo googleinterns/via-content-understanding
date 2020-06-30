@@ -80,8 +80,6 @@ class VideoEncoder(tf.keras.Model):
         self.expert_projection = ExpertProjectionModulationLayer()
 
         self.make_gem_layers()
-        self.remove_missing_modalities = remove_missing_modalities
-        self.include_self = include_self
 
     def make_temporal_aggregation_layers(self):
         """Make temporal aggregation layers."""
@@ -166,9 +164,6 @@ class VideoEncoder(tf.keras.Model):
                 attention_available = expert_available * experts_availability[
                     :, other_expert_index]
                 
-                if other_expert_index == expert_index:
-                    continue
-
                 attention = self.g_mlp(tf.concat(
                     [embedding, other_embedding],
                     axis=1,
