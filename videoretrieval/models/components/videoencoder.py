@@ -49,8 +49,6 @@ class VideoEncoder(tf.keras.Model):
             h_mlp_layers=5,
             make_activation_layer=tf.keras.layers.ReLU,
             use_batch_norm=True,
-            remove_missing_modalities=True,
-            include_self=True
             ):
         """Initalize video encoder.
 
@@ -136,13 +134,13 @@ class VideoEncoder(tf.keras.Model):
 
         assert len(expert_embeddings) == len(self.experts)
 
-        aggregated_embeddings = self.temporal_aggreagation(expert_embeddings)
+        aggregated_embeddings = self.temporal_aggregation(expert_embeddings)
         output_embedding = self.collaborative_gating(
             aggregated_embeddings, missing_experts)
 
         return output_embedding
 
-    def temporal_aggreagation(self, inputs):
+    def temporal_aggregation(self, inputs):
         """Run temporal aggregation module."""
         aggregated_embeddings = []
 
