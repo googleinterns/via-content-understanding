@@ -53,9 +53,9 @@ class NetVLAD(tf.keras.layers.Layer):
             feature_dim = feature_dim.value
         self.fc = tf.keras.layers.Dense(
             units=self.num_clusters + self.ghost_clusters,
-            kernel_regularizer=tf.keras.regularizers.l2(1e-5),
-            use_bias=False
+            kernel_regularizer=tf.keras.regularizers.l2(1e-5)
         )
+
         self.batch_norm = tf.keras.layers.BatchNormalization(momentum=0.1)
         self.softmax = tf.keras.layers.Softmax(axis=1)
 
