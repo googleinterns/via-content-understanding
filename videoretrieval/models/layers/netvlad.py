@@ -20,18 +20,11 @@ from typeguard import typechecked
 
 
 class NetVLAD(tf.keras.layers.Layer):
-    """Applies NetVLAD to the input.
-
-        This is a fully-differentiable version of "Vector of Locally Aggregated Descriptors" commonly used in image
-        retrieval. It is also used in audio retrieval, and audio represenation learning (ex
-        "Towards Learning a Universal Non-Semantic Representation of Speech", https://arxiv.org/abs/2002.12764).
-
-        "NetVLAD: CNN architecture for weakly supervised place recognition"
-        Relja Arandjelovic, Petr Gronat, Akihiko Torii, Tomas Pajdla, Josef Sivic.
-        https://arxiv.org/abs/1511.07247
+    """Applies GhostVLAD to the input.
 
     Arguments:
         num_clusters: The number of clusters to use.
+        ghost_clusers: The number of ghost clusters to use.
     Input shape:
         3D tensor with shape: `(batch_size, time, feature_dim)`.
     Output shape:
@@ -53,7 +46,6 @@ class NetVLAD(tf.keras.layers.Layer):
             feature_dim = feature_dim.value
         self.fc = tf.keras.layers.Dense(
             units=self.num_clusters + self.ghost_clusters,
-            kernel_regularizer=tf.keras.regularizers.l2(1e-5),
             use_bias=False
         )
         self.batch_norm = tf.keras.layers.BatchNormalization(momentum=0.1)

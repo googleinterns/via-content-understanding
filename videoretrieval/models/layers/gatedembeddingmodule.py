@@ -37,10 +37,7 @@ class GatedEmbeddingModule(tf.keras.layers.Layer):
         linear_layer_one: a Dense layer that performs W_1 * Z_0 + B_1.
         linear_layer_two: a Dense layer that performs W_2 * Z_1 + B_2 and
             applies a sigmoid.
-        layer_one_batch_norm: a Batch Normalization layer for the activiations
-            from layer one.
-        layer_two_batch_norm: a Batch Normalization layer for the activations
-            from layer two.
+        batch_norm: a Batch Normalization layer for the activiations.
     """
     def __init__(self, input_dimension, output_dimension):
         super(GatedEmbeddingModule, self).__init__()
@@ -67,7 +64,21 @@ class GatedEmbeddingModule(tf.keras.layers.Layer):
         return scaled_activations
 
 class GatedEmbeddingUnitReasoning(tf.keras.layers.Layer):
+    """An implementation of the Gated Embedding Unit for Video Reasoning.
+
+    Attributes:
+        fully_connected: a dense, fully connected layer.
+        batch_norm_one: a batch normalization layer for the activations from the
+            fully connected layer.
+        batch_norm_two: a batch normalization layer for the mask.
+    """
+
     def __init__(self, output_dimension):
+        """Initalizes the Gated Embedding Reasoning Unit.
+
+        Arguments:
+            output_dimension: dimension this unit should output.
+        """
         super(GatedEmbeddingUnitReasoning, self).__init__()
         self.fully_connected = tf.keras.layers.Dense(output_dimension)
 

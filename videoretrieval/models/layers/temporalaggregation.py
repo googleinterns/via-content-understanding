@@ -29,6 +29,7 @@ class TemporalAggregationLayer(tf.keras.layers.Layer):
 			output_dim: the dimensionality to project the experts to.
 			use_netvlad: if NetVLAD should be used to aggregate features
 			netvlad_clusers: the number of clusters NetVLAD should have.
+			ghost_clusters: the number of ghost clusters NetVLAD should have.
 		"""
 		super(TemporalAggregationLayer, self).__init__()
 

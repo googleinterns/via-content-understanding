@@ -60,7 +60,8 @@ class VideoEncoder(tf.keras.Model):
                 encoded_expert_dimensionality.
             g_mlp_layers: layers in the mlp labeled "g".
             h_mlp_layers: layers in the mlp labeled "h".
-            a
+            use_batch_norm: if this model should use batch norm in the reasoning
+                layers.
         """
 
         super(VideoEncoder, self).__init__()
