@@ -27,3 +27,6 @@ class DenseNet161(BaseExpert):
     @property
     def embedding_shape(self):
         return (2208,)
+
+    def feature_transformation(self, feature):
+    	return feature[0]

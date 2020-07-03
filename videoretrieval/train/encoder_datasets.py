@@ -21,9 +21,22 @@ import tensorflow as tf
 import numpy as np
 
 def replace_video_id_with_expert_features_wrapper(precomputed_features):
+    """Returns a function that adds precomputed features to an example.
+
+    Arguments:
+        precomputed_features: an array of dicts, where each dict maps from a
+            video id to a precomputed feature.
+
+    Returns: a function that has two inputs, video_id, which is a video id as a
+        string and ids, the contextual embeddings for the given caption. This
+        function then returns a tuple of video_id, expert_features, the
+        contextual embeddings, and an tensor of missing expert modalities. 
+    """
+
     output_shape = (tf.bool,) + len(precomputed_features) * (tf.float32,)
 
     def get_expert_features(video_id_encoded):
+        """Gets the features for a given video id"""
         expert_features = []
         missing_modalities = []
 
@@ -37,7 +50,7 @@ def replace_video_id_with_expert_features_wrapper(precomputed_features):
 
         return [np.array(missing_modalities)] +  expert_features
 
-    def wrapper(video_id, ids):
+    def wrapper(video_id, ids):  
         expert_data = tf.numpy_function(
             get_expert_features, [video_id], output_shape)
 
@@ -50,6 +63,19 @@ def replace_video_id_with_expert_features_wrapper(precomputed_features):
     return wrapper
 
 def update_dataset_shape_wrapper(experts, language_model):
+    """Updates the shapes of expert features and text embedding a given dataset.
+
+    Arguments:
+        experts: a list of experts (type BaseExpert) used in the dataset.
+        language_model: 
+
+    Returns: a function that takes in video id, expert features, contextual
+        embeddings, and missing modalities as parameters and assigns a shape to
+        the contextual embeddings and the expert features, then returns the a
+        tuple of the video ids, expert features, contextual embeddings, and
+        missing modalities.
+    """
+
     num_experts = len(experts)
     expert_shapes = [expert.embedding_shape for expert in experts]
     contextual_embeddings_shape = language_model.contextual_embeddings_shape
@@ -73,7 +99,21 @@ def update_dataset_shape_wrapper(experts, language_model):
 
 def match_cached_embeddings_with_experts(
     language_model, experts, precomputed_features, *datasets):
-    """Matches the cached"""
+    """Matches items in a dataset with the precomputed features
+
+    Parameters:
+        language_model: the language model the contextual embeddings are from.
+        experts: a list of experts taht the precomputed features are from.
+        precomputed_features: a list of dicts, one per expert, that map from
+        video id to precomputed feature.
+        *datasets: the datasets to transform.
+
+    Returns: A list of tf.data Datasets, where each example in the dataset
+        consists of: video id, precomputed features, contextual embeddings, and
+        a boolean vector that indiicates which expert modalities are missing.  
+
+    """
+
     map_fn = replace_video_id_with_expert_features_wrapper(precomputed_features)
     set_shape_fn = update_dataset_shape_wrapper(experts, language_model)
 
@@ -82,16 +122,38 @@ def match_cached_embeddings_with_experts(
         .map(set_shape_fn, num_parallel_calls=tf.data.experimental.AUTOTUNE)
         ) for dataset in datasets]
 
+def is_expert_value_missing(expert_value):
+    """Returns if a given expert_value is missing or not."""
+    return type(expert_value) == float and np.isnan(expert_value)
+
+def zero_pad_expert_features(expert, expert_value):
+    """Zero pads a variable length precomputed feature."""
+    frames = expert_value.shape[0]
+
+    if frames >= expert.max_frames:
+        video_expert_features = \
+            expert_value[:expert.max_frames]
+    else:
+        zero_padding = np.zeros((
+            expert.max_frames - frames,
+            *expert.embedding_shape[1:]), np.float32)
+
+        video_expert_features = np.concatenate((
+            expert_value, zero_padding))
+
+    return video_expert_features
+
+
 def get_precomputed_features(source_dataset, experts):
     """Get precomputed features from a set of experts and a dataset.
 
     Arguments:
-        source_dataset: 
-        experts:
+        source_dataset: the source dataset as an instance of Base Dataset.
+        experts: a list of experts to use precomputed features from
 
-    Returns:
+    Returns: A list of dicts, where each dict maps from video id to precomputed
+        features. 
     """
-
     
     precomputed_features = []
 
@@ -105,28 +167,20 @@ def get_precomputed_features(source_dataset, experts):
             video_expert_features = None
             missing_modalities = False
 
-            if expert.name == "densenet":
-                expert_value = expert_value[0]
+            expert_value = expert.feature_transformation(expert_value)
 
-            if type(expert_value) == float and np.isnan(expert_value):
+            if is_expert_value_missing(expert_value):
                 video_expert_features = np.zeros(
                     expert.embedding_shape, np.float32)
                 missing_modalities = True
             else:
                 expert_value = expert_value.astype(np.float32)
+                
                 if expert.constant_length:
                     video_expert_features = expert_value
                 else:
-                    frames = expert_value.shape[0]
-
-                    if frames >= expert.max_frames:
-                        video_expert_features = \
-                            expert_value[:expert.max_frames]
-                    else:
-                        video_expert_features = np.concatenate((
-                            expert_value, np.zeros((
-                                expert.max_frames - frames,
-                                *expert.embedding_shape[1:]), np.float32)))
+                    video_expert_features = zero_pad_expert_features(
+                        expert, expert_value)
 
             processed_expert_features[video_id] = (
                 video_expert_features,
@@ -138,6 +192,7 @@ def get_precomputed_features(source_dataset, experts):
     return precomputed_features
 
 def sample_captions(ds):
+    """Given a dataset, samples one caption per video."""
     def random_index(sample):
         return np.random.randint(0, sample.shape[0]) 
 
@@ -156,12 +211,17 @@ def generate_encoder_datasets(language_model, source_dataset, experts):
     """Generates datasets necessary to train encoders.
 
     Arguments:
-        language_model: an instance of BaseLanguageModel
-        source_dataset:
-        experts:
+        language_model: an instance of BaseLanguageModel who's embeddings should
+            be use.
+        source_dataset: The dataset to generate the embeddings from. 
+        experts: The experts to be used.
 
-    Returns:
-
+    Returns: A tuple of three tf.data datasets: the train dataset, the
+        validation dataset, and the test dataset. Each element of each of these
+        datasets is a tuple where the first element is the video ids, the second
+        element is the precomputed video features, the third is the contextual
+        embeddings, and the fourth a boolean tensor of missing video expert
+        modalities.  
     """
     train_ds = cache.get_cached_language_model_embeddings(
         source_dataset, language_model, "train")

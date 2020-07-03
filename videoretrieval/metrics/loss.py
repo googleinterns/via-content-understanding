@@ -51,42 +51,19 @@ def build_similaritiy_matrix(
     weights = mixture_weights * missing_experts_weights
     weights, _ = tf.linalg.normalize(weights, axis=-1, ord=1)
 
-    similarity_matrix = None
+    similarity_matrix = 0
 
-    for i, (expert_video_embeddings, expert_text_embeddings) in enumerate(zip(
-        video_embeddings, text_embeddings)):
+    for expert_index, (
+        expert_video_embeddings, expert_text_embeddings) in enumerate(
+            zip(video_embeddings, text_embeddings)):
 
         similarities = tf.matmul(
             expert_text_embeddings, expert_video_embeddings, transpose_b=True)
         similarities = similarities * weights[:, :, i]
 
-        if similarity_matrix is None:
-            similarity_matrix = similarities
-        else:
-            similarity_matrix = similarities + similarity_matrix
+        similarity_matrix = similarities + similarity_matrix
 
     return similarity_matrix
-
-def same_mask(video_ids, batch_size):
-    """Generates a matrix indicating matching video ids.
-
-    Parameters:
-        video_ids: a numpy array of video ids.
-        batch_size: the number of video ids in `video_ids`.
-
-    Returns:
-        A batch_size x batch_size float32 matrix, where the element at row i and
-        col j is a 0 if videos_ids[i] == video_ids[j] and 1 otherwise.
-    """
-
-    results = np.ones((batch_size, batch_size)).astype(np.float32)
-
-    for row_index in range(batch_size):
-        for col_index in range(batch_size):
-            if video_ids[row_index] == video_ids[col_index]:
-                results[row_index][col_index] = 0.0
-
-    return results
 
 def bidirectional_max_margin_ranking_loss(
     video_embeddings, text_embeddings, mixture_weights, missing_experts,
@@ -129,11 +106,6 @@ def bidirectional_max_margin_ranking_loss(
         similarities_transpose - matching_similarities)
 
     computed_similarities = computed_similarities *  (1 - tf.eye(batch_size))
-
-    same_video_mask = tf.numpy_function(
-        same_mask, [video_ids, batch_size], tf.float32)
-
-    computed_similarities = computed_similarities * same_video_mask
 
     loss = tf.reduce_sum(computed_similarities) / (2 * batch_size**2)
 

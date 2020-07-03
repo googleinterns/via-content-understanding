@@ -44,4 +44,5 @@ class BaseExpert(AbstractClass):
         constant length."""
         return None
     
-    
+    def feature_transformation(self, feature):
+        return feature
