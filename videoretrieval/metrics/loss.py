@@ -59,7 +59,7 @@ def build_similaritiy_matrix(
 
         similarities = tf.matmul(
             expert_text_embeddings, expert_video_embeddings, transpose_b=True)
-        similarities = similarities * weights[:, :, i]
+        similarities = similarities * weights[:, :, expert_index]
 
         similarity_matrix = similarities + similarity_matrix
 

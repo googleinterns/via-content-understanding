@@ -78,7 +78,7 @@ class VideoEncoder(tf.keras.Model):
         self.g_mlp = self.make_mlp(g_mlp_layers)
         self.h_mlp = self.make_mlp(h_mlp_layers)
 
-        self.expert_projection = ExpertProjectionModulationLayer()
+        #self.expert_projection = ExpertProjectionModulationLayer()
 
         self.make_gem_layers()
 

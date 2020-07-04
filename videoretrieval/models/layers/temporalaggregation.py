@@ -22,7 +22,7 @@ class TemporalAggregationLayer(tf.keras.layers.Layer):
 	"""A layer that aggregates expert features to a common dimensionality."""
 
 	def __init__(
-		self, output_dim, use_netvlad, netvlad_clusters=5, ghost_clusters=1):
+		self, output_dim, use_netvlad, netvlad_clusters=5, ghost_clusters=0):
 		"""Initalizes this temporal aggregation layer.
 
 		Arguments:
