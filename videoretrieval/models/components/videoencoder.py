@@ -78,8 +78,6 @@ class VideoEncoder(tf.keras.Model):
         self.g_mlp = self.make_mlp(g_mlp_layers)
         self.h_mlp = self.make_mlp(h_mlp_layers)
 
-        #self.expert_projection = ExpertProjectionModulationLayer()
-
         self.make_gem_layers()
 
     def make_temporal_aggregation_layers(self):
@@ -95,7 +93,20 @@ class VideoEncoder(tf.keras.Model):
                 netvlad_clusters=clusters))
 
     def make_mlp(self, num_layers):
-        """Makes and returns an mlp with num_layers layers."""
+        """Makes and returns an sequential feed forward neural network.
+
+        This network is comprised of dense layers, batch normalization layers
+        (if specified), and non-linearity functions. The network is comprised of
+        a dense layer followed by a batch normalization layer (if specified) and
+        a non-linearity. The network ends with a single dense layer with a
+        linear activation function.
+
+        Parameters:
+            num_layers: the number of dense layers in the sequential model.
+
+        Returns: a sequential feed forward neural network.
+        """
+
         sequential_layers = []
         
         for i in range(num_layers):
@@ -117,16 +128,23 @@ class VideoEncoder(tf.keras.Model):
         return tf.keras.Sequential(sequential_layers)
 
     def make_gem_layers(self):
-        """Create gated embedding module layers."""
+        """Create gated embedding reasoning units and adds them to self.gems."""
         self.gems = []
         
         for _ in self.experts:
             self.gems.append(GatedEmbeddingUnitReasoning(
-                #self.expert_aggregated_size,
                 self.encoded_expert_dimensionality))
 
     def call(self, inputs):
-        """Forward pass on the video encoder."""
+        """Forward pass on the video encoder.
+
+        Parameters:
+            inputs: inputs is a pair of two elements. First, a list of video
+            experts. Second, a boolean tensor indicating missing
+            video experts.
+
+        Returns: an array of tensors, the ith tensor corresponding to the
+        embedding shard from the ith video expert."""
         assert len(inputs) == 2
 
         expert_embeddings, missing_experts = inputs
@@ -140,7 +158,15 @@ class VideoEncoder(tf.keras.Model):
         return output_embedding
 
     def temporal_aggregation(self, inputs):
-        """Run temporal aggregation module."""
+        """Runs the temporal aggregation module.
+
+        Parameters:
+            inputs: a list of tensors from video experts.
+
+        Returns: a list of temporally aggregated tensors, each dimension
+        batch_size x self.expert_aggregated_size.
+        """
+
         aggregated_embeddings = []
 
         for aggregator, embedding in zip(
@@ -150,7 +176,29 @@ class VideoEncoder(tf.keras.Model):
         return aggregated_embeddings
 
     def collaborative_gating(self, aggregated_embeddings, missing_experts):
-        """Run collaboartive gating module."""
+        """Runs collaboartive gating module.
+
+        For each aggregated embedding, runs the feedfoward network in
+        self.g_mlp to create an attention mask relative to each other embedding.
+        These masks are then summed and scaled by the number of available 
+        experts for a given example. Then, the aggregated embedding and scaled
+        mask is fed into a gated embedding reasoning unit, which produces a
+        normalized shard of the final embedding. 
+
+        Parameters:
+            aggregated_embeddings: a list of n aggregated video embeddings,
+                where n is tne number of video experts used. Each element of the
+                list should be a tensor of shape batch_size x
+                self.expert_aggregated_size.
+            missing_experts: a tensor of shape batch_size x n, where n is the
+                number of video experts. A "false" in this tensor indicates that
+                the expert is not missing, while a true indicates the expert is
+                missing.
+        
+        Returns: a list of tensors, each batch_size x
+        self.encoded_expert_dimensionality. The ith tensor contains the parts
+        of the embeddings from the ith expert."""
+
         gated_embeddings = []
         experts_availability = 1 - tf.cast(missing_experts, tf.float32)
 
@@ -162,6 +210,11 @@ class VideoEncoder(tf.keras.Model):
 
             for other_expert_index, other_embedding in enumerate(
                 aggregated_embeddings):
+
+                # if either the expert at expert_index or the expert at
+                # other_expert_index is not available, the attention mask isn't
+                # used
+
                 attention_available = expert_available * experts_availability[
                     :, other_expert_index]
                 
@@ -172,13 +225,15 @@ class VideoEncoder(tf.keras.Model):
 
                 attention_available = tf.expand_dims(attention_available, -1)
                 attention = attention * attention_available 
+
+
                 experts_used = experts_used + attention_available
                 summed_attentions = summed_attentions + attention
 
+            # This divison scales the summed attentions by the number of experts
+            # used, helping the model be more robust
             attentions = tf.math.divide_no_nan(summed_attentions, experts_used) 
             attentions = self.h_mlp(attentions)
-
-            #embedding = self.expert_projection([embedding, attentions])
 
             gated_embedding = self.gems[expert_index]([embedding, attentions])
 
