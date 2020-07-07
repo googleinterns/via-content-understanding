@@ -76,6 +76,13 @@ class GatedEmbeddingUnitReasoning(tf.keras.layers.Layer):
     def __init__(self, output_dimension):
         """Initalizes the Gated Embedding Reasoning Unit.
 
+        This layer takes in two inputs, an expert video embedding and a mask.
+        First, the embedding is passed through a dense layer to create
+        activations which are then batch normalized. Then, the mask is batch
+        normalized and added to the activations and a sigmoid function is
+        applied to the sum, then multiplied element wise with the embedding.
+        The this product is then l2 normalized and returned. 
+
         Arguments:
             output_dimension: dimension this unit should output.
         """
@@ -86,6 +93,12 @@ class GatedEmbeddingUnitReasoning(tf.keras.layers.Layer):
         self.batch_norm_two = tf.keras.layers.BatchNormalization(momentum=0.1)
 
     def call(self, inputs):
+        """Executes a forward pass on this layer.
+
+        Parameters:
+            inputs: a pair of two tensors, the first being a video embedding,
+            the second being a mask.
+        """
         assert len(inputs) == 2
 
         embedding, mask = inputs
