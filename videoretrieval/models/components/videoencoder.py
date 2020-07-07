@@ -50,7 +50,7 @@ class VideoEncoder(tf.keras.Model):
             make_activation_layer=tf.keras.layers.ReLU,
             use_batch_norm=True,
             ):
-        """Initalize video encoder.
+        """Initialize video encoder.
 
         Parameters:
             experts: a list of experts (that implement BaseExpert).
@@ -176,7 +176,7 @@ class VideoEncoder(tf.keras.Model):
         return aggregated_embeddings
 
     def collaborative_gating(self, aggregated_embeddings, missing_experts):
-        """Runs collaboartive gating module.
+        """Runs collaborative gating module.
 
         For each aggregated embedding, runs the feedfoward network in
         self.g_mlp to create an attention mask relative to each other embedding.
@@ -187,7 +187,7 @@ class VideoEncoder(tf.keras.Model):
 
         Parameters:
             aggregated_embeddings: a list of n aggregated video embeddings,
-                where n is tne number of video experts used. Each element of the
+                where n is the number of video experts used. Each element of the
                 list should be a tensor of shape batch_size x
                 self.expert_aggregated_size.
             missing_experts: a tensor of shape batch_size x n, where n is the
@@ -230,7 +230,7 @@ class VideoEncoder(tf.keras.Model):
                 experts_used = experts_used + attention_available
                 summed_attentions = summed_attentions + attention
 
-            # This divison scales the summed attentions by the number of experts
+            # This division scales the summed attentions by the number of experts
             # used, helping the model be more robust
             attentions = tf.math.divide_no_nan(summed_attentions, experts_used) 
             attentions = self.h_mlp(attentions)

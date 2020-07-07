@@ -79,40 +79,62 @@ class EncoderModel(tf.keras.Model):
 
         return batch_metrics
 
+    def remove_repeated_video_data(self, tensor):
+        """Removes repeated video data from a tensor.
+
+        Because the dataset is constructed on a pairwise basis, if there are
+        multiple videos in a batch, there will be repeated video data. This
+        removes the repeated data.
+
+        Parameters:
+            tensor: the tensor with repeated video data
+
+        Returns: a tensor like the `tensor` inputted with repeated video data
+        removed.
+        """
+        return tensor[::self.captions_per_video]
+
     def test_step(self, video_text_pair_batch):
         """Executes one test step."""
         video_ids, video_features, text_features, missing_experts = \
             video_text_pair_batch
-        
-        video_results = self.video_encoder([video_features, missing_experts])
+
+        assert video_ids.shape[0] % self.captions_per_video == 0
+
+        video_ids = self.remove_repeated_video_data(video_ids)
+        video_features = map(self.remove_repeated_video_data, video_features)
+        missing_experts = self.remove_repeated_video_data(missing_experts)
+
+        video_results = self.video_encoder(
+            [video_features, missing_experts])
         text_results, mixture_weights = self.text_encoder(text_features)
 
         valid_metrics = {}
         loss = []
         ranks = []
 
-        shard_video_results = [embed[::self.captions_per_video]
-            for embed in video_results]
-        shard_missing_experts = missing_experts[::self.captions_per_video]
-        shard_video_ids = video_ids[::self.captions_per_video]
+        # Because there are multiple captions per video, we shard the embeddings
+        # into self.captions_per_video shards. Because the video data is the
+        # doesn't change over multiple captions, splitting the data into shards
+        # and computing retrieval methods on shards instead of computing metrics
+        # on the entire validation set at once is the cleaner option.
 
         for caption_index in range(self.captions_per_video):
             shard_text_results = [embed[caption_index::self.captions_per_video]
                 for embed in text_results]
-
             shard_mixture_weights = mixture_weights[
                 caption_index::self.captions_per_video]
 
             loss.append(self.loss_fn(
-                shard_video_results,
+                video_results,
                 shard_text_results,
                 shard_mixture_weights,
-                shard_missing_experts,
-                self.loss_hyperparameter_m, shard_video_ids))
+                missing_experts,
+                self.loss_hyperparameter_m, video_ids))
 
             ranks.append(metrics.rankings.compute_ranks(
-                shard_text_results, shard_mixture_weights, shard_video_results,
-                shard_missing_experts))
+                shard_text_results, shard_mixture_weights, video_results,
+                missing_experts))
 
         valid_metrics["loss"] = tf.reduce_mean(tf.stack(loss))
         ranks = tf.concat(ranks, axis=0)
