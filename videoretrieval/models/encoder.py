@@ -21,12 +21,13 @@ class EncoderModel(tf.keras.Model):
     """An implementation of an Encoder model."""
 
     def __init__(self, video_encoder, text_encoder, loss_hyperparameter_m):
-        """Intialize an encoder with a video encoder and a text encoder.
+        """Initialize an encoder with a video encoder and a text encoder.
 
         Parameters:
             video_encoder: the Video Encoder to be used.
             text_encoder: the Text Encoder to be used.
-            loss_hyperparameter_m: TODO(ryanehrlich).
+            loss_hyperparameter_m: the margin hyper parameter used when
+                computing loss.
         """
         super(EncoderModel, self).__init__()
 
@@ -114,12 +115,13 @@ class EncoderModel(tf.keras.Model):
         ranks = []
 
         # Because there are multiple captions per video, we shard the embeddings
-        # into self.captions_per_video shards. Because the video data is the
-        # doesn't change over multiple captions, splitting the data into shards
-        # and computing retrieval methods on shards instead of computing metrics
-        # on the entire validation set at once is the cleaner option.
+        # into self.captions_per_video shards. Because the video data is
+        # repeated multiple times in a given batch, splitting the data and
+        # computing retrieval methods on shards instead of computing metrics on 
+        # the entire validation set at once is the cleaner option.
 
         for caption_index in range(self.captions_per_video):
+
             shard_text_results = [embed[caption_index::self.captions_per_video]
                 for embed in text_results]
             shard_mixture_weights = mixture_weights[
