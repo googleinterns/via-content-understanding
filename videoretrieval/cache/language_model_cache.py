@@ -23,8 +23,7 @@ embeddings_per_file = 100
 
 decoding_schema = {
     "video_id": tf.io.FixedLenFeature([], tf.string),
-    "seralized_embeddings": tf.io.FixedLenFeature([], tf.string),
-    "text": tf.io.FixedLenFeature([], tf.string),
+    "seralized_embeddings": tf.io.VarLenFeature(tf.string),
 }
 
 base_path = Path(f"/mnt/disks/fast_ssd/cached_data/")
@@ -46,19 +45,16 @@ def get_records_directory(dataset, language_model, split):
 
     return path
 
-def seralize_to_protobuf(video_id, contextual_embeddings, text):
-    """Seralizes the video_id, contextual_embeddings, and text as a protobuf."""
-
+def seralize_to_protobuf(video_id, contextual_embeddings, tokens):
+    """Seralizes the video_id and contextual_embeddings."""
     video_id_feature = get_feature(video_id)
-    text_feature = get_feature(text)
 
-    seralized_embedding = tf.io.serialize_tensor(contextual_embeddings)
+    seralized_embedding = tf.io.serialize_tensor(contextual_embeddings[:tokens])
     embeddings_feature = get_feature(seralized_embedding)
 
     feature = {
         "video_id": video_id_feature,
         "seralized_embeddings": embeddings_feature,
-        "text": text_feature
     }
 
     protobuf = tf.train.Example(features=tf.train.Features(feature=feature))
@@ -151,37 +147,31 @@ def get_cached_records_dataset(
 
     return dataset
 
-def unseralize_data(seralized_item):
-    """Unseralizes a seralized protobuf feature.
 
-    Returns: a tuple of 3 items, the first being the video id as a string
-        tensor, the second being the contextual embeddings as a float32 tensor,
-        the third being the source text as tensor.
-    """
-    example = tf.io.parse_single_example(seralized_item, decoding_schema)
-    contextual_embeddings = tf.io.parse_tensor(
-        example["seralized_embeddings"], tf.float32)
+def unseralize_data_wrapper(text_max_length, contextual_embeddings_dim):
+    def unseralize_data(seralized_item):
+        """Unseralizes a seralized protobuf feature.
 
-    return (example["video_id"], contextual_embeddings, example["text"])
+        Returns: a tuple of 2 items, the first being the video id as a string
+            tensor, the second being the contextual embeddings.
+        """
+        example = tf.io.parse_single_example(seralized_item, decoding_schema)
+        video_id = example["video_id"]
 
-def truncate_contextual_embeddings_wrapper(
-    text_max_length, contextual_embeddings_dim):
-    """Generates a function that returns."""
-    
-    def truncate_contextual_embeddings(video_id, contextual_embeddings, text):
-        num_words = len(text.decode("utf-8").split(" "))
-        if num_words >= text_max_length:
-            return video_id, contextual_embeddings[:text_max_length]
+        contextual_embeddings = tf.io.parse_tensor(
+            example["seralized_embeddings"], tf.float32)
 
-        output = tf.zeros(
-            (text_max_length - num_words, contextual_embeddings_dim),
-            tf.float32)
-        output = tf.concat([contextual_embeddings[:num_words], output], axis=0)
-        
-        return video_id, output
+        if contextual_embeddings.shape[0] >= text_max_length:
+            return (video_id, contextual_embeddings[:text_max_length])
+        else:
+            output = tf.zeros((
+                text_max_length - contextual_embeddings.shape[0],
+                contextual_embeddings_dim))
+            
+            output = tf.concat([contextual_embeddings, output], axis=0)
+            return (video_id, contextual_embeddings)
 
-    return lambda *args: tf.numpy_function(
-        truncate_contextual_embeddings, args, (tf.string, tf.float32))
+    return unseralize_data
 
 def get_cached_language_model_embeddings(
     source_dataset, language_model, split, shuffle_files=True):
@@ -197,15 +187,11 @@ def get_cached_language_model_embeddings(
             before they are read.
     Returns: a tf.data Dataset where the first element is the video id as a
         string tensor, the second is the contextual embeddings as a float32
-        tensor, and the third is the raw caption text as a string tensor.
-        The dataset is empty if there are no cached results.  
+        tensor. The dataset is empty if there are no cached results.  
     """
     dataset = get_cached_records_dataset(
         source_dataset, language_model, split, shuffle_files)
 
-    return (dataset
-        .map(unseralize_data, num_parallel_calls=tf.data.experimental.AUTOTUNE)
-        .map(
-            truncate_contextual_embeddings_wrapper(
-                *language_model.contextual_embeddings_shape),
-            num_parallel_calls=tf.data.experimental.AUTOTUNE))
+    return dataset.map(
+        unseralize_data_wrapper(*language_model.contextual_embeddings),
+        num_parallel_calls=tf.data.experimental.AUTOTUNE)

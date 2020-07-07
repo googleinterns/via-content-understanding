@@ -28,18 +28,19 @@ def get_encode_function(language_model):
     Returns: a function that has two parameters, the video id, and the caption
         text. This function then returns a tuple of 3 values. The first value is
         the video id, the second value is the encoded ids, and the third is the
-        caption text.
+        number of tokens in the encoding.
     """
 
     def encode_text(text):
-        result = language_model.encode(text.decode("utf-8"))
-        return [result]
+        result, tokens = language_model.encode(text.decode("utf-8"))
+        return [result], tokens
 
     def wrapper(video_id, text):
-        result = tf.numpy_function(encode_text, [text], tf.int64)
+        result, tokens = tf.numpy_function(
+            encode_text, [text], (tf.int64, tf.int64))
         result.set_shape(language_model.encoded_shape)
 
-        return video_id, result, text
+        return video_id, result, tokens
 
     return wrapper
 
@@ -52,15 +53,16 @@ def get_language_model_inference_function(language_model):
 
     Returns: a function that has three parameters, the video id, the encoded ids
         and the text of the caption. The function returns three values, the 
-        video id, the contextual embeddings, and the caption text.
+        video id, the contextual embeddings, and the number of tokens in the
+        encoding.
     """
 
     def inference(ids):
         return language_model(ids)
 
-    def wrapper(video_id, ids, text):
+    def wrapper(video_id, ids, tokens):
         contextual_embeddings = tf.py_function(inference, [ids], tf.float32)
-        return video_id, contextual_embeddings, text
+        return video_id, contextual_embeddings, tokens
 
     return wrapper
 

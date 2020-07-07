@@ -65,7 +65,9 @@ class OpenAIGPTModel(BaseLanguageModel):
             text: a string to encode as ids
 
         Returns:
-            A python list of ids zero padded to the appropriate size. 
+            A tuple of two elements. First, a python list of ids zero padded to
+            the appropriate size. Second, the number of tokens the text was
+            encoded to.
         """
 
         tokens = self.tokenizer.tokenize(text)
