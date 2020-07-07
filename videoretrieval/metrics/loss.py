@@ -107,6 +107,7 @@ def bidirectional_max_margin_ranking_loss(
 
     computed_similarities = computed_similarities *  (1 - tf.eye(batch_size))
 
-    loss = tf.reduce_sum(computed_similarities) / (2 * batch_size**2)
+    loss = tf.reduce_sum(
+        computed_similarities) / (2 * (batch_size**2 - batch_size))
 
     return loss
