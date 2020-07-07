@@ -40,7 +40,7 @@ class TextEncoder(tf.keras.Model):
             ghost_clusters=1,
             language_model_dimensionality=768,
             encoded_expert_dimensionality=100):
-        """Initalize TextEncoder.
+        """Initialize TextEncoder.
 
         Parameters:
             num_of_experts: number of experts used in the video encoder.
@@ -63,7 +63,7 @@ class TextEncoder(tf.keras.Model):
         self.make_dense_layers()
 
     def make_gems(self):
-        """Initalize gated embedding modules."""
+        """Initialize gated embedding modules."""
         self.gems = []
 
         for _ in range(self.num_of_experts):
@@ -73,13 +73,26 @@ class TextEncoder(tf.keras.Model):
 
 
     def make_dense_layers(self):
-        """Make dense + softmax layers."""
+        """Make dense layer used for generating mixture of embedding weights.
+        Note: "moe" stands for mixture of embeddings weights. 
+        """
+
         self.moe_dense = tf.keras.layers.Dense(
             self.num_of_experts,
             activation="softmax")
 
     def call(self, input_):
-        """Forward pass."""
+        """Executes a forward pass on the text encoder.
+
+        First, the text is aggregated using netvlad. These aggregated
+        text embeddings are inputted to each gated embedding module to generate 
+        the normalized embeddings. The aggregated text embeddings are also
+        inputted into the moe_dense layer to generate the mixture weights.
+
+        Returns: a tuple of two elements. First, a list of embeddings for the
+        text captions. Second, a tensor of mixture weights for the embeddings.
+
+        """
 
         aggregated_embeddings = self.netvlad(input_)
 
