@@ -40,7 +40,5 @@ class TestLoss(unittest.TestCase):
     loss_out = loss.custom_crossentropy(y_actual, y_predicted, epsilon=1)
     self.assertEqual(loss_out, tf.zeros(()))
 
-
-
 if __name__ == "__main__":
   unittest.main()

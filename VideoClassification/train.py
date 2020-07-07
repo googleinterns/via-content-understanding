@@ -51,8 +51,6 @@ def train(data_dir, epochs=6, lr=0.0002, num_clusters=256, batch_size=80, random
   """
   train_dir = os.path.join(data_dir, "train")
   validation_dir = os.path.join(data_dir, "validate")
-  
-
   test_dir = os.path.join(data_dir, "validate")
 
   #Set up Reader and Preprocess Data

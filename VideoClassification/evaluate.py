@@ -71,7 +71,7 @@ def evaluate_model(model, data_reader, test_dir, batch_size):
   
   return eval_dict
 
-def load_and_evaluate(data_dir, model_path, epochs=6, lr=0.0002, num_clusters=256, batch_size=80, random_frames=True, num_mixtures=2, fc_units=1024, iterations=300):
+def load_and_evaluate(data_dir, model_path, epochs=6, num_clusters=256, batch_size=80, random_frames=True, num_mixtures=2, fc_units=1024, iterations=300):
   """Load and test the video classifier model.
 
   Args:
@@ -89,9 +89,7 @@ def load_and_evaluate(data_dir, model_path, epochs=6, lr=0.0002, num_clusters=25
 
   #Compile and train model
   model_generator = model_lib.VideoClassifier(num_clusters, video_input_shape, audio_input_shape, fc_units=fc_units, num_classes=data_reader.num_classes, num_mixtures=num_mixtures, iterations=iterations)
-  
   model = model_generator.build_model(input_shape, batch_size)
-
   model.load_weights(model_path)
 
   eval_dict = evaluate_model(model, data_reader, test_dir, batch_size)

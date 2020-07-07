@@ -17,9 +17,12 @@ import tensorflow as tf
 
 class NetVLAD(tf.keras.layers.Layer):
   """Applies NetVLAD to the input.
-  Arguments:
+  
+  Args:
     num_clusters: The number of clusters to use.
-  Input shape:
+    input_shape: 3D tensor denoting the input shape of the NetVLAD layer.
+  
+  Input Shape:
     3D tensor with shape: `(batch_size, time, feature_dim)`.
   Output shape:
     2D tensor with shape: `(batch_size, feature_dim * num_clusters)`.
@@ -51,6 +54,7 @@ class NetVLAD(tf.keras.layers.Layer):
 
   def call(self, frames):
     """Apply the NetVLAD module to the given frames.
+    
     Args:
       frames: A tensor with shape [batch_size, max_frames, feature_dim].
     Returns:
@@ -123,11 +127,8 @@ class ContextGating(tf.keras.layers.Layer):
     feature_dim = model_input.shape.as_list()[-1]
     if feature_dim is None:
       raise ValueError("Last dimension must be defined.")
-    
     context_gate = self.fc(model_input)
-
     output = tf.math.multiply(context_gate, model_input)
-
     return output
 
   def compute_output_shape(self, input_shape):
