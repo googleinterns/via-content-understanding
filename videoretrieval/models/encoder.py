@@ -100,10 +100,11 @@ class EncoderModel(tf.keras.Model):
         video_ids, video_features, text_features, missing_experts = \
             video_text_pair_batch
 
-        assert video_ids.shape[0] % self.captions_per_video == 0
+        #assert video_ids.shape[0] % self.captions_per_video == 0
 
         video_ids = self.remove_repeated_video_data(video_ids)
-        video_features = map(self.remove_repeated_video_data, video_features)
+        video_features = list(map(
+            self.remove_repeated_video_data, video_features))
         missing_experts = self.remove_repeated_video_data(missing_experts)
 
         video_results = self.video_encoder(

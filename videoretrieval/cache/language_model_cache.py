@@ -193,5 +193,5 @@ def get_cached_language_model_embeddings(
         source_dataset, language_model, split, shuffle_files)
 
     return dataset.map(
-        unseralize_data_wrapper(*language_model.contextual_embeddings),
+        unseralize_data_wrapper(*language_model.contextual_embeddings_shape),
         num_parallel_calls=tf.data.experimental.AUTOTUNE)

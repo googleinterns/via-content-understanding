@@ -73,7 +73,7 @@ class OpenAIGPTModel(BaseLanguageModel):
         tokens = self.tokenizer.tokenize(text)
         padded_tokens = self.pad_tokens(tokens)
 
-        return self.tokenizer.convert_tokens_to_ids(padded_tokens)
+        return self.tokenizer.convert_tokens_to_ids(padded_tokens), len(tokens)
 
     def forward(self, ids):
         """A forward pass on the model.
