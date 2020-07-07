@@ -45,4 +45,11 @@ class BaseExpert(AbstractClass):
         return None
     
     def feature_transformation(self, feature):
+        """A transformation applied to features when they are loaded from the
+        cache.
+
+        Arguments:
+            feature: the feature to apply the transformation to.
+
+        Returns: the transformed feature."""
         return feature
