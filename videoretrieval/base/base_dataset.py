@@ -79,13 +79,17 @@ class BaseVideoDataset(AbstractClass):
     
     @property
     def id_caption_pair_datasets(self):
-        """Get id caption pair datasets for each split in dataset.
+        """Get id caption pair datasets for each split in this dataset.
 
-        Returns: a tuple of three tuples, where the first element of each tuple
-        is the tf.data.Dataset of video id caption pairs, and the second element
+        Returns: a tuple of three tuples. Each tuple has two elements, the first
+        tf.data.Dataset of video id caption pairs, and the second element
         is the name of the split as a string. In the retured tuple, the first
         element is the data for the train split, followed by the valid and test
-        sets.
+        sets. The three splits returned are for "train", "valid", and "test" 
+        splits. For example, the returned data would be: (
+            (tf.data.Dataset instance, "train"),
+            (tf.data.Dataset instance, "valid"),
+            (tf.data.Dataset instance, "test"))
         """ 
 
         train_ids, valid_ids, test_ids = self.train_valid_test_ids
@@ -119,9 +123,23 @@ class BaseVideoDataset(AbstractClass):
         )
 
     def num_of_examples_by_split(self, split_name):
-        """Get the number of examples in the given split in this dataset."""
+        """Gets the number of examples in the given split in this dataset.
+
+        Parameters:
+            split_name: the name of the dataset split, as a string (case
+            insensitive). The split name can be "train", "valid", or "test".
+
+        Returns: an integer that represents the number of examples in the given
+        split.
+
+        Raises: ValueError if the split name is not "train", "valid", or "test".
+        """
         if "num_of_train_examples" not in dir(self):
+            # Accessing the property self.id_caption_pair_datasets counts the
+            # number of examples in each split 
             _ = self.id_caption_pair_datasets
+
+        split_name = split_name.lower()
 
         if split_name == "train":
             return self.num_of_train_examples
