@@ -150,6 +150,18 @@ def get_cached_records_dataset(
 
 
 def unseralize_data_wrapper(text_max_length, contextual_embeddings_dim):
+    """Wrapper for unseralization function.
+
+    Parameters:
+        text_max_length: the length to zero-pad the contextual embeddings to.
+        contextual_embeddings_dim: the last dimension of the contextual
+            embeddings.
+
+    Returns: a function that maps from a seralized protobuf string to a tuple
+        with two elements: the first being the video id, the second being a
+        tensor of size text_max_length x contextual_embeddings_dim.
+    """ 
+
     def get_embedding_length(embedding):
         return embedding.shape[0]
 
