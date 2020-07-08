@@ -30,8 +30,7 @@ class TemporalAggregationLayer(tf.keras.layers.Layer):
 
     Attributes:
         output_dim: the dimensionality the experts are aggregated to.
-        use_netvald: a boolean indicating if we should use netvlad to aggregate
-            the features.
+        use_netvald: a boolean indicating if netvlad is used for aggregation.
         netvlad_clusters: the number of clusters the netvlad layer uses. 
         netvlad: a netvlad layer used to aggregate features to a fixed length.
             This will be missing if the use_netvlad attribute is False.
