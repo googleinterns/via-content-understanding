@@ -56,7 +56,7 @@ def serialize_to_protobuf(video_id, contextual_embeddings, tokens):
 
     Returns:
         A protobuf serialized as a string.
-        """
+    """
     video_id_feature = get_feature(video_id)
 
     # Access contextual_embeddings[0] to get rid of extra dimension.
@@ -97,10 +97,10 @@ def cache_language_model_embeddings(dataset, source_dataset, language_model,
     """Caches embeddings for a specific dataset/model/split.
 
     Arguments:
-        dataset: a tf.data Dataset to be cached where the first element is the
-            video is as a string tensor, the second is the contextual embeddings
-            as a float32 tensor, and the third is the raw caption text as a
-            string tensor.
+        dataset: a batched tf.data Dataset to be cached where the first element
+            is the video is as a string tensor, the second is the contextual
+            embeddings as a float32 tensor, and the third is the number of
+            tokens in the tokenized raw caption.
         source_dataset: an implementation of BaseDataset for the dataset to be
             loaded.
         language_model: an implementation of BaseLanguageModel for the language
