@@ -23,7 +23,7 @@ embeddings_per_file = 100
 
 decoding_schema = {
     "video_id": tf.io.FixedLenFeature([], tf.string),
-    "seralized_embeddings": tf.io.VarLenFeature(tf.string),
+    "serialized_embeddings": tf.io.FixedLenFeature([], tf.string),
 }
 
 base_path = Path(f"/mnt/disks/fast_ssd/cached_data/")
@@ -49,12 +49,13 @@ def seralize_to_protobuf(video_id, contextual_embeddings, tokens):
     """Seralizes the video_id and contextual_embeddings."""
     video_id_feature = get_feature(video_id)
 
-    seralized_embedding = tf.io.serialize_tensor(contextual_embeddings[:tokens])
+    seralized_embedding = tf.io.serialize_tensor(
+        contextual_embeddings[0, :tokens])
     embeddings_feature = get_feature(seralized_embedding)
 
     feature = {
         "video_id": video_id_feature,
-        "seralized_embeddings": embeddings_feature,
+        "serialized_embeddings": embeddings_feature,
     }
 
     protobuf = tf.train.Example(features=tf.train.Features(feature=feature))
@@ -149,6 +150,9 @@ def get_cached_records_dataset(
 
 
 def unseralize_data_wrapper(text_max_length, contextual_embeddings_dim):
+    def get_embedding_length(embedding):
+        return embedding.shape[0]
+
     def unseralize_data(seralized_item):
         """Unseralizes a seralized protobuf feature.
 
@@ -161,15 +165,18 @@ def unseralize_data_wrapper(text_max_length, contextual_embeddings_dim):
         contextual_embeddings = tf.io.parse_tensor(
             example["seralized_embeddings"], tf.float32)
 
-        if contextual_embeddings.shape[0] >= text_max_length:
+        embedding_length = tf.numpy_function(
+            get_embedding_length, [contextual_embeddings], tf.int64)
+
+        if embedding_length >= text_max_length:
             return (video_id, contextual_embeddings[:text_max_length])
         else:
             output = tf.zeros((
-                text_max_length - contextual_embeddings.shape[0],
+                text_max_length - embedding_length,
                 contextual_embeddings_dim))
             
             output = tf.concat([contextual_embeddings, output], axis=0)
-            return (video_id, contextual_embeddings)
+            return (video_id, output)
 
     return unseralize_data
 
