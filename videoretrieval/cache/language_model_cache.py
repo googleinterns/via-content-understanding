@@ -47,9 +47,19 @@ def get_records_directory(dataset, language_model, split):
     return path
 
 def serialize_to_protobuf(video_id, contextual_embeddings, tokens):
-    """Serializes the video_id and contextual_embeddings."""
+    """Serializes the video_id and contextual_embeddings.
+
+    Parameters:
+        video_id: the id of the video corresponding to the caption.
+        contextual_embeddings: a 1 x padded size x embedding dimension tensor.
+        tokens: the number of tokens created from the original caption.
+
+    Returns:
+        A protobuf serialized as a string.
+        """
     video_id_feature = get_feature(video_id)
 
+    # Access contextual_embeddings[0] to get rid of extra dimension.
     serialized_embedding = tf.io.serialize_tensor(
         contextual_embeddings[0, :tokens])
     embeddings_feature = get_feature(serialized_embedding)
