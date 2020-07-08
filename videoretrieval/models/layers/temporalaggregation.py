@@ -47,8 +47,12 @@ class TemporalAggregationLayer(tf.keras.layers.Layer):
             output_dim: the dimensionality to project the experts to.
             use_netvlad: a boolean indicating if NetVLAD should be used for
                 aggregation.
-            kernel_initializer: the way to initialize the dense layer's kernels.
-            bias_initializer: the way to initialize the dense layer's biases.
+            kernel_initializer: the way to initialize the projection layer's
+                kernels. Either a tf.keras.initializers initializer or a string
+                naming the initializer.
+            bias_initializer: the way to initialize the projection layer's
+                biases.Either a tf.keras.initializers initializer or a string
+                naming the initializer.
             netvlad_clusers: the number of clusters NetVLAD should have.
             ghost_clusters: the number of ghost clusters NetVLAD should have.    
         """
