@@ -41,7 +41,7 @@ class TextEncoder(tf.keras.Model):
             language_model_dimensionality=768,
             encoded_expert_dimensionality=100,
             kernel_initializer="glorot_uniform",
-            bias_initializer="glorot_uniform"):
+            bias_initializer="zeros"):
         """Initialize TextEncoder.
 
         Parameters:

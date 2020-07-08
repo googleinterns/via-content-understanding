@@ -50,7 +50,7 @@ class VideoEncoder(tf.keras.Model):
             make_activation_layer=tf.keras.layers.ReLU,
             use_batch_norm=True,
             kernel_initializer="glorot_uniform",
-            bias_initializer="glorot_uniform"
+            bias_initializer="zeros"
             ):
         """Initialize video encoder.
 
