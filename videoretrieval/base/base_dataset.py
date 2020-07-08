@@ -82,11 +82,11 @@ class BaseVideoDataset(AbstractClass):
         """Get id caption pair datasets for each split in this dataset.
 
         Returns: a tuple of three tuples. Each tuple has two elements, the first
-        tf.data.Dataset of video id caption pairs, and the second element
+        is a tf.data.Dataset of video id caption pairs, and the second element
         is the name of the split as a string. In the retured tuple, the first
         element is the data for the train split, followed by the valid and test
         sets. The three splits returned are for "train", "valid", and "test" 
-        splits. For example, the returned data would be: (
+        splits. The returned data is structured as follows: (
             (tf.data.Dataset instance, "train"),
             (tf.data.Dataset instance, "valid"),
             (tf.data.Dataset instance, "test"))
