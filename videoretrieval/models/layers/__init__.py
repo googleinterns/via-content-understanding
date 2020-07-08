@@ -1,4 +1,4 @@
-"""Implementation of the video encoder.
+"""__init__.py for the layers package.
 
 Copyright 2020 Google LLC
 
