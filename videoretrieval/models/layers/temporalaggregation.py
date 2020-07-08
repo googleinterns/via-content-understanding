@@ -19,12 +19,30 @@ import tensorflow as tf
 from .netvlad import NetVLAD
 
 class TemporalAggregationLayer(tf.keras.layers.Layer):
-    """A layer that aggregates expert features to a common dimensionality."""
+    """A layer that aggregates expert features to a common dimensionality.
+
+    If the expert feature is variable length, netvlad is used project the
+    feature to a fixed length vector. Then, the fixed length vector is projected
+    to a specified dimensionality and then l2 normalized. 
+
+    If the expert feature is constant length, the feature is projected to a
+    specified dimensionality and then l2 normalized.
+
+    Attributes:
+        output_dim: the dimensionality the experts are aggregated to.
+        use_netvald: a boolean indicating if we should use netvlad to aggregate
+            the features.
+        netvlad_clusters: the number of clusters the netvlad layer uses. 
+        netvlad: a netvlad layer used to aggregate features to a fixed length.
+            This will be missing if the use_netvlad attribute is False.
+        projection_layer: a dense layer used to project the expert features to a
+            common dimensionality.
+     """
 
     def __init__(
         self, output_dim, use_netvlad, kernel_initializer, bias_initializer, 
         netvlad_clusters=5, ghost_clusters=0):
-        """Initalizes this temporal aggregation layer.
+        """Initializers this temporal aggregation layer.
 
         Arguments:
             output_dim: the dimensionality to project the experts to.
