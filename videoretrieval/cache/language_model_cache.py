@@ -121,15 +121,15 @@ def get_cached_records_dataset(
     """Gets a TFRecordDataset of cached data.
 
     Parameters:
-        source_dataset: an implementation of BaseDataset that the cached
-            embeddings were generated from. 
-        language_model: an implementation of BaseLanguage model that the
-            cached embeddings were generated from.
+        source_dataset: an instance of BaseDataset that the cached embeddings
+            were generated from. 
+        language_model: an instance of BaseLanguage model that the cached
+            embeddings were generated from.
         split: the name of the dataset split.
         shuffle_files: a boolean indicating if the files should be shuffled
             before they are read.
 
-    Returns: a list of file paths (as strings) to each cached tfrecord file.
+    Returns: a TFRecord dataset of serialized embeddings.
     """
 
     records_directory = get_records_directory(
@@ -148,14 +148,13 @@ def get_cached_records_dataset(
         dataset = dataset.shuffle(len(file_paths))
 
     dataset = dataset.batch(len(file_paths)).interleave(
-        lambda files: tf.data.TFRecordDataset(
-            files))#, num_parallel_reads=tf.data.experimental.AUTOTUNE))
+        lambda files: tf.data.TFRecordDataset(files))
 
     return dataset
 
 
 def unserialize_data_wrapper(text_max_length, contextual_embeddings_dim):
-    """Wrapper for unseralization function.
+    """Wrapper for unserialize function.
 
     Parameters:
         text_max_length: the length to zero-pad the contextual embeddings to.
@@ -199,16 +198,16 @@ def unserialize_data_wrapper(text_max_length, contextual_embeddings_dim):
 
 def get_cached_language_model_embeddings(
     source_dataset, language_model, split, shuffle_files=True):
-    """Loads the cached embeddings for a specific dataset/model/split.
+    """Loads the cached embeddings for a specific dataset/split.
 
     Parameters:
-        source_dataset: an implementation of BaseDataset for the dataset to be
-            loaded.
-        language_model: an implementation of BaseLanguageModel for the language
-            model used to generate the contextual embeddings.
+        source_dataset: an instance of BaseDataset for the dataset to be loaded.
+        language_model: an instance of BaseLanguageModel for the language model
+            used to generate the contextual embeddings.
         split: the name of the split (as a string).
         shuffle_files: a boolean indicating if the files should be shuffled
             before they are read.
+    
     Returns: a tf.data Dataset where the first element is the video id as a
         string tensor, the second is the contextual embeddings as a float32
         tensor. The dataset is empty if there are no cached results.  
