@@ -61,6 +61,7 @@ class BaseLanguageModel(AbstractClass):
 
         Returns:
             A tuple of two elements. First, a python list of ids zero padded to
-            the appropriate size. Second, the number of tokens the 
+            the appropriate size. Second, the number of tokens in the tokenized
+            text.
         """
         pass
