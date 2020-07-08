@@ -90,7 +90,8 @@ class VideoEncoder(tf.keras.Model):
 
         self.make_gem_layers(kernel_initializer, bias_initializer)
 
-    def make_temporal_aggregation_layers(self):
+    def make_temporal_aggregation_layers(
+        self, kernel_initializer, bias_initializer):
         """Make temporal aggregation layers."""
         self.temporal_aggregation_layers = []
 
