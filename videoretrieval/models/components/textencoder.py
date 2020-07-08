@@ -39,7 +39,9 @@ class TextEncoder(tf.keras.Model):
             num_netvlad_clusters=25,
             ghost_clusters=1,
             language_model_dimensionality=768,
-            encoded_expert_dimensionality=100):
+            encoded_expert_dimensionality=100,
+            kernel_initializer="glorot_uniform",
+            bias_initializer="glorot_uniform"):
         """Initialize TextEncoder.
 
         Parameters:
@@ -50,6 +52,10 @@ class TextEncoder(tf.keras.Model):
             encoded_expert_dimensionality: the dimensionality video experts
                 embeddings are computed down to. Final output size is num of
                 experts * encoded_expert_dimensionality.
+            kernel_initializer: the strategy used to initialize the weights in
+                dense layer's kernel.
+            bias_initial: the strategy used to initalize the weights in dense
+                layers' biases.
         """
         super(TextEncoder, self).__init__()
 
@@ -59,27 +65,35 @@ class TextEncoder(tf.keras.Model):
         self.netvlad = NetVLAD(num_netvlad_clusters, ghost_clusters)
         self.encoded_expert_dimensionality = encoded_expert_dimensionality
 
-        self.make_gems()
-        self.make_dense_layers()
+        self.make_gems(
+            kernel_initializer=kernel_initializer,
+            bias_initializer=bias_initializer)
 
-    def make_gems(self):
+        self.make_dense_layers(
+            kernel_initializer=kernel_initializer,
+            bias_initializer=bias_initializer)
+
+    def make_gems(self, kernel_initializer, bias_initializer):
         """Initialize gated embedding modules."""
         self.gems = []
 
         for _ in range(self.num_of_experts):
             self.gems.append(GatedEmbeddingModule(
-                self.language_model_dimensionality * self.num_netvlad_clusters,
-                self.encoded_expert_dimensionality))
+                self.encoded_expert_dimensionality,
+                kernel_initializer=kernel_initializer,
+                bias_initializer=bias_initializer))
 
 
-    def make_dense_layers(self):
+    def make_dense_layers(self, kernel_initializer, bias_initializer):
         """Make dense layer used for generating mixture of embedding weights.
         Note: "moe" stands for mixture of embeddings weights. 
         """
 
         self.moe_dense = tf.keras.layers.Dense(
             self.num_of_experts,
-            activation="softmax")
+            activation="softmax",
+            kernel_initializer=kernel_initializer,
+            bias_initializer=bias_initializer)
 
     def call(self, input_):
         """Executes a forward pass on the text encoder.

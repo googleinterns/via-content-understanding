@@ -49,6 +49,8 @@ class VideoEncoder(tf.keras.Model):
             h_mlp_layers=5,
             make_activation_layer=tf.keras.layers.ReLU,
             use_batch_norm=True,
+            kernel_initializer="glorot_uniform",
+            bias_initializer="glorot_uniform"
             ):
         """Initialize video encoder.
 
@@ -62,6 +64,10 @@ class VideoEncoder(tf.keras.Model):
             h_mlp_layers: layers in the mlp labeled "h".
             use_batch_norm: if this model should use batch norm in the reasoning
                 layers.
+            kernel_initializer: the strategy used to initialize the weights in
+                dense layer's kernel.
+            bias_initial: the strategy used to initalize the weights in dense
+                layers' biases.
         """
 
         super(VideoEncoder, self).__init__()
@@ -74,11 +80,15 @@ class VideoEncoder(tf.keras.Model):
         self.make_activation_layer = make_activation_layer
         self.use_batch_norm = use_batch_norm
 
-        self.make_temporal_aggregation_layers()
-        self.g_mlp = self.make_mlp(g_mlp_layers)
-        self.h_mlp = self.make_mlp(h_mlp_layers)
+        self.make_temporal_aggregation_layers(
+            kernel_initializer, bias_initializer)
 
-        self.make_gem_layers()
+        self.g_mlp = self.make_mlp(
+            g_mlp_layers, kernel_initializer, bias_initializer)
+        self.h_mlp = self.make_mlp(
+            h_mlp_layers, kernel_initializer, bias_initializer)
+
+        self.make_gem_layers(kernel_initializer, bias_initializer)
 
     def make_temporal_aggregation_layers(self):
         """Make temporal aggregation layers."""
@@ -90,9 +100,11 @@ class VideoEncoder(tf.keras.Model):
             self.temporal_aggregation_layers.append(TemporalAggregationLayer(
                 self.expert_aggregated_size,
                 should_use_netvlad,
+                kernel_initializer=kernel_initializer,
+                bias_initializer=bias_initializer,
                 netvlad_clusters=clusters))
 
-    def make_mlp(self, num_layers):
+    def make_mlp(self, num_layers, kernel_initializer, bias_initializer):
         """Makes and returns an sequential feed forward neural network.
 
         This network is comprised of dense layers, batch normalization layers
@@ -113,7 +125,9 @@ class VideoEncoder(tf.keras.Model):
             sequential_layers.append(
                 tf.keras.layers.Dense(
                     self.expert_aggregated_size,
-                    activation=None))
+                    activation=None,
+                    kernel_initializer=kernel_initializer,
+                    bias_initializer=bias_initializer))
 
             if i == num_layers - 1:
                 break
@@ -127,13 +141,15 @@ class VideoEncoder(tf.keras.Model):
 
         return tf.keras.Sequential(sequential_layers)
 
-    def make_gem_layers(self):
+    def make_gem_layers(self, kernel_initializer, bias_initializer):
         """Create gated embedding reasoning units and adds them to self.gems."""
         self.gems = []
         
         for _ in self.experts:
             self.gems.append(GatedEmbeddingUnitReasoning(
-                self.encoded_expert_dimensionality))
+                self.encoded_expert_dimensionality,
+                kernel_initializer=kernel_initializer,
+                bias_initializer=bias_initializer))
 
     def call(self, inputs):
         """Forward pass on the video encoder.

@@ -39,14 +39,25 @@ class GatedEmbeddingModule(tf.keras.layers.Layer):
             applies a sigmoid.
         batch_norm: a Batch Normalization layer for the activiations.
     """
-    def __init__(self, input_dimension, output_dimension):
+    def __init__(self, output_dimension, kernel_initializer, bias_initializer):
+        """Initializes a Gated Embedding Module.
+
+        Parameters:
+            output_dimension: the dimensionality of the output.
+            kernel_initializer: the way to initialize the dense layer's kernels.
+            bias_initializer: the way to initialize the dense layer's biases.
+        """ 
         super(GatedEmbeddingModule, self).__init__()
 
         self.linear_layer_one = tf.keras.layers.Dense(
-            output_dimension, input_shape=(input_dimension,))
+            output_dimension,
+            kernel_initializer=kernel_initializer,
+            bias_initializer=bias_initializer)
 
         self.linear_layer_two = tf.keras.layers.Dense(
-            output_dimension, input_shape=(output_dimension,))
+            output_dimension,
+            kernel_initializer=kernel_initializer,
+            bias_initializer=bias_initializer)
 
         self.batch_norm = tf.keras.layers.BatchNormalization(momentum=0.1)
 
@@ -66,6 +77,14 @@ class GatedEmbeddingModule(tf.keras.layers.Layer):
 class GatedEmbeddingUnitReasoning(tf.keras.layers.Layer):
     """An implementation of the Gated Embedding Unit for Video Reasoning.
 
+    This layer takes in two inputs, an expert video embedding and a mask.
+    First, the embedding is passed through a dense layer to create
+    activations which are then batch normalized. Then, the mask is batch
+    normalized and added to the activations and a sigmoid function is
+    applied to the sum, then multiplied element wise with the embedding.
+    The this product is then l2 normalized and returned. 
+
+
     Attributes:
         fully_connected: a dense, fully connected layer.
         batch_norm_one: a batch normalization layer for the activations from the
@@ -73,21 +92,19 @@ class GatedEmbeddingUnitReasoning(tf.keras.layers.Layer):
         batch_norm_two: a batch normalization layer for the mask.
     """
 
-    def __init__(self, output_dimension):
+    def __init__(self, output_dimension, kernel_initializer, bias_initializer):
         """Initalizes the Gated Embedding Reasoning Unit.
-
-        This layer takes in two inputs, an expert video embedding and a mask.
-        First, the embedding is passed through a dense layer to create
-        activations which are then batch normalized. Then, the mask is batch
-        normalized and added to the activations and a sigmoid function is
-        applied to the sum, then multiplied element wise with the embedding.
-        The this product is then l2 normalized and returned. 
 
         Arguments:
             output_dimension: dimension this unit should output.
+            kernel_initializer: the way to initialize the dense layer's kernels.
+            bias_initializer: the way to initialize the dense layer's biases.
         """
         super(GatedEmbeddingUnitReasoning, self).__init__()
-        self.fully_connected = tf.keras.layers.Dense(output_dimension)
+        self.fully_connected = tf.keras.layers.Dense(
+            output_dimension,
+            kernel_initializer=kernel_initializer,
+            bias_initializer=bias_initializer)
 
         self.batch_norm_one = tf.keras.layers.BatchNormalization(momentum=0.1)
         self.batch_norm_two = tf.keras.layers.BatchNormalization(momentum=0.1)
