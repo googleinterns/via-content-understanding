@@ -1,4 +1,4 @@
-"""Implementation of the video encoder.
+"""Implementation of the temporal aggregation layer.
 
 Copyright 2020 Google LLC
 
