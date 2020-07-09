@@ -19,7 +19,7 @@ from cache import cache_language_model_embeddings
 
 
 def get_encode_function(language_model):
-    """Returns a function that encodes captions.
+    """Wraps a function that uses a language model's tokenizer to encoder text.
 
     Arguments:
         language_model: an instance of BaseLanguageModel that is used to encode
@@ -45,7 +45,7 @@ def get_encode_function(language_model):
     return wrapper
 
 def get_language_model_inference_function(language_model):
-    """Returns a function that inferences with the language model.
+    """Wraps a function that uses a language model to generate embeddings.
 
     Arguments:
         language_model: an instance of BaseLanguageModel that is used to
@@ -53,7 +53,7 @@ def get_language_model_inference_function(language_model):
 
     Returns: a function that has three parameters: the video id, the encoded
         ids, and the number of tokens in the tokenized caption. The function
-        returns three values, the  video id, the contextual embeddings, and the
+        returns three values, the video id, the contextual embeddings, and the
         number of tokens in the tokenized caption.
     """
 
