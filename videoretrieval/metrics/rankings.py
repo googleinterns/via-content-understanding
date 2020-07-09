@@ -1,14 +1,17 @@
-"""Copyright 2020 Google LLC
+"""Defines functions for computing ranks.
+
+Copyright 2020 Google LLC
+
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
     https://www.apache.org/licenses/LICENSE-2.0
+
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-Defines the loss function needed to train the model.
 """
 
 import tensorflow as tf
@@ -64,18 +67,40 @@ def compute_ranks(
 
 @tf.function
 def get_mean_rank(ranks_tensor):
-    """Gets the mean rank given a tensor of ranks."""
+    """Gets the mean rank given a tensor of ranks.
+
+    Parameters:
+        ranks_tensor: an integer tensor of ranks.
+
+    Returns:
+        The mean rank as a float32 tensor with one element.
+    """
     return tf.reduce_mean(tf.cast(ranks_tensor, tf.float32))
 
 @tf.function
 def get_median_rank(ranks_tensor):
-    """Gets the mean rank given a tensor of ranks."""
+    """Gets the median rank given a tensor of ranks.
+
+    Parameters:
+        ranks_tensor: an integer tensor of ranks.
+
+    Returns:
+        The median rank as an int32 tensor with one element.
+    """
     return tf.reduce_min(
         tf.math.top_k(
             ranks_tensor, ranks_tensor.shape[0] // 2, sorted=False)[0])
 
 @tf.function
 def get_recall_at_k(ranks_tensor, k):
-    """Gets the recall at k given a tensor of ranks and a k."""
+    """Gets the recall at k given a tensor of ranks and a k.
+
+    Parameters:
+        ranks_tensor: an integer tensor of ranks.
+        k: the threshold used in the recall calculation.
+
+    Returns:
+        The recall at k as a float32 tensor with one element.
+    """
     recalled_correctly_mask = tf.cast(ranks_tensor <= k, tf.float32)
     return tf.reduce_mean(recalled_correctly_mask)

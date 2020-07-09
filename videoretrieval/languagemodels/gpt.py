@@ -1,4 +1,6 @@
-"""Copyright 2020 Google LLC
+"""Implementation of BaseLanguageModel class for gpt-1.
+
+Copyright 2020 Google LLC
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -11,8 +13,6 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-
-Implementation of BaseLanguageModel class for gpt-1.
 """
 
 from base import BaseLanguageModel
@@ -62,7 +62,7 @@ class OpenAIGPTModel(BaseLanguageModel):
         """Encode the given text as ids to be passed into the model.
 
         Parameters:
-            text: a string to encode as ids
+            text: a string to encode.
 
         Returns:
             A tuple of two elements. First, a python list of ids zero padded to

@@ -81,7 +81,7 @@ def bidirectional_max_margin_ranking_loss(
         missing_experts: a boolean tensor of shape batch_size x number of
             experts, where each element corresponds to a video embedding and
             indicates the missing experts. 
-        embedding_distance_parameter: a positive marign hyperparameter,called
+        embedding_distance_parameter: a positive margin hyper-parameter, called
             "m" by the authors of the paper. This parameter is added to the
             difference between each pairwise similarity between embeddings.
 

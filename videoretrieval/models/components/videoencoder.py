@@ -23,20 +23,31 @@ from models.layers import TemporalAggregationLayer, \
 class VideoEncoder(tf.keras.Model):
     """Implementation of the video encoder.
 
+    This model takes in a list of features computed by pretrained expert models
+    and produces a fixed length, sharded embeedding. This embedding corresponds
+    to the embedding produced by a corresponding text encoder. This model should
+    be trained in concert with a video encoder.
+
+    The expert features are first aggregated down to a fixed length vector.
+    Then, a model is used to compute an attention mask for each expert feature.
+    The mask and embedding are fed into a Gated Embedding Unit for Video
+    Reasoning.
+
     Attributes:
-        experts: a list of experts (that implement BaseExpert)
-        expert_aggregated_size: the dimensionality we'll project experts to.
-        encoded_expert_dimensionality: the dimensionality experts embeddings
-            are computed down to. Final output size is num of experts *
-            encoded_expert_dimensionality.
+        experts: the experts that are used to generate the precomputed features.
+            This attribute is a list, where each element implements BaseExpert.
+        expert_aggregated_size: the dimensionality experts features are
+            projected to.
+        encoded_expert_dimensionality: the dimensionality fixed size experts embeddings
+            are mapped to.
         temporal_aggregation_layers: a list of temporal aggregation layers, one
             per expert.
-        expert_projection: An expert projection modulation layer.
         g_mlp: A standard feedforward deep neural network, with g_mlp_layers.
+            This model takes in two embeddings and produces an attention mask.
         h_mlp: A standard feedforward deep neural network, with h_mlp_layers.
         gems: A list of gated embedding modules, one per embedding.
         activation_layer: the type of activation to be used.
-        use_batch_norm: if we use batch normalization in the network
+        use_batch_norm: a boolean indicating if batch normalization is used.
     """
 
     def __init__(self, 
@@ -56,7 +67,7 @@ class VideoEncoder(tf.keras.Model):
 
         Parameters:
             experts: a list of experts (that implement BaseExpert).
-            expert_aggregated_size: the dimensionality we'll project experts to.
+            expert_aggregated_size: the dimensionality experts are projected to.
             encoded_expert_dimensionality: the dimensionality experts embeddings
                 are computed down to. Final output size is num of experts * 
                 encoded_expert_dimensionality.

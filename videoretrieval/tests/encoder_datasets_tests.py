@@ -3,47 +3,46 @@ import unittest
 from train import encoder_datasets
 import tensorflow as tf
 
+def make_mock_video_ids(num_videos):
+    video_ids = []
 
-class TestMakeInferenceDataset(unittest.TestCase):
-    """Tests the make inference function in the encoder_datasets module."""
-    def test_multiple_videos(self):
-        expected_video_data = [
-            (0, [0.0]),
-            (1, [1.0]),
-            (2, [2.0]),
-        ]
+    for video_num in range(num_videos):
+        video_ids.append(f"video{video_num}")
 
-        expected_text_data = [
-            (0, [1.0]),
-            (0, [2.0]),
-            (0, [3.0]),
-            (1, [4.0]),
-            (1, [5.0]),
-            (2, [6.0]),
-            (2, [7.0])
-        ]
+def make_mock_id_embeddings_pair_dataset(
+    video_ids, mock_tensor_shape, mock_embeddings_per_video=1):
+    mock_dataset = []
 
-        video_text_pair_dataset = tf.data.Dataset.from_generator(lambda: [
-            ("video0", [0.0], [1.0]),
-            ("video0", [0.0], [2.0]),
-            ("video0", [0.0], [3.0]),
-            ("video1", [1.0], [4.0]),
-            ("video1", [1.0], [5.0]),
-            ("video2", [2.0], [6.0]),
-            ("video2", [2.0], [7.0])], (tf.string, tf.float32, tf.float32))
+    for video_id in video_ids:
+        for _ in range(mock_embeddings_per_video):
+            mock_dataset.append((video_id, tf.zeros(mock_tensor_shape)))
 
-        video_dataset, text_dataset = encoder_datasets.make_inference_dataset(
-            video_text_pair_dataset)
+    dataset_generator = (item for item in mock_dataset) 
 
-        video_dataset_as_list = list(video_dataset.as_numpy_iterator())
-        text_dataset_as_list = list(text_dataset.as_numpy_iterator())
+    return tf.data.Dataset.from_generator(dataset_generator, 
+        (tf.string, tf.float32))
 
-        for generated_ds, expected_ds in [
-            (video_dataset_as_list, expected_video_data),
-            (text_dataset_as_list, expected_text_data)]:
+def make_mock_precomputed_features(self):
 
-            for generated, expected in zip(
-                generated_ds, expected_ds):
 
-                self.assertEqual(generated[0], expected[0])
-                self.assertEqual(list(generated[1]), expected[1])
+class TestEncoderDatasetsFunctions(unittest.TestCase):
+
+    def test_replacing_video_id_with_expert_features(self):
+        mock_video_ids = make_mock_video_ids(5)
+        mock_dataset = make_mock_id_embeddings_pair_dataset(
+            mock_video_ids, (2,2))
+        mock_precomputed_features = make_mock_precomputed_features(
+            mock_video_ids)
+
+        map_fn = encoder_datasets.replace_video_id_with_xpert_features_wrapper(
+            mock_precomputed_features)
+
+        output = list(iter(mock_dataset.map(map_fn)))
+
+    def test_update_dataset_shape_wrapper(self):
+
+    def test_zero_pad_expert_features(self):
+
+    def test_get_precomputed_features(self):
+
+    def test_sample_captions(self):

@@ -37,13 +37,13 @@ class TextEncoder(tf.keras.Model):
     Attributes:
         num_of_experts: the number of experts used.
         num_netvlad_clusters: the number of clusters in the NetVLAD model.
-        language_model_dimensionality: last dimension of output of language
-            model.
-        netvlad: A NetVLAD model, used for aggregation embeddings.
+        language_model_dimensionality: the length of the last dimension of
+            the contextual embeddings.
+        netvlad: a NetVLAD model, used for aggregation embeddings.
         encoded_expert_dimensionality: dimensionality of each expert in the
             final embedding.
-        gems: A list of gated embedding modules, one per expert.
-        dense_layers: A list of dense layers, one per expert.
+        gems: a list of gated embedding modules, one per expert.
+        dense_layers: a list of dense layers, one per expert.
 
     """
     def __init__(self,
@@ -54,7 +54,7 @@ class TextEncoder(tf.keras.Model):
             encoded_expert_dimensionality=100,
             kernel_initializer="glorot_uniform",
             bias_initializer="zeros"):
-        """Initialize TextEncoder.
+        """Initialize this model.
 
         Parameters:
             num_of_experts: number of experts used in the video encoder.
@@ -65,7 +65,7 @@ class TextEncoder(tf.keras.Model):
             encoded_expert_dimensionality: the dimensionality video experts
                 embeddings are computed down to.
             kernel_initializer: the strategy used to initialize the weights in
-                dense layer's kernel.
+                dense layers' kernel.
             bias_initial: the strategy used to initialize the weights in dense
                 layers' biases.
         """
@@ -114,6 +114,9 @@ class TextEncoder(tf.keras.Model):
         text embeddings are inputted to each gated embedding module to generate 
         the normalized embeddings. The aggregated text embeddings are also
         inputted into a dense layer to generate the mixture weights.
+
+        Parameters:
+            input_: a batch of contextual embeddings.
 
         Returns: a tuple of two elements. First, a list of embeddings for the
         text captions. Each element of this list is a tensor of shape batch size

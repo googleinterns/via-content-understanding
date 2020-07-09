@@ -48,7 +48,7 @@ def replace_video_id_with_expert_features_wrapper(precomputed_features):
 
             missing_modalities.append(data_exists)
 
-        return [np.array(missing_modalities)] +  expert_features
+        return [np.array(missing_modalities)] + expert_features
 
     def wrapper(video_id, ids):  
         expert_data = tf.numpy_function(

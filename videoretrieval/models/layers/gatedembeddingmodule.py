@@ -13,7 +13,6 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-
 """
 
 import tensorflow as tf
@@ -62,6 +61,15 @@ class GatedEmbeddingModule(tf.keras.layers.Layer):
         self.batch_norm = tf.keras.layers.BatchNormalization(momentum=0.1)
 
     def call(self, inputs):
+        """Executes forward pass on the gated embedding module.
+
+        Parameters:
+            inputs: the input tensor of shape batch size x feature size.
+
+        Returns: A l2 tensor normalized on the last axis of shape batch size x
+            output dimension size.
+        """
+
         layer_one_activations = self.linear_layer_one(inputs)
         layer_two_activations = self.linear_layer_two(layer_one_activations)
 
@@ -84,9 +92,8 @@ class GatedEmbeddingUnitReasoning(tf.keras.layers.Layer):
     applied to the sum, then multiplied element wise with the embedding.
     The this product is then l2 normalized and returned. 
 
-
     Attributes:
-        fully_connected: a dense, fully connected layer.
+        fully_connected: a dense layer used to generate activations.
         batch_norm_one: a batch normalization layer for the activations from the
             fully connected layer.
         batch_norm_two: a batch normalization layer for the mask.
@@ -115,6 +122,9 @@ class GatedEmbeddingUnitReasoning(tf.keras.layers.Layer):
         Parameters:
             inputs: a pair of two tensors, the first being a video embedding,
             the second being a mask.
+
+        Returns: a tensor, l2 noramlized on the last dimension, of shape batch
+            size x output size.
         """
         assert len(inputs) == 2
 
