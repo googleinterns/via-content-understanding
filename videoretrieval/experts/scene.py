@@ -32,7 +32,7 @@ class DenseNet161(BaseExpert):
         """Removes an unnecessary dimension from feature.
 
         In the cache, the densenet features are stored in a vector with a shape
-        of 1 x 2208, so this transformation transforms the vector into a vector
+        of 1 x 2208. This transformation transforms the vector into a vector
         with shape 2208.
         """ 
     	return feature[0]
