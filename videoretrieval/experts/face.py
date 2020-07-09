@@ -27,5 +27,3 @@ class FaceExpert(BaseExpert):
     @property
     def embedding_shape(self):
         return (512,)
-    
-    
