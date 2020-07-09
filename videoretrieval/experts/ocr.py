@@ -35,6 +35,3 @@ class OCRExpert(BaseExpert):
     @property
     def max_frames(self):
         return 49
-    
-    
-
