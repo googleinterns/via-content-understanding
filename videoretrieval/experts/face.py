@@ -1,4 +1,4 @@
-"""Class for managing face experts.
+"""Classes for managing face experts.
 
 Copyright 2020 Google LLC
 
