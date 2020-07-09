@@ -25,7 +25,7 @@ def get_encode_function(language_model):
         language_model: an instance of BaseLanguageModel that is used to encode
             the text.
 
-    Returns: a function that has two parameters: the video id, and the caption
+    Returns: a function that has two parameters: the video id and the caption
         text. This function then returns a tuple of 3 values. The first value is
         the video id, the second value is the encoded ids, and the third is the
         number of tokens in the encoding.
