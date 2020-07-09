@@ -27,7 +27,7 @@ class TextEncoder(tf.keras.Model):
     produced by the corresponding video encoder. This model should be trained
     in concert with a video encoder.
 
-    The contextual embeddings are first aggregated using netvald to a fixed
+    The contextual embeddings are first aggregated using netvlad to a fixed
     length vector. Then, for each expert in the corresponding video encoder,
     this fixed length vector is passed through a Gated Embedding Module to
     produce a shard of an embedding. The fixed length vector is also passed
