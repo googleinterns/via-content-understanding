@@ -36,7 +36,7 @@ def compute_rank(input_):
 @tf.function
 def compute_ranks(
     text_embeddings, mixture_weights, video_embeddings, missing_experts):
-    """Computes a ranks for a batch of video and text embeddings.
+    """Computes ranks for a batch of video and text embeddings.
 
     Arguments:
         text_embeddings: a list of text embedding tensors, where each element of
@@ -93,7 +93,7 @@ def get_median_rank(ranks_tensor):
 
 @tf.function
 def get_recall_at_k(ranks_tensor, k):
-    """Gets the recall at k given a tensor of ranks and a k.
+    """Gets the recall at k given a tensor of ranks and a threshold k.
 
     Parameters:
         ranks_tensor: an integer tensor of ranks.
