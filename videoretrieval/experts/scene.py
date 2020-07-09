@@ -29,4 +29,10 @@ class DenseNet161(BaseExpert):
         return (2208,)
 
     def feature_transformation(self, feature):
+        """Removes an unnecessary dimension from feature.
+
+        In the cache, the densenet features are stored in a vector with a shape
+        of 1 x 2208, so this transformation transforms the vector into a vector
+        with shape 2208.
+        """ 
     	return feature[0]
