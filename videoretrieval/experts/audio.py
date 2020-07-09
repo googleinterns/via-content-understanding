@@ -35,6 +35,3 @@ class AudioExpert(BaseExpert):
     @property
     def max_frames(self):
         return 29
-    
-    
-
