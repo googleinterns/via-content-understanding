@@ -25,7 +25,7 @@ def get_encode_function(language_model):
         language_model: an instance of BaseLanguageModel that is used to encode
             the text.
 
-    Returns: a function that has two parameters, the video id, and the caption
+    Returns: a function that has two parameters: the video id, and the caption
         text. This function then returns a tuple of 3 values. The first value is
         the video id, the second value is the encoded ids, and the third is the
         number of tokens in the encoding.
@@ -51,10 +51,10 @@ def get_language_model_inference_function(language_model):
         language_model: an instance of BaseLanguageModel that is used to
             generate contextual embeddings from the text.
 
-    Returns: a function that has three parameters, the video id, the encoded ids
-        and the text of the caption. The function returns three values, the 
-        video id, the contextual embeddings, and the number of tokens in the
-        encoding.
+    Returns: a function that has three parameters: the video id, the encoded
+        ids, and the number of tokens in the tokenized caption. The function
+        returns three values, the  video id, the contextual embeddings, and the
+        number of tokens in the tokenized caption.
     """
 
     def inference(ids):
@@ -71,7 +71,7 @@ def generate_contextal_embeddings(language_model, dataset):
 
     Arguments:
         language_model: an instance of BaseLanguageModel that is used to
-            generate contextual embeddings
+            generate contextual embeddings.
         dataset: a tf.data Dataset where each of the dataset has two items.
             First, a video id in the form of a string tensor, and second, 
             a caption corresponding to that video in the form of a string
@@ -79,7 +79,7 @@ def generate_contextal_embeddings(language_model, dataset):
 
     Returns: a tf.data Dataset that has three elements: a video id in the form
         of a string tensor, the contextual embeddings as a float32 tensor, and
-        the original caption as a string tensor.
+        the number of tokens in the embedding.
     """
 
     encode = get_encode_function(language_model)
@@ -87,7 +87,8 @@ def generate_contextal_embeddings(language_model, dataset):
     return (dataset
         .map(encode, num_parallel_calls=tf.data.experimental.AUTOTUNE)
         .batch(language_model.batch_size)
-        .map(get_language_model_inference_function(language_model)))
+        .map(get_language_model_inference_function(language_model))
+        .unbatch())
 
 
 def generate_and_cache_contextual_embeddings(language_model, source_dataset):

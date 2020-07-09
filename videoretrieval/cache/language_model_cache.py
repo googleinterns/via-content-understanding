@@ -97,17 +97,17 @@ def cache_language_model_embeddings(dataset, source_dataset, language_model,
     """Caches embeddings for a specific dataset/model/split.
 
     Parameters:
-        dataset: a batched tf.data Dataset to be cached where the first element
-            is the video is as a string tensor, the second is the contextual
-            embeddings as a float32 tensor, and the third is the number of
-            tokens in the tokenized raw caption.
+        dataset: a tf.data Dataset to be cached where the first element is the
+            video is as a string tensor, the second is the contextual embeddings
+            as a float32 tensor, and the third is the number of tokens in the
+            tokenized raw caption.
         source_dataset: an instance of BaseDataset for the dataset to be cached.
         language_model: an instance of BaseLanguageModel for the language model
             used to generate the contextual embeddings.
         split: the name of the split (as a string).
     """
 
-    dataset = dataset.unbatch().map(serialize_to_protobuf_wrapper, 
+    dataset = dataset.map(serialize_to_protobuf_wrapper, 
         num_parallel_calls=tf.data.experimental.AUTOTUNE)
 
     records_directory = get_records_directory(source_dataset, language_model,
