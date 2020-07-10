@@ -57,6 +57,13 @@ class BaseVideoDataset(AbstractClass):
 
     @property
     @abstractmethod
+    def captions_per_video(self):
+        """Number of captions per video."""
+        pass
+    
+
+    @property
+    @abstractmethod
     def train_valid_test_ids(self):
         """Returns a tuple of sets providing ids for the dataset splits.
 

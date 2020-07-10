@@ -34,6 +34,10 @@ class MSRVTTDataset(BaseVideoDataset):
     def dataset_downloaded(self):
         return False
 
+    @property
+    def captions_per_video(self):
+        return 20
+
     def download_dataset(self):
         """Downloads the dataset and stores it to disk."""
         if self.dataset_downloaded:
