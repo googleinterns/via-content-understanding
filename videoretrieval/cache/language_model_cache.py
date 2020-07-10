@@ -90,7 +90,7 @@ def write_dataset(dataset, records_directory):
 
         shard = tf.data.Dataset.from_tensor_slices(batch)
 
-        # Utilize tf.data.experimental.TFRecordWriter to write larger numbers of
+        # Utilize tf.data.experimental.TFRecordWriter to write large numbers of
         # serialized protocol buffers to TFRecords.
         writer = tf.data.experimental.TFRecordWriter(str(file_path))
         writer.write(shard)
