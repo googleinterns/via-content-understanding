@@ -42,7 +42,6 @@ def build_similaritiy_matrix(
         jth video embedding. 
     """
 
-
     missing_experts_weights = 1 - tf.cast(missing_experts, tf.float32)
 
     missing_experts_weights = tf.expand_dims(missing_experts_weights, 0)
