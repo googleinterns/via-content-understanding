@@ -44,6 +44,7 @@ def build_similaritiy_matrix(
 
     missing_experts_weights = 1 - tf.cast(missing_experts, tf.float32)
 
+    # Expand dimensions to allow for multiplication.
     missing_experts_weights = tf.expand_dims(missing_experts_weights, 0)
     mixture_weights = tf.expand_dims(mixture_weights, 1)
 
