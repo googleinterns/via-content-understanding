@@ -36,4 +36,4 @@ class DenseNet161(BaseExpert):
         of 1 x 2208. This transformation transforms the vector into a vector
         with shape 2208.
         """ 
-    	return feature[0]
+        return feature[0]
