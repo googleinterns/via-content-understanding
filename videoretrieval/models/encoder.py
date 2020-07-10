@@ -64,7 +64,7 @@ class EncoderModel(tf.keras.Model):
 
             loss = self.loss_fn(
                 video_results, text_results, mixture_weights, missing_experts,
-                self.loss_hyperparameter_m, video_ids)
+                self.loss_hyperparameter_m)
 
         gradients = gradient_tape.gradient(loss, self.trainable_variables)
 
@@ -133,7 +133,7 @@ class EncoderModel(tf.keras.Model):
                 shard_text_results,
                 shard_mixture_weights,
                 missing_experts,
-                self.loss_hyperparameter_m, video_ids))
+                self.loss_hyperparameter_m))
 
             ranks.append(metrics.rankings.compute_ranks(
                 shard_text_results, shard_mixture_weights, video_results,
