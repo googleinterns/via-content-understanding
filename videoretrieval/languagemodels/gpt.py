@@ -18,6 +18,8 @@ limitations under the License.
 from base import BaseLanguageModel
 from transformers import TFOpenAIGPTModel, OpenAIGPTTokenizer
 
+GPT_PAD_TOKEN = 0
+
 class OpenAIGPTModel(BaseLanguageModel):
     """An implementation of BaseLanguageModel for the openai-gpt1 model."""
 
@@ -56,7 +58,8 @@ class OpenAIGPTModel(BaseLanguageModel):
         if len(tokens) >= self.max_input_length:
             return tokens[:self.max_input_length]
         else:
-            return tokens + [0] * (self.max_input_length - len(tokens))
+            pad_tokens_required = self.max_input_length - len(tokens)
+            return tokens + [GPT_PAD_TOKEN] * pad_tokens_required
 
     def encode(self, text):
         """Encode the given text as ids to be passed into the model.
