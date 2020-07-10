@@ -67,7 +67,7 @@ def build_similaritiy_matrix(
 
 def bidirectional_max_margin_ranking_loss(
     video_embeddings, text_embeddings, mixture_weights, missing_experts,
-    embedding_distance_parameter, video_ids):
+    embedding_distance_parameter):
     """Implementation of the Bidirectional max margin ranking loss.
 
     Arguments:
