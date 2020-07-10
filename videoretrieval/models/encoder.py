@@ -1,4 +1,4 @@
-"""Implementation of the text encoder.
+"""Implementation of encoder.
 
 Copyright 2020 Google LLC
 
