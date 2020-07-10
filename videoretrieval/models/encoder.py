@@ -18,7 +18,14 @@ import tensorflow as tf
 import metrics.rankings
 
 class EncoderModel(tf.keras.Model):
-    """An implementation of an Encoder model."""
+    """An implementation of an Encoder model.
+
+    This model wraps a video and text encoder to help with training them.
+
+    Attributes:
+        video_encoder: The encoder used to encode features from videos.
+        text_encoder: The encoder used to encode features from text.
+    """
 
     def __init__(self, video_encoder, text_encoder, loss_hyperparameter_m):
         """Initialize an encoder with a video encoder and a text encoder.
@@ -42,6 +49,8 @@ class EncoderModel(tf.keras.Model):
         Arguments:
             optimizer: the optimizer for the video encoder.
             loss_fn: the loss function for this model.
+            recall_at_k_bounds: the a list of integers to use as thresholds when
+                computing recall at k.
         """
         super(EncoderModel, self).compile()
 
@@ -70,6 +79,9 @@ class EncoderModel(tf.keras.Model):
 
         self.optimizer.apply_gradients(zip(gradients, self.trainable_variables))
 
+        # It's wasteful to calculate ranking metrics for the entire train
+        # dataset, so we just mark the values as nan for keras.
+
         batch_metrics = {
             label: float("nan") for label in self.recall_at_k_labels}
 
@@ -88,7 +100,8 @@ class EncoderModel(tf.keras.Model):
         removes the repeated data.
 
         Parameters:
-            tensor: the tensor with repeated video data
+            tensor: the tensor with repeated video data. The data in tensor
+                should be repeated self.captions_per_video times.
 
         Returns: a tensor like the `tensor` inputted with repeated video data
         removed.
@@ -100,15 +113,12 @@ class EncoderModel(tf.keras.Model):
         video_ids, video_features, text_features, missing_experts = \
             video_text_pair_batch
 
-        #assert video_ids.shape[0] % self.captions_per_video == 0
-
         video_ids = self.remove_repeated_video_data(video_ids)
         video_features = list(map(
             self.remove_repeated_video_data, video_features))
         missing_experts = self.remove_repeated_video_data(missing_experts)
 
-        video_results = self.video_encoder(
-            [video_features, missing_experts])
+        video_results = self.video_encoder([video_features, missing_experts])
         text_results, mixture_weights = self.text_encoder(text_features)
 
         valid_metrics = {}

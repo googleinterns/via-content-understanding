@@ -146,11 +146,13 @@ def get_cached_records_dataset(
         # In this case, there are no files, so an empty dataset is returned.
         return tf.data.TFRecordDataset(file_paths)
 
-    if shuffle_files:
-        random.shuffle(file_paths)
+    dataset = tf.data.Dataset.from_tensor_slices(file_paths)
 
-    dataset = tf.data.TFRecordDataset(
-        file_paths, num_parallel_reads=tf.data.experimental.AUTOTUNE)
+    if shuffle_files:
+        dataset = dataset.shuffle(len(file_paths))
+
+    dataset = dataset.batch(len(file_paths)).interleave(
+        lambda files: tf.data.TFRecordDataset(files))
 
     return dataset
 
