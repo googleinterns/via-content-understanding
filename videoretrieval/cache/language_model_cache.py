@@ -19,6 +19,7 @@ import tensorflow as tf
 import math
 from pathlib import Path
 import glob
+import random
 
 embeddings_per_file = 100
 
@@ -59,7 +60,7 @@ def serialize_to_protobuf(video_id, contextual_embeddings, tokens):
     """
     video_id_feature = get_feature(video_id)
 
-    # Access contextual_embeddings[0] to get rid of extra dimension.
+    # Accessing contextual_embeddings[0] to gets rid of the extra dimension.
     serialized_embedding = tf.io.serialize_tensor(
         contextual_embeddings[0, :tokens])
     embeddings_feature = get_feature(serialized_embedding)
@@ -71,15 +72,15 @@ def serialize_to_protobuf(video_id, contextual_embeddings, tokens):
 
     protobuf = tf.train.Example(features=tf.train.Features(feature=feature))
 
-    serialized = protobuf.SerializeToString()
+    serialized_protobuf = protobuf.SerializeToString()
 
-    return serialized
+    return serialized_protobuf
 
 def serialize_to_protobuf_wrapper(*args):
     """Wraps the serialize_to_protobuf function with tf.py_function."""
     return tf.py_function(serialize_to_protobuf, args, tf.string)
 
-def write_dataset(dataset, records_directory, dataset_size):
+def write_dataset(dataset, records_directory):
     """Shards a tf.data Dataset and writes it to disk."""
     dataset = dataset.batch(embeddings_per_file).prefetch(
         tf.data.experimental.AUTOTUNE)
@@ -89,6 +90,8 @@ def write_dataset(dataset, records_directory, dataset_size):
 
         shard = tf.data.Dataset.from_tensor_slices(batch)
 
+        # Utilize tf.data.experimental.TFRecordWriter to write larger numbers of
+        # serialized protocol buffers to TFRecords.
         writer = tf.data.experimental.TFRecordWriter(str(file_path))
         writer.write(shard)
  
@@ -97,24 +100,25 @@ def cache_language_model_embeddings(dataset, source_dataset, language_model,
     """Caches embeddings for a specific dataset/model/split.
 
     Parameters:
-        dataset: a tf.data Dataset to be cached where the first element is the
-            video is as a string tensor, the second is the contextual embeddings
-            as a float32 tensor, and the third is the number of tokens in the
-            tokenized raw caption.
+        dataset: a tf.data Dataset to be cached. Each element of the dataset
+            should be a tuple where the first element is the video id as a
+            string tensor, the second is the contextual embeddings as a float32
+            tensor, and the third is the number of tokens in the tokenized raw
+            caption as an integer tensor.
         source_dataset: an instance of BaseDataset for the dataset to be cached.
         language_model: an instance of BaseLanguageModel for the language model
             used to generate the contextual embeddings.
         split: the name of the split (as a string).
     """
 
-    dataset = dataset.map(serialize_to_protobuf_wrapper, 
+    dataset = dataset.map(
+        serialize_to_protobuf_wrapper,
         num_parallel_calls=tf.data.experimental.AUTOTUNE)
 
-    records_directory = get_records_directory(source_dataset, language_model,
-        split)
+    records_directory = get_records_directory(
+        source_dataset, language_model, split)
 
-    write_dataset(dataset, records_directory, 
-        source_dataset.num_of_examples_by_split(split))
+    write_dataset(dataset, records_directory)
 
 def get_cached_records_dataset(
     source_dataset, language_model, split, shuffle_files):
@@ -126,8 +130,8 @@ def get_cached_records_dataset(
         language_model: an instance of BaseLanguage model that the cached
             embeddings were generated from.
         split: the name of the dataset split.
-        shuffle_files: a boolean indicating if the files should be shuffled
-            before they are read.
+        shuffle_files: a boolean indicating if the order in which the files are
+            read should be random or not.
 
     Returns: a TFRecord dataset of serialized embeddings.
     """
@@ -139,16 +143,14 @@ def get_cached_records_dataset(
     file_paths = glob.glob(glob_string)
 
     if len(file_paths) == 0:
-        # In this case, there are no files, so we'll return an empty dataset.
+        # In this case, there are no files, so an empty dataset is returned.
         return tf.data.TFRecordDataset(file_paths)
 
-    dataset = tf.data.Dataset.from_tensor_slices(file_paths)
-
     if shuffle_files:
-        dataset = dataset.shuffle(len(file_paths))
+        random.shuffle(file_paths)
 
-    dataset = dataset.batch(len(file_paths)).interleave(
-        lambda files: tf.data.TFRecordDataset(files))
+    dataset = tf.data.TFRecordDataset(
+        file_paths, num_parallel_reads=tf.data.experimental.AUTOTUNE)
 
     return dataset
 
