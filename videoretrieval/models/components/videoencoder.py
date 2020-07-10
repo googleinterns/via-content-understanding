@@ -34,12 +34,11 @@ class VideoEncoder(tf.keras.Model):
     Reasoning.
 
     Attributes:
-        experts: the experts that are used to generate the precomputed features.
-            This attribute is a list, where each element implements BaseExpert.
+        num_experts: the number of pretrained experts used.
         expert_aggregated_size: the dimensionality experts features are
             projected to.
-        encoded_expert_dimensionality: the dimensionality fixed size experts embeddings
-            are mapped to.
+        encoded_expert_dimensionality: the dimensionality aggregated experts
+            embeddings are mapped to.
         temporal_aggregation_layers: a list of temporal aggregation layers, one
             per expert.
         g_mlp: A standard feedforward deep neural network, with g_mlp_layers.
@@ -51,7 +50,7 @@ class VideoEncoder(tf.keras.Model):
     """
 
     def __init__(self, 
-            experts,
+            num_experts,
             experts_use_netvlad,
             experts_netvlad_shape,
             expert_aggregated_size=768,
@@ -66,7 +65,7 @@ class VideoEncoder(tf.keras.Model):
         """Initialize video encoder.
 
         Parameters:
-            experts: a list of experts (that implement BaseExpert).
+            num_experts: the number of pretrained experts used, as an integer.
             expert_aggregated_size: the dimensionality experts are projected to.
             encoded_expert_dimensionality: the dimensionality experts embeddings
                 are computed down to. Final output size is num of experts * 
@@ -76,14 +75,16 @@ class VideoEncoder(tf.keras.Model):
             use_batch_norm: if this model should use batch norm in the reasoning
                 layers.
             kernel_initializer: the strategy used to initialize the weights in
-                dense layer's kernel.
-            bias_initial: the strategy used to initalize the weights in dense
-                layers' biases.
+                dense layer's kernel. Either a string naming the initializer or
+                an instance of tf.keras.initializers.Initializer.
+            bias_initial: the strategy used to initialize the weights in dense
+                layers' biases. Either a string naming the initializer or
+                an instance of tf.keras.initializers.Initializer.
         """
 
         super(VideoEncoder, self).__init__()
 
-        self.experts = experts
+        self.num_experts = num_experts
         self.experts_use_netvlad = experts_use_netvlad
         self.experts_netvlad_shape = experts_netvlad_shape
         self.expert_aggregated_size = expert_aggregated_size
@@ -120,10 +121,10 @@ class VideoEncoder(tf.keras.Model):
         """Makes and returns an sequential feed forward neural network.
 
         This network is comprised of dense layers, batch normalization layers
-        (if specified), and non-linearity functions. The network is comprised of
-        a dense layer followed by a batch normalization layer (if specified) and
-        a non-linearity. The network ends with a single dense layer with a
-        linear activation function.
+        (if specified), and non-linearity functions. All dense layers except the
+        final dense layer are followed by a batch normalization layer (if
+        specified) and a non-linearity. The network ends with a single dense
+        layer with a linear activation function.
 
         Parameters:
             num_layers: the number of dense layers in the sequential model.
@@ -133,7 +134,7 @@ class VideoEncoder(tf.keras.Model):
 
         sequential_layers = []
         
-        for i in range(num_layers):
+        for dense_layer_count in range(num_layers):
             sequential_layers.append(
                 tf.keras.layers.Dense(
                     self.expert_aggregated_size,
@@ -141,7 +142,7 @@ class VideoEncoder(tf.keras.Model):
                     kernel_initializer=kernel_initializer,
                     bias_initializer=bias_initializer))
 
-            if i == num_layers - 1:
+            if dense_layer_count == num_layers - 1:
                 break
 
             if self.use_batch_norm:
@@ -157,7 +158,7 @@ class VideoEncoder(tf.keras.Model):
         """Create gated embedding reasoning units and adds them to self.gems."""
         self.gems = []
         
-        for _ in self.experts:
+        for _ in range(self.num_experts):
             self.gems.append(GatedEmbeddingUnitReasoning(
                 self.encoded_expert_dimensionality,
                 kernel_initializer=kernel_initializer,
@@ -177,7 +178,7 @@ class VideoEncoder(tf.keras.Model):
 
         expert_embeddings, missing_experts = inputs
 
-        assert len(expert_embeddings) == len(self.experts)
+        assert len(expert_embeddings) == self.num_experts
 
         aggregated_embeddings = self.temporal_aggregation(expert_embeddings)
         output_embedding = self.collaborative_gating(
@@ -252,8 +253,9 @@ class VideoEncoder(tf.keras.Model):
                 ))
 
                 attention_available = tf.expand_dims(attention_available, -1)
-                attention = attention * attention_available 
 
+                # This zeros out missing experts.
+                attention = attention * attention_available 
 
                 experts_used = experts_used + attention_available
                 summed_attentions = summed_attentions + attention
@@ -265,6 +267,8 @@ class VideoEncoder(tf.keras.Model):
 
             gated_embedding = self.gems[expert_index]([embedding, attentions])
 
+            gated_embedding = gated_embedding * tf.expand_dims(
+                expert_available, -1) 
             gated_embeddings.append(gated_embedding)
 
         return gated_embeddings
