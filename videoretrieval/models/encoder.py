@@ -1,4 +1,4 @@
-"""Implementation of encoder.
+"""Implementation of encoder that wraps a video and text encoder.
 
 Copyright 2020 Google LLC
 
