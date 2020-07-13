@@ -111,3 +111,14 @@ def generate_and_cache_contextual_embeddings(language_model, source_dataset):
 
         cache_language_model_embeddings(
             ds_split, source_dataset, language_model, split=split_name)
+
+def generate_and_cache_encodings(language_model, source_dataset):
+    for ds_split, split_name in source_dataset.id_caption_pair_datasets:
+        generate_encodings = get_encode_function(language_model)
+
+        ds_split = ds_split.map(
+            generate_encodings,
+            num_parallel_calls=tf.data.experimental.AUTOTUNE)
+
+        cache_language_model_encodings(
+            ds_split, source_dataset, language_model, split=split_name)

@@ -23,9 +23,14 @@ import random
 
 embeddings_per_file = 100
 
-decoding_schema = {
+embeddings_schema = {
     "video_id": tf.io.FixedLenFeature([], tf.string),
     "serialized_embeddings": tf.io.FixedLenFeature([], tf.string),
+}
+
+encodings_schema = {
+    "video_id": tf.io.FixedLenFeature([], tf.string),
+    "serialized_encodings": tf.io.FixedLenFeature([], tf.string),
 }
 
 base_path = Path(f"/mnt/disks/fast_ssd/cached_data/")
@@ -36,12 +41,12 @@ def get_feature(value):
     bytes_list = tf.train.BytesList(value=[value.numpy()])
     return tf.train.Feature(bytes_list=bytes_list)
 
-def get_records_directory(dataset, language_model, split):
+def get_records_directory(dataset, language_model, split, postfix=""):
     """Gets a path to cache the data from the dataset/model/split."""
     dataset_name = dataset.dataset_name
     language_model_name = language_model.name
 
-    path = base_path / f"{dataset_name}/{language_model_name}/{split}"
+    path = base_path / f"{dataset_name}/{language_model_name}/{split}{postfix}"
 
     path.mkdir(parents=True, exist_ok=True)
 
@@ -80,7 +85,28 @@ def serialize_to_protobuf_wrapper(*args):
     """Wraps the serialize_to_protobuf function with tf.py_function."""
     return tf.py_function(serialize_to_protobuf, args, tf.string)
 
-def write_dataset(dataset, records_directory):
+def seralize_encodings(video_id, encodings, tokens):
+    video_id_feature = get_feature(video_id)
+
+    serialized_encodings = tf.io.seralize_tensor(encodings)
+    encodings_feature = get_feature(serialized_encodings)
+
+    feature = {
+        "video_id": video_id_feature,
+        "serialized_encodings": encodings_feature
+    }
+
+    protobuf = tf.train.Example(features=tf.train.Features(feature=feature))
+
+    serialized_protobuf = protobuf.SerializeToString()
+
+    return serialized_protobuf
+
+def serialize_encodings_wrapper(*args):
+    """Wraps the seralize_encodings function with tf.py_function."""
+    return tf.py_function(seralize_encodings, args, tf.string)
+
+def write_dataset(dataset, records_directory, file_naming_function):
     """Shards a tf.data Dataset and writes it to disk."""
     dataset = dataset.batch(embeddings_per_file).prefetch(
         tf.data.experimental.AUTOTUNE)
@@ -95,6 +121,17 @@ def write_dataset(dataset, records_directory):
         writer = tf.data.experimental.TFRecordWriter(str(file_path))
         writer.write(shard)
  
+def cache_language_model_encodings(dataset, source_dataset, language_model,
+    split):
+    dataset = dataset.map(
+        serialize_to_protobuf_wrapper,
+        num_parallel_calls=tf.data.experimental.AUTOTUNE)
+
+    records_directory = get_records_directory(
+        source_dataset, language_model, split, "encodings")
+
+    write_dataset(dataset, records_directory)
+
 def cache_language_model_embeddings(dataset, source_dataset, language_model,
     split):
     """Caches embeddings for a specific dataset/model/split.
@@ -121,7 +158,7 @@ def cache_language_model_embeddings(dataset, source_dataset, language_model,
     write_dataset(dataset, records_directory)
 
 def get_cached_records_dataset(
-    source_dataset, language_model, split, shuffle_files):
+    source_dataset, language_model, split, shuffle_files, postfix=""):
     """Gets a TFRecordDataset of cached data.
 
     Parameters:
@@ -137,7 +174,7 @@ def get_cached_records_dataset(
     """
 
     records_directory = get_records_directory(
-        source_dataset, language_model, split)
+        source_dataset, language_model, split, postfix)
     glob_string = str((records_directory / "*.tfrecord").absolute())
 
     file_paths = glob.glob(glob_string)
@@ -157,7 +194,7 @@ def get_cached_records_dataset(
     return dataset
 
 
-def unserialize_data_wrapper(text_max_length, contextual_embeddings_dim):
+def unserialize_embeddings_wrapper(text_max_length, contextual_embeddings_dim):
     """Wrapper for unserialize function.
 
     Parameters:
@@ -179,7 +216,7 @@ def unserialize_data_wrapper(text_max_length, contextual_embeddings_dim):
         Returns: a tuple of 2 items, the first being the video id as a string
             tensor, the second being the contextual embeddings.
         """
-        example = tf.io.parse_single_example(serialized_item, decoding_schema)
+        example = tf.io.parse_single_example(serialized_item, embeddings_schema)
         video_id = example["video_id"]
 
         contextual_embeddings = tf.io.parse_tensor(
@@ -199,6 +236,58 @@ def unserialize_data_wrapper(text_max_length, contextual_embeddings_dim):
             return (video_id, output)
 
     return unserialize_data
+
+def unserialize_encodings_wrapper(text_max_length):
+    """Wrapper for unserialize function.
+
+    Parameters:
+        text_max_length: the length to zero-pad the contextual embeddings to.
+        contextual_embeddings_dim: the last dimension of the contextual
+            embeddings.
+
+    Returns: a function that maps from a serialized protobuf string to a tuple
+        with two elements: the first being the video id, the second being a
+        tensor of size text_max_length x contextual_embeddings_dim.
+    """ 
+
+    def get_encoding_length(encoding):
+        return encoding.shape[0]
+
+    def unserialize_data(serialized_item):
+        """Unserializes a serialized protobuf feature.
+
+        Returns: a tuple of 2 items, the first being the video id as a string
+            tensor, the second being the contextual embeddings.
+        """
+        example = tf.io.parse_single_example(serialized_item, encodings_schema)
+        video_id = example["video_id"]
+
+        encodings = tf.io.parse_tensor(
+            example["serialized_encodings"], tf.int64)
+
+        encoding_length = tf.numpy_function(
+            get_encoding_length, [encodings], tf.int64)
+
+        if encoding_length >= text_max_length:
+            return (video_id, encodings[:text_max_length], encoding_length)
+        else:
+            output = tf.zeros(text_max_length - encoding_length, tf.int64)
+            
+            output = tf.concat([encodings, output], axis=0)
+            return (video_id, output, encoding_length)
+
+    return unserialize_data
+
+def get_cached_language_model_encodings(
+    source_dataset, language_model, split, shuffle_files=True):
+    dataset = get_cached_records_dataset(
+        source_dataset, language_model, split, shuffle_files, "encodings")
+
+    return dataset.map(
+        unserialize_encodings_wrapper(
+            language_model.contextual_embeddings_shape[0]),
+        num_parallel_calls=tf.data.experimental.AUTOTUNE)
+
 
 def get_cached_language_model_embeddings(
     source_dataset, language_model, split, shuffle_files=True):
@@ -220,5 +309,6 @@ def get_cached_language_model_embeddings(
         source_dataset, language_model, split, shuffle_files)
 
     return dataset.map(
-        unserialize_data_wrapper(*language_model.contextual_embeddings_shape),
+        unserialize_embeddings_wrapper(
+            *language_model.contextual_embeddings_shape),
         num_parallel_calls=tf.data.experimental.AUTOTUNE)
