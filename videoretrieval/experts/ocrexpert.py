@@ -12,18 +12,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-Class for managing Speech experts.
+Class for managing OCR experts.
 """
 
 from base import BaseExpert
 
-class SpeechExpert(BaseExpert):
-    """Implementation of the Speech expert class."""
+class OCRExpert(BaseExpert):
+    """Implementation of the OCR expert class."""
 
     @property
     def name(self):
-        return "speech"
+        return "ocr"
     
     @property
     def embedding_shape(self):
-        return (29, 300)
+        return (5, 300)
