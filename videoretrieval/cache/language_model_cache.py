@@ -33,7 +33,7 @@ encodings_schema = {
     "serialized_encodings": tf.io.FixedLenFeature([], tf.string),
 }
 
-base_path = Path(f"/mnt/disks/fast_ssd/cached_data/")
+base_path = Path(f"cached_data/")#Path(f"/mnt/disks/fast_ssd/cached_data/")
 
 
 def get_feature(value):
@@ -85,10 +85,10 @@ def serialize_to_protobuf_wrapper(*args):
     """Wraps the serialize_to_protobuf function with tf.py_function."""
     return tf.py_function(serialize_to_protobuf, args, tf.string)
 
-def seralize_encodings(video_id, encodings, tokens):
+def serialize_encodings(video_id, encodings, tokens):
     video_id_feature = get_feature(video_id)
 
-    serialized_encodings = tf.io.seralize_tensor(encodings)
+    serialized_encodings = tf.io.serialize_tensor(encodings)
     encodings_feature = get_feature(serialized_encodings)
 
     feature = {
@@ -103,10 +103,10 @@ def seralize_encodings(video_id, encodings, tokens):
     return serialized_protobuf
 
 def serialize_encodings_wrapper(*args):
-    """Wraps the seralize_encodings function with tf.py_function."""
-    return tf.py_function(seralize_encodings, args, tf.string)
+    """Wraps the serialize_encodings function with tf.py_function."""
+    return tf.py_function(serialize_encodings, args, tf.string)
 
-def write_dataset(dataset, records_directory, file_naming_function):
+def write_dataset(dataset, records_directory):
     """Shards a tf.data Dataset and writes it to disk."""
     dataset = dataset.batch(embeddings_per_file).prefetch(
         tf.data.experimental.AUTOTUNE)
@@ -124,7 +124,7 @@ def write_dataset(dataset, records_directory, file_naming_function):
 def cache_language_model_encodings(dataset, source_dataset, language_model,
     split):
     dataset = dataset.map(
-        serialize_to_protobuf_wrapper,
+        serialize_encodings_wrapper,
         num_parallel_calls=tf.data.experimental.AUTOTUNE)
 
     records_directory = get_records_directory(

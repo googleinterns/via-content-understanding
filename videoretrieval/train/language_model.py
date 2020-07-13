@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 import tensorflow as tf
-from cache import cache_language_model_embeddings 
+from cache import cache_language_model_embeddings, cache_language_model_encodings
 
 
 def get_encode_function(language_model):

@@ -59,7 +59,7 @@ def replace_video_id_with_expert_features_wrapper(precomputed_features):
 
         return (video_id, tuple(expert_features), ids, missing_modalities)
 
-    def encodings_wrapper(video_ids, encoded, num_tokens):
+    def encodings_wrapper(video_id, encoded, num_tokens):
         expert_data = tf.numpy_function(
             get_expert_features, [video_id], output_shape)
 
@@ -109,20 +109,21 @@ def update_dataset_shape_wrapper(experts, language_model):
 
     def map_fn_encodings(
         video_id, expert_features, encodings, num_tokens, missing_modalities):
-        for expert_features, shape in zip(expert_features, expert_shapes):
+        for expert_feature, shape in zip(expert_features, expert_shapes):
             expert_feature.set_shape(shape)
 
-            encodings.set_shape(contextual_embeddings_shape[0])
-            missing_modalities.set_shape(num_experts)
+        encodings.set_shape(contextual_embeddings_shape[0])
+        missing_modalities.set_shape(num_experts)
+        num_tokens.set_shape(1)
 
-            return (
-                video_id,
-                expert_features,
-                contextual_embeddings,
-                num_tokens
-                missing_modalities)
+        return (
+            video_id,
+            expert_feature,
+            encodings,
+            num_tokens,
+            missing_modalities)
 
-    return map_fn
+    return map_fn, map_fn_encodings
 
 
 def match_cached_embeddings_with_experts(
@@ -281,5 +282,5 @@ def generate_language_model_fine_tuning_datasets(
 
     precomputed_features = get_precomputed_features(source_dataset, experts)
 
-    return match_cached_encodings_with_experts(language_model, experts,
+    return match_cached_embeddings_with_experts(language_model, experts,
         precomputed_features, [train_ds, valid_ds, test_ds], map_fn_idx=1)

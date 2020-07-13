@@ -19,4 +19,5 @@ from .features_cache import cache_features_by_expert_and_dataset, \
 	get_cached_features_by_expert_and_dataset 
 
 from .language_model_cache import cache_language_model_embeddings, \
-	get_cached_language_model_embeddings
+	get_cached_language_model_embeddings, cache_language_model_encodings, \
+	get_cached_language_model_encodings
