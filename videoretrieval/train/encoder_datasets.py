@@ -25,7 +25,9 @@ def replace_video_id_with_expert_features_wrapper(precomputed_features):
 
     Arguments:
         precomputed_features: an array of dicts, where each dict maps from a
-            video id to a precomputed feature.
+            video id to a tuple. The tuple has two elements, the first being the
+            data of the precomputed feature, the second being a boolean that
+            indicates if the feature is missing.
 
     Returns: a function that has two inputs, video_id, which is a video id as a
         string and ids, the contextual embeddings for the given caption. This
@@ -43,9 +45,9 @@ def replace_video_id_with_expert_features_wrapper(precomputed_features):
         video_id = video_id_encoded.decode("utf-8")
 
         for feature_dict in precomputed_features:
+            assert video_id in feature_dict, f"Video {video_id} missing data"
             features, data_exists = feature_dict[video_id]
             expert_features.append(features)
-
             missing_modalities.append(data_exists)
 
         return [np.array(missing_modalities)] + expert_features
@@ -63,17 +65,18 @@ def replace_video_id_with_expert_features_wrapper(precomputed_features):
     return wrapper
 
 def update_dataset_shape_wrapper(experts, language_model):
-    """Updates the shapes of expert features and text embedding a given dataset.
+    """Updates the shapes of expert features and text embeddings for a dataset.
 
     Arguments:
         experts: a list of experts (type BaseExpert) used in the dataset.
-        language_model: 
+        language_model: a language model of type BaseLanguageModel that was used
+            to generate contextual embeddings. 
 
     Returns: a function that takes in video id, expert features, contextual
         embeddings, and missing modalities as parameters and assigns a shape to
-        the contextual embeddings and the expert features, then returns the a
-        tuple of the video ids, expert features, contextual embeddings, and
-        missing modalities.
+        the contextual embeddings and the expert features, then returns a tuple
+        of the video ids, expert features, contextual embeddings, and missing
+        modalities.
     """
 
     num_experts = len(experts)
