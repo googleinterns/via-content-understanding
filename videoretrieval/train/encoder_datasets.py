@@ -118,7 +118,7 @@ def update_dataset_shape_wrapper(experts, language_model):
 
         return (
             video_id,
-            expert_feature,
+            expert_features,
             encodings,
             num_tokens,
             missing_modalities)

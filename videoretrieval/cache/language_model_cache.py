@@ -36,7 +36,7 @@ encodings_schema = {
 base_path = Path(f"cached_data/")#Path(f"/mnt/disks/fast_ssd/cached_data/")
 
 
-def get_feature(value):
+def get_bytes_feature(value):
     """Gets a tf.train.Feature from the parameter value."""
     bytes_list = tf.train.BytesList(value=[value.numpy()])
     return tf.train.Feature(bytes_list=bytes_list)
@@ -63,12 +63,12 @@ def serialize_to_protobuf(video_id, contextual_embeddings, tokens):
     Returns:
         A protobuf serialized as a string.
     """
-    video_id_feature = get_feature(video_id)
+    video_id_feature = get_bytes_feature(video_id)
 
     # Accessing contextual_embeddings[0] to gets rid of the extra dimension.
     serialized_embedding = tf.io.serialize_tensor(
         contextual_embeddings[0, :tokens])
-    embeddings_feature = get_feature(serialized_embedding)
+    embeddings_feature = get_bytes_feature(serialized_embedding)
 
     feature = {
         "video_id": video_id_feature,
@@ -86,14 +86,15 @@ def serialize_to_protobuf_wrapper(*args):
     return tf.py_function(serialize_to_protobuf, args, tf.string)
 
 def serialize_encodings(video_id, encodings, tokens):
-    video_id_feature = get_feature(video_id)
+    serialized_encodings = tf.io.serialize_tensor(encodings[:tokens])
 
-    serialized_encodings = tf.io.serialize_tensor(encodings)
-    encodings_feature = get_feature(serialized_encodings)
+    video_id_feature = get_bytes_feature(video_id)
+    encodings_feature = get_bytes_feature(serialized_encodings)
 
     feature = {
         "video_id": video_id_feature,
-        "serialized_encodings": encodings_feature
+        "serialized_encodings": encodings_feature,
+        "tokens": 
     }
 
     protobuf = tf.train.Example(features=tf.train.Features(feature=feature))
