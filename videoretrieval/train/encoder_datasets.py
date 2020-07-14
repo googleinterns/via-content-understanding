@@ -114,7 +114,7 @@ def update_dataset_shape_wrapper(experts, language_model):
 
         encodings.set_shape(contextual_embeddings_shape[0])
         missing_modalities.set_shape(num_experts)
-        num_tokens.set_shape(1)
+        num_tokens.set_shape([])
 
         return (
             video_id,

@@ -86,7 +86,7 @@ def serialize_to_protobuf_wrapper(*args):
     return tf.py_function(serialize_to_protobuf, args, tf.string)
 
 def serialize_encodings(video_id, encodings, tokens):
-    serialized_encodings = tf.io.serialize_tensor(encodings[:tokens])
+    serialized_encodings = tf.io.serialize_tensor(encodings[0, :tokens])
 
     video_id_feature = get_bytes_feature(video_id)
     encodings_feature = get_bytes_feature(serialized_encodings)
@@ -94,7 +94,6 @@ def serialize_encodings(video_id, encodings, tokens):
     feature = {
         "video_id": video_id_feature,
         "serialized_encodings": encodings_feature,
-        "tokens": 
     }
 
     protobuf = tf.train.Example(features=tf.train.Features(feature=feature))
