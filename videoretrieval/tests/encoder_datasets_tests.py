@@ -27,7 +27,7 @@ NUM_MOCK_VIDEOS = 5
 MOCK_CAPTIONS_PER_VIDEO = 20
 
 class MockExpert(BaseExpert):
-
+    """An implementation of BaseExpert used for unit tests."""
     def __init__(self, is_constant_length, max_frames, embedding_shape):
         self.constant_length = is_constant_length
         self.max_frames = max_frames
@@ -42,6 +42,8 @@ class MockExpert(BaseExpert):
         return self._embedding_shape
 
 class MockLanguageModel(BaseLanguageModel):
+    """An implementation of BaseLanguageModel used for unit tests."""
+
     def __init__(self, contextual_embeddings_shape):
         self.contextual_embeddings_shape = contextual_embeddings_shape
 
@@ -56,6 +58,12 @@ class MockLanguageModel(BaseLanguageModel):
         raise NotImplementedError()
 
 def make_mock_video_ids(num_videos):
+    """Makes a list of video ids used for unit tests.
+
+    num_videos: an integer; the number of mock video ids to make. 
+
+    Returns: a list of strings of that can be used as video ids for unit tests.
+    """
     video_ids = []
 
     for video_num in range(num_videos):
@@ -125,7 +133,7 @@ class TestEncoderDatasetsFunctions(unittest.TestCase):
         pass
 
     def test_zero_pad_expert_features(self):
-        pass
+        mock_expert = MockExpert(False, 10, 10)
 
     def test_sample_captions(self):
         """Tests the sample captions method of encoder datasets."""
