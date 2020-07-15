@@ -196,7 +196,7 @@ class EncoderFineTuning(tf.keras.Model):
             recall_at_k_bounds: the a list of integers to use as thresholds when
                 computing recall at k.
         """
-        super(EncoderFineTunin,g self).compile()
+        super(EncoderFineTuning, self).compile()
 
         self.optimizer = optimizer
         self.loss_fn = loss_fn
