@@ -33,7 +33,7 @@ encodings_schema = {
     "serialized_encodings": tf.io.FixedLenFeature([], tf.string),
 }
 
-base_path = Path(f"cached_data/")#Path(f"/mnt/disks/fast_ssd/cached_data/")
+base_path = Path(f"/mnt/disks/fast_ssd/cached_data/")
 
 
 def get_bytes_feature(value):

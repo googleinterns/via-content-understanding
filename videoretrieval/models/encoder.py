@@ -160,7 +160,7 @@ class EncoderModel(tf.keras.Model):
 
         return valid_metrics
 
-class EncoderFineTuning:
+class EncoderFineTuning(tf.keras.Model):
     """An implementation of an Encoder model.
 
     This model wraps a video and text encoder to help with training them.
@@ -217,7 +217,7 @@ class EncoderFineTuning:
             num_parallel_iterations=self.lm_batch_size)[0]
 
     def language_model_forward_pass(self, text_tokens, text_tokens_lengths):
-        embeddings = self.language_model(text_tokens)
+        embeddings = self.language_model(text_tokens)[0]
         return self.zero_padding_tokens_embeddings(
             embedding, text_token_lengths)
 
@@ -278,7 +278,7 @@ class EncoderFineTuning:
 
     def test_step(self, video_text_pair_batch):
         """Executes one test step."""
-        video_ids, video_features, text_tokens, text_token_lengths, missing_experts = video_text_pair_batch[-1]
+        video_ids, video_features, text_tokens, text_token_lengths, missing_experts = video_text_pair_batch
 
         video_ids = self.remove_repeated_video_data(video_ids)
         video_features = list(map(

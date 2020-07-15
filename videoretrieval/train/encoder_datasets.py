@@ -240,7 +240,7 @@ def sample_captions_for_encodings(ds, captions_per_video):
     def random_index(sample):
         return np.random.randint(0, sample.shape[0])
 
-    def sample_captions_wrapper(videos_id_batch, encodings, token_lengths):
+    def sample_captions_wrapper(video_ids_batch, encodings, token_lengths):
         index = tf.numpy_function(random_index, [encodings], tf.int64)
         return video_ids_batch[index], encodings[index, :], token_lengths[index]
 
