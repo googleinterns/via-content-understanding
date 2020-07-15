@@ -15,6 +15,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from .gpt import OpenAIGPTModel
+from .gpt import OpenAIGPTModel, GPT2Model
 
-openai_gpt = OpenAIGPTModel()
+#openai_gpt = OpenAIGPTModel()
