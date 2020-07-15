@@ -187,7 +187,7 @@ class EncoderFineTuning:
         self.loss_hyperparameter_m = encoder.loss_hyperparameter_m
 
     def compile(
-            self, optimizer, loss_fn, recall_at_k_bounds, captions_per_video):
+            self, optimizer, loss_fn, recall_at_k_bounds, captions_per_video, lm_batch_size):
         """Complies the encoder.
 
         Arguments:
@@ -196,7 +196,7 @@ class EncoderFineTuning:
             recall_at_k_bounds: the a list of integers to use as thresholds when
                 computing recall at k.
         """
-        super(EncoderFineTuning, self).compile()
+        super(EncoderFineTunin,g self).compile()
 
         self.optimizer = optimizer
         self.loss_fn = loss_fn
@@ -204,21 +204,17 @@ class EncoderFineTuning:
 
         self.recall_at_k_labels = [f"R_{k}" for k in recall_at_k_bounds]
         self.captions_per_video = captions_per_video
+        self.lm_batch_size = lm_batch_size
 
-    @tf.function
-    def zero_padding_tokens_embeddings(self, embeddings, token_lengths):
-        def zero_padding_tokens_embeddings_map_fn(embedding, length):
-            zeros_shape = embedding.shape
-            zero_shape[0] -= length
+    def zero_padding_token_embeddings(self, embedding_batch, lengths):
+        def map_fn(embedding, num_tokens):
+            output = tf.zeros_like(embedding)
+            output = tf.concat(
+                (embedding[:num_tokens], embedding[num_tokens:]), axis=0)
+            return output, num_tokens
 
-            zeros = tf.zeros(zeros_shape, tf.float32)
-            embedding = embedding[:length]
-
-            return tf.concat((embedding, zeros), axis=0)
-
-        return tf.vectorized_map(
-            map_fn=zero_padding_tokens_embeddings_map_fn,
-            elems=(embeddings, token_lengths)) 
+        return tf.map_fn(map_fn, (embedding_batch, lengths),
+            num_parallel_iterations=self.lm_batch_size)[0]
 
     def language_model_forward_pass(self, text_tokens, text_tokens_lengths):
         embeddings = self.language_model(text_tokens)
@@ -288,6 +284,9 @@ class EncoderFineTuning:
         video_features = list(map(
             self.remove_repeated_video_data, video_features))
         missing_experts = self.remove_repeated_video_data(missing_experts)
+
+        video_results = self.video_encoder([video_features, missing_experts])
+
 
         video_results, text_results, mixture_weights = self.forward_pass(video_ids, video_features, text_tokens, text_token_lengths, missing_experts)
 
