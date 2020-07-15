@@ -179,7 +179,7 @@ class EncoderFineTuning:
             loss_hyperparameter_m: the margin hyper parameter used when
                 computing loss.
         """
-        super(EncoderModel, self).__init__()
+        super(EncoderFineTuning, self).__init__()
 
         self.video_encoder = encoder.video_encoder
         self.text_encoder = encoder.text_encoder
@@ -196,7 +196,7 @@ class EncoderFineTuning:
             recall_at_k_bounds: the a list of integers to use as thresholds when
                 computing recall at k.
         """
-        super(EncoderModel, self).compile()
+        super(EncoderFineTuning, self).compile()
 
         self.optimizer = optimizer
         self.loss_fn = loss_fn
