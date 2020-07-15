@@ -236,6 +236,17 @@ def sample_captions(ds, captions_per_video):
     return ds.batch(captions_per_video).map(sample_caption_wrapper,
         num_parallel_calls=tf.data.experimental.AUTOTUNE)
 
+def sample_captions_for_encodings(ds, captions_per_video):
+    def random_index(sample):
+        return np.random.randint(0, sample.shape[0])
+
+    def sample_captions_wrapper(videos_id_batch, encodings, token_lengths):
+        index = tf.numpy_function(random_index, [encodings], tf.int64)
+        return video_ids_batch[index], encodings[index, :], token_lengths[index]
+
+    return ds.batch(captions_per_video).map(sample_captions,
+        num_parallel_calls=tf.data.experimental.AUTOTUNE)
+
 def generate_encoder_datasets(language_model, source_dataset, experts):
     """Generates datasets necessary to train encoders.
 
@@ -280,6 +291,8 @@ def generate_language_model_fine_tuning_datasets(
     test_ds = cache.get_cached_language_model_encodings(
         source_dataset, language_model, "test")
 
+    train_ds = sample_captions_for_encodings(
+        train_ds, source_dataset.captions_per_video)
     precomputed_features = get_precomputed_features(source_dataset, experts)
 
     return match_cached_embeddings_with_experts(language_model, experts,
