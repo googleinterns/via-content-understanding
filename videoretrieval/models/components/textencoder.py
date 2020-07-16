@@ -48,15 +48,15 @@ class TextEncoder(tf.keras.Model):
     """
     def __init__(self,
             num_of_experts,
-            num_netvlad_clusters=25,
-            ghost_clusters=1,
-            language_model_dimensionality=768,
-            encoded_expert_dimensionality=100,
+            num_netvlad_clusters,
+            ghost_clusters,
+            language_model_dimensionality,
+            encoded_expert_dimensionality,
             kernel_initializer="glorot_uniform",
             bias_initializer="zeros"):
         """Initialize this model.
 
-        Parameters:
+        Args:
             num_of_experts: number of experts used in the video encoder.
             num_netvlad_clusters: number of clusters in NetVLAD.
             ghost_clusters: number of ghost clusters in NetVLAD.
@@ -65,9 +65,11 @@ class TextEncoder(tf.keras.Model):
             encoded_expert_dimensionality: the dimensionality video experts
                 embeddings are computed down to.
             kernel_initializer: the strategy used to initialize the weights in
-                dense layers' kernel.
+                dense layers' kernel. The default is glorot uniform, the default
+                strategy for keras.
             bias_initial: the strategy used to initialize the weights in dense
-                layers' biases.
+                layers' biases. The default is zeros, the default strategy for
+                keras.
         """
         super(TextEncoder, self).__init__()
 
@@ -107,7 +109,7 @@ class TextEncoder(tf.keras.Model):
             kernel_initializer=kernel_initializer,
             bias_initializer=bias_initializer)
 
-    def call(self, input_):
+    def call(self, contextual_embeddings):
         """Executes a forward pass on the text encoder.
 
         First, the text is aggregated using netvlad. These aggregated
@@ -115,8 +117,8 @@ class TextEncoder(tf.keras.Model):
         the normalized embeddings. The aggregated text embeddings are also
         inputted into a dense layer to generate the mixture weights.
 
-        Parameters:
-            input_: a batch of contextual embeddings.
+        Args:
+            contextual_embeddings: a batch of contextual embeddings.
 
         Returns: a tuple of two elements. First, a list of embeddings for the
         text captions. Each element of this list is a tensor of shape batch size
@@ -124,15 +126,13 @@ class TextEncoder(tf.keras.Model):
         for the embeddings of shape batch size x number of experts.
         """
 
-        aggregated_embeddings = self.netvlad(input_)
+        aggregated_embeddings = self.netvlad(contextual_embeddings)
 
         expert_embeddings = []
 
         for expert_gated_embedding_module in self.gems:
-            expert_embedding = expert_gated_embedding_module(
-                aggregated_embeddings)
-
-            expert_embeddings.append(expert_embedding)
+            expert_embeddings.append(expert_gated_embedding_module(
+                aggregated_embeddings))
 
         mixture_weights = self.moe_dense(aggregated_embeddings)
 

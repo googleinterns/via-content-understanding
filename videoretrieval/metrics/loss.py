@@ -26,13 +26,15 @@ def build_similaritiy_matrix(
     """Builds a similarity matrix between text_embeddings and video_embeddings.
 
     Arguments:
-        video_embeddings: a list of video embedding tensors, where each element
-            of the list is of shape batch_size x embedding dimensionality.
+        video_embeddings: a list of length number of experts of video embedding
+            tensors, where each element of the list is of shape batch_size x
+            embedding dimensionality.
         missing_experts: a boolean tensor of shape batch_size x number of
             experts, where each element corresponds to a video embedding and
             indicates the missing experts. 
-        text_embeddings: a list of text embedding tensors, where each element of
-            the list is of shape batch_size x embedding dimensionality.
+        text_embeddings: a list of text embedding tensors of length number of
+            experts, where each element of the list is of shape batch_size x
+            embedding dimensionality.
         mixture_weights: a tensor of mixture weights of shape batch_size x
             number of experts, where each element contains the mixture weights
             for the corresponding text embedding.
@@ -41,6 +43,11 @@ def build_similaritiy_matrix(
         and jth column is the similarity between the ith text embedding and the
         jth video embedding. 
     """
+    assert len(text_embeddings) > 0
+    assert len(video_embeddings) > 0
+
+    num_text_embeddings = text_embeddings[0].shape[0]
+    num_video_embeddings = video_embeddings[0].shape[0]
 
     missing_experts_weights = 1 - tf.cast(missing_experts, tf.float32)
 
@@ -51,7 +58,8 @@ def build_similaritiy_matrix(
     weights = mixture_weights * missing_experts_weights
     weights, _ = tf.linalg.normalize(weights, axis=-1, ord=1)
 
-    similarity_matrix = 0
+    similarity_matrix = tf.zeros(
+        (num_text_embeddings, num_video_embeddings), tf.float32)
 
     for expert_index, (
         expert_video_embeddings, expert_text_embeddings) in enumerate(
