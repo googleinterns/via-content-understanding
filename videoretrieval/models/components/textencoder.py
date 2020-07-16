@@ -136,4 +136,4 @@ class TextEncoder(tf.keras.Model):
 
         mixture_weights = self.moe_dense(aggregated_embeddings)
 
-        return expert_embeddings, mixture_weights
+        return expert_embeddings, mixture_weights, aggregated_embeddings

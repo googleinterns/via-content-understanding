@@ -69,10 +69,10 @@ class EncoderModel(tf.keras.Model):
         with tf.GradientTape() as gradient_tape:
             video_results = self.video_encoder(
                 [video_features, missing_experts])
-            text_results, mixture_weights = self.text_encoder(text_features)
+            text_results, mixture_weights, hidden_state = self.text_encoder(text_features)
 
             loss = self.loss_fn(
-                video_results, text_results, mixture_weights, missing_experts,
+                video_results, text_results, hidden_state, mixture_weights, missing_experts,
                 self.loss_hyperparameter_m)
 
         gradients = gradient_tape.gradient(loss, self.trainable_variables)
@@ -119,7 +119,7 @@ class EncoderModel(tf.keras.Model):
         missing_experts = self.remove_repeated_video_data(missing_experts)
 
         video_results = self.video_encoder([video_features, missing_experts])
-        text_results, mixture_weights = self.text_encoder(text_features)
+        text_results, mixture_weights, hidden_state = self.text_encoder(text_features)
 
         valid_metrics = {}
         loss = []
@@ -141,6 +141,7 @@ class EncoderModel(tf.keras.Model):
             loss.append(self.loss_fn(
                 video_results,
                 shard_text_results,
+                hidden_state,
                 shard_mixture_weights,
                 missing_experts,
                 self.loss_hyperparameter_m))

@@ -66,7 +66,7 @@ def build_similaritiy_matrix(
     return similarity_matrix
 
 def bidirectional_max_margin_ranking_loss(
-    video_embeddings, text_embeddings, mixture_weights, missing_experts,
+    video_embeddings, text_embeddings, hidden_state, mixture_weights, missing_experts,
     embedding_distance_parameter):
     """Implementation of the Bidirectional max margin ranking loss.
 
@@ -89,6 +89,7 @@ def bidirectional_max_margin_ranking_loss(
     """
 
     batch_size = video_embeddings[0].shape[0]
+    text_embedding_hs_sm = tf.matmul(hidden_state, hidden_state, transpose_b=True)
 
     similarities = build_similaritiy_matrix(
         video_embeddings, missing_experts, text_embeddings, mixture_weights)
@@ -100,9 +101,9 @@ def bidirectional_max_margin_ranking_loss(
     matching_similarities = tf.tile(matching_similarities, [1, batch_size])
 
     computed_similarities = tf.nn.relu(
-        embedding_distance_parameter + similarities - matching_similarities)
+        text_embedding_hs_sm + embedding_distance_parameter + similarities - matching_similarities)
     computed_similarities += tf.nn.relu(
-        embedding_distance_parameter +\
+        text_embedding_hs_sm + embedding_distance_parameter +\
         similarities_transpose - matching_similarities)
 
     computed_similarities = computed_similarities *  (1 - tf.eye(batch_size))
