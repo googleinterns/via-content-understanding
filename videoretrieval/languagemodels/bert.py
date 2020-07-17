@@ -6,6 +6,7 @@ class BERTModel(BaseLanguageModel):
     max_input_length = 37
     _batch_size = 42
 
+
     def __init__(self):
         self.model = TFBertModel.from_pretrained("bert-large-uncased")
         self.tokenizer = BertTokenizerFast.from_pretrained("bert-large-uncased")
@@ -26,7 +27,11 @@ class BERTModel(BaseLanguageModel):
     @property
     def contextual_embeddings_shape(self):
         return (37, 1024)
-    
+
+    @property
+    def zero_pad(self):
+        return True
+
 
     def encode(self, text):
         """Encode the given text as ids to be passed into the model.
@@ -40,11 +45,11 @@ class BERTModel(BaseLanguageModel):
             encoded to.
         """
 
-        tokenized = self.tokenizer(text),
+        tokenized = self.tokenizer("[CLS] " + text, padding="max_length")
 
         input_ids = tokenized["input_ids"]
 
-        return input_ids, input_ids.index(0)
+        return input_ids, len(input_ids)
 
     def forward(self, ids):
         """A forward pass on the model.
@@ -55,4 +60,4 @@ class BERTModel(BaseLanguageModel):
         Returns: a tensor of contextual embeddings.
         """
 
-        return self.model(ids)
+        return [self.model(ids)[0][0]]

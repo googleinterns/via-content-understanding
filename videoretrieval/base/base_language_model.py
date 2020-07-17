@@ -65,3 +65,8 @@ class BaseLanguageModel(AbstractClass):
             text.
         """
         pass
+
+    @property
+    def zero_pad(self):
+        return False
+    
