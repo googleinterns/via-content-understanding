@@ -33,7 +33,7 @@ def get_encode_function(language_model):
 
     def encode_text(text):
         result, tokens = language_model.encode(text.decode("utf-8"))
-        return [result], tokens
+        return result, tokens
 
     def wrapper(video_id, text):
         result, tokens = tf.numpy_function(

@@ -67,7 +67,7 @@ def serialize_to_protobuf(video_id, contextual_embeddings, tokens):
 
     # Accessing contextual_embeddings[0] to gets rid of the extra dimension.
     serialized_embedding = tf.io.serialize_tensor(
-        contextual_embeddings[0, :tokens])
+        contextual_embeddings)
     embeddings_feature = get_bytes_feature(serialized_embedding)
 
     feature = {
@@ -86,7 +86,7 @@ def serialize_to_protobuf_wrapper(*args):
     return tf.py_function(serialize_to_protobuf, args, tf.string)
 
 def serialize_encodings(video_id, encodings, tokens):
-    serialized_encodings = tf.io.serialize_tensor(encodings[0, :tokens])
+    serialized_encodings = tf.io.serialize_tensor(encodings)
 
     video_id_feature = get_bytes_feature(video_id)
     encodings_feature = get_bytes_feature(serialized_encodings)
@@ -222,6 +222,7 @@ def unserialize_embeddings_wrapper(text_max_length, contextual_embeddings_dim):
         contextual_embeddings = tf.io.parse_tensor(
             example["serialized_embeddings"], tf.float32)
 
+        return (video_id, contextual_embeddings)
         embedding_length = tf.numpy_function(
             get_embedding_length, [contextual_embeddings], tf.int64)
 
@@ -267,6 +268,8 @@ def unserialize_encodings_wrapper(text_max_length):
 
         encoding_length = tf.numpy_function(
             get_encoding_length, [encodings], tf.int64)
+
+        return (video_id, encodings, encoding_length)
 
         if encoding_length >= text_max_length:
             return (video_id, encodings[:text_max_length], encoding_length)
