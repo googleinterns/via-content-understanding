@@ -49,6 +49,8 @@ class TextEncoder(tf.keras.Model):
     def __init__(self,
             num_of_experts,
             encoded_expert_dimensionality=768,
+            gem_layers=1,
+            moe_dense_layers=1,
             kernel_initializer="glorot_uniform",
             bias_initializer="zeros"):
         """Initialize this model.
@@ -72,34 +74,64 @@ class TextEncoder(tf.keras.Model):
         self.encoded_expert_dimensionality = encoded_expert_dimensionality
 
         self.make_gems(
+            gem_layers,
             kernel_initializer=kernel_initializer,
             bias_initializer=bias_initializer)
 
         self.make_dense_layers(
+            moe_dense
             kernel_initializer=kernel_initializer,
             bias_initializer=bias_initializer)
 
-    def make_gems(self, kernel_initializer, bias_initializer):
+    def make_gems(self, layers_per_gem, kernel_initializer, bias_initializer):
         """Initialize gated embedding modules."""
         self.gems = []
 
-        for _ in range(self.num_of_experts):
-            self.gems.append(GatedEmbeddingModule(
-                self.encoded_expert_dimensionality,
-                kernel_initializer=kernel_initializer,
-                bias_initializer=bias_initializer))
+        if type(layers_per_gem) == int:
+            layers_per_gem = [layers_per_gem] * self.num_of_experts
+        elif type(layers_per_gem) == list:
+            assert len(layers_per_gem) == self.num_of_experts
+        else:
+            raise ValueError()
+
+        for num_layers in layers_per_gem:
+            assert type(num_layers) == int
+            assert num_layers
+
+            expert_gems = []
+
+            for _ in range(num_layers):
+                expert_gems.append(GatedEmbeddingModule(
+                    self.encoded_expert_dimensionality,
+                    kernel_initializer=kernel_initializer,
+                    bias_initializer=bias_initializer))
+
+            self.gems.append(tf.keras.Sequential(expert_gems))
 
 
-    def make_dense_layers(self, kernel_initializer, bias_initializer):
+    def make_dense_layers(self, moe_dense_layers, kernel_initializer, bias_initializer):
         """Make dense layer used for generating mixture of embedding weights.
         Note: "moe" stands for mixture of embeddings weights. 
         """
 
-        self.moe_dense = tf.keras.layers.Dense(
+        moe_layers = []
+
+        assert moe_dense_layers >= 1
+
+        for _ in range(moe_dense_layers - 1):
+            moe_layers.append(tf.keras.layers.Dense(
+                self.num_of_experts,
+                activation="relu",
+                kernel_initializer=kernel_initializer,
+                bias_initializer=bias_initializer))
+
+        moe_layers.append(tf.keras.layers.Dense(
             self.num_of_experts,
             activation="softmax",
             kernel_initializer=kernel_initializer,
-            bias_initializer=bias_initializer)
+            bias_initializer=bias_initializer))
+
+        self.moe_dense = tf.keras.Sequential(moe_layers)
 
     def call(self, input_):
         """Executes a forward pass on the text encoder.
@@ -126,6 +158,6 @@ class TextEncoder(tf.keras.Model):
 
             expert_embeddings.append(expert_embedding)
 
-        mixture_weights = self.moe_dense(aggregated_embeddings)
+        mixture_weights = self.moe_dense(input_)
 
         return expert_embeddings, mixture_weights

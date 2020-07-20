@@ -10,7 +10,7 @@ class BERTModel(BaseLanguageModel):
     def __init__(self):
         self.model = TFBertModel.from_pretrained("bert-large-uncased")
         self.tokenizer = BertTokenizerFast.from_pretrained("bert-large-uncased")
-        self.tokenizer.model_max_length = self.max_`    
+        self.tokenizer.model_max_length = self.max_input_length   
 
     @property
     def name(self):
@@ -49,7 +49,7 @@ class BERTModel(BaseLanguageModel):
 
         input_ids = tokenized["input_ids"]
 
-        return input_ids, len(input_ids)
+        return input_ids[:self.max_input_length], self.max_input_length
 
     def forward(self, ids):
         """A forward pass on the model.

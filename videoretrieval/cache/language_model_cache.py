@@ -21,7 +21,7 @@ from pathlib import Path
 import glob
 import random
 
-embeddings_per_file = 100
+embeddings_per_file = 250
 
 embeddings_schema = {
     "video_id": tf.io.FixedLenFeature([], tf.string),
@@ -194,7 +194,7 @@ def get_cached_records_dataset(
     return dataset
 
 
-def unserialize_embeddings_wrapper(text_max_length, contextual_embeddings_dim):
+def unserialize_embeddings_wrapper(text_max_length):
     """Wrapper for unserialize function.
 
     Parameters:
