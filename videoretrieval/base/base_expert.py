@@ -19,16 +19,37 @@ from abc import abstractmethod
 import pathlib
 
 class BaseExpert(AbstractClass):
-	"""Base class for expert models."""
+    """Base class for expert models."""
 
-	@property
-	@abstractmethod
-	def name(self):
-		"""A short name for the expert: e.g., slowfast."""
-		pass
-	
-	@property
-	@abstractmethod
-	def embedding_shape(self):
-		"""The shape of the embedding outputted by the expert."""
-		pass
+    @property
+    @abstractmethod
+    def name(self):
+        """A short name for the expert: e.g., slowfast."""
+        pass
+
+    @property
+    @abstractmethod
+    def embedding_shape(self):
+        """The shape of the embedding outputted by the expert."""
+        pass
+
+    @property
+    def constant_length(self):
+        """A boolean indicating if the expert features are constant length."""
+        return True
+
+    @property
+    def max_frames(self):
+        """The maximum number of frames to use. None if the features are
+        constant length."""
+        return None
+    
+    def feature_transformation(self, feature):
+        """A transformation applied to features when they are loaded from the
+        cache.
+
+        Arguments:
+            feature: the feature to apply the transformation to.
+
+        Returns: the transformed feature."""
+        return feature

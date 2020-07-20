@@ -18,16 +18,17 @@ __init__.py for experts package. Imports and initializes expert models.
 from .action import I3D, R2P1D
 from .objects import ResNext101, SeNet154
 from .speech import SpeechExpert
-from .ocrexpert import OCRExpert
+from .ocr import OCRExpert
 from .scene import DenseNet161
+from .audio import AudioExpert
+from .face import FaceExpert
 
 i3d = I3D()
 r2p1d = R2P1D()
-
 resnext = ResNext101()
 senet = SeNet154()
-
 speech_expert = SpeechExpert()
-
-ocr = OCRExpert()
+ocr_expert = OCRExpert()
+audio_expert = AudioExpert()
 densenet = DenseNet161()
+face_expert = FaceExpert()
