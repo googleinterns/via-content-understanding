@@ -57,9 +57,7 @@ class MSRVTTDataset(BaseVideoDataset):
     def video_captions(self):
         """Returns a dict of that maps from video_id to a list of captions."""
         video_metadata = metadata.load_metadata()
-
         id_caption_pairs = []
-        
         for split in video_metadata.values():
             for data in split:
                 for caption in data["captions"]:
