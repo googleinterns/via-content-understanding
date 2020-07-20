@@ -35,24 +35,22 @@ precomputed_features_base_path = "data/MSRVTT/structured-symlinks/"
 
 i3d_path = precomputed_features_base_path + \
 	"aggregated_i3d_25fps_256px_stride25_offset0_inner_stride1/i3d-avg.pickle"
-
 resnext_path = precomputed_features_base_path + \
 	"aggregated_imagenet_25fps_256px_stride1_offset0/resnext101_32x48d-avg.pickle"
-
 senet_path = precomputed_features_base_path + \
 	"aggregated_imagenet_25fps_256px_stride1_offset0/senet154-avg.pickle"
-
 speech_path = precomputed_features_base_path + \
 	"aggregated_speech/speech-w2v.pickle"
-
 r2p1d_path = precomputed_features_base_path + \
 	"aggregated_r2p1d_30fps_256px_stride32_offset0_inner_stride1/r2p1d-ig65m-avg.pickle"
-
 ocr_path = precomputed_features_base_path + \
 	"aggregated_ocr_feats/ocr-raw.pickle"
-
 densenet_path = precomputed_features_base_path + \
 	"aggregated_scene_25fps_256px_stride1_offset0/densenet161-avg.pickle"
+audio_path = precomputed_features_base_path + \
+	"aggregated_audio_feats/Audio_MSRVTT_new.pickle"
+face_path = precomputed_features_base_path + \
+	"aggregated_face_feats/facefeats-avg.pickle"
 
 expert_to_features = {
 	experts.i3d: i3d_path,
@@ -60,6 +58,8 @@ expert_to_features = {
 	experts.senet: senet_path,
 	experts.speech_expert: speech_path,
 	experts.r2p1d: r2p1d_path,
-	experts.ocr: ocr_path,
-	experts.densenet: densenet_path
+	experts.ocr_expert: ocr_path,
+	experts.densenet: densenet_path,
+	experts.audio_expert: audio_path,
+	experts.face_expert: face_path
 }
