@@ -149,6 +149,8 @@ class TestEncoderDatasetsFunctions(unittest.TestCase):
 
     def test_zero_pad_expert_features(self):
         """Tests zero padding expert features."""
+        tf.random.set_seed(1)
+
         mock_expert = MockExpert(False, 10, (10, 5))
         mock_expert_value_large = tf.random.normal((15, 5))
 

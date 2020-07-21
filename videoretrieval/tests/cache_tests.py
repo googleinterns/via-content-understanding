@@ -36,7 +36,9 @@ class TestLanguageModelCache(unittest.TestCase):
         self.assertTrue(tf.reduce_all(tensor_a == tensor_b) == True)
 
     def test_serialization_loop_normal_data(self):
-        """Tests serializing and deserializing without truncation or padding.""" 
+        """Tests serializing and deserializing without truncation or padding."""
+        tf.random.set_seed(1)
+
         mock_embeddings = tf.random.normal(
             (1, self.MOCK_NUM_TOKENS, self.MOCK_EMBEDDING_DIM))
 
@@ -49,6 +51,8 @@ class TestLanguageModelCache(unittest.TestCase):
 
     def test_serialization_loop_truncating_data(self):
         """Tests serializing and deserializing with truncation."""
+        tf.random.set_seed(1)
+
         mock_embeddings = tf.random.normal(
             (1, self.MOCK_NUM_TOKENS + 1, self.MOCK_EMBEDDING_DIM))
 
@@ -62,6 +66,8 @@ class TestLanguageModelCache(unittest.TestCase):
 
     def test_serialization_loop_padding_data(self):
         """Tests serializing and deserializing with padding."""
+        tf.random.set_seed(1)
+
         mock_embeddings = tf.random.normal(
             (1, self.MOCK_NUM_TOKENS - 1, self.MOCK_EMBEDDING_DIM))
 
