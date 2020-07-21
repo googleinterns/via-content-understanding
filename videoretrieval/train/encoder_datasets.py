@@ -112,7 +112,7 @@ def update_dataset_shape_wrapper(experts, language_model):
         for expert_feature, shape in zip(expert_features, expert_shapes):
             expert_feature.set_shape(shape)
 
-        encodings.set_shape(contextual_embeddings_shape[0])
+        encodings.set_shape((37,))
         missing_modalities.set_shape(num_experts)
         num_tokens.set_shape([])
 
@@ -237,14 +237,25 @@ def sample_captions(ds, captions_per_video):
         num_parallel_calls=tf.data.experimental.AUTOTUNE)
 
 def sample_captions_for_encodings(ds, captions_per_video):
-    def random_index(sample):
-        return np.random.randint(0, sample.shape[0])
+    # def random_index(sample):
+    #     return np.random.randint(0, sample.shape[0])
+
+    # def sample_captions_wrapper(video_ids_batch, encodings, token_lengths):
+    #     index = tf.numpy_function(random_index, [encodings], tf.int64)
+    #     return video_ids_batch[index], encodings[index], token_lengths[index]
+
 
     def sample_captions_wrapper(video_ids_batch, encodings, token_lengths):
-        index = tf.numpy_function(random_index, [encodings], tf.int64)
-        return video_ids_batch[index], encodings[index], token_lengths[index]
+        random_weights = tf.random.uniform((captions_per_video,))
+        random_weights, _ = tf.linalg.normalize(random_weights, ord=1)
 
-    return ds.batch(captions_per_video).map(sample_captions,
+        encodings = random_weights[:, None] * encodings
+        encodings = tf.reduce_sum(tf.transpose(encodings), axis=-1)
+
+        return video_ids_batch[0], encodings, token_lengths[0]
+
+
+    return ds.batch(captions_per_video).map(sample_captions_wrapper,
         num_parallel_calls=tf.data.experimental.AUTOTUNE)
 
 def generate_encoder_datasets(language_model, source_dataset, experts):
@@ -264,13 +275,13 @@ def generate_encoder_datasets(language_model, source_dataset, experts):
         modalities.  
     """
     train_ds = cache.get_cached_language_model_embeddings(
-        source_dataset, language_model, "train")
+        source_dataset, language_model, "train").cache()
 
     valid_ds = cache.get_cached_language_model_embeddings(
-        source_dataset, language_model, "valid")
+        source_dataset, language_model, "valid").cache()
 
     test_ds = cache.get_cached_language_model_embeddings(
-        source_dataset, language_model, "test")
+        source_dataset, language_model, "test").cache()
 
     train_ds = sample_captions(train_ds, source_dataset.captions_per_video)
 
@@ -283,13 +294,13 @@ def generate_language_model_fine_tuning_datasets(
     language_model, source_dataset, experts):
 
     train_ds = cache.get_cached_language_model_encodings(
-        source_dataset, language_model, "train")
+        source_dataset, language_model, "train").cache()
 
     valid_ds = cache.get_cached_language_model_encodings(
-        source_dataset, language_model, "valid")
+        source_dataset, language_model, "valid").cache()
 
     test_ds = cache.get_cached_language_model_encodings(
-        source_dataset, language_model, "test")
+        source_dataset, language_model, "test").cache()
 
     train_ds = sample_captions_for_encodings(
         train_ds, source_dataset.captions_per_video)

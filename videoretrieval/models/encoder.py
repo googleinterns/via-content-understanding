@@ -217,9 +217,9 @@ class EncoderFineTuning(tf.keras.Model):
             num_parallel_iterations=self.lm_batch_size)[0]
 
     def language_model_forward_pass(self, text_tokens, text_tokens_lengths):
-        embeddings = self.language_model(text_tokens)[0]
-        return self.zero_padding_tokens_embeddings(
-            embedding, text_token_lengths)
+        embeddings = self.language_model(text_tokens)[0][:, 0, :]
+        #return self.zero_padding_tokens_embeddings(
+        #    embedding, text_token_lengths)
 
     def forward_pass(
         self, video_ids, video_features, text_tokens, text_token_lengths,

@@ -79,7 +79,7 @@ class TextEncoder(tf.keras.Model):
             bias_initializer=bias_initializer)
 
         self.make_dense_layers(
-            moe_dense
+            moe_dense_layers,
             kernel_initializer=kernel_initializer,
             bias_initializer=bias_initializer)
 

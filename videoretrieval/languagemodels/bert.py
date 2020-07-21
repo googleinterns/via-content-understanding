@@ -87,7 +87,7 @@ class BERTModel(BaseLanguageModel):
 
     @property
     def contextual_embeddings_shape(self):
-        return (1024, )
+        return (768, )
 
     @property
     def zero_pad(self):
