@@ -164,6 +164,16 @@ class VideoEncoder(tf.keras.Model):
                 kernel_initializer=kernel_initializer,
                 bias_initializer=bias_initializer))
 
+    def make_embedding_creation_layers(self):
+        self.embedding_projectors = []
+        self.mask_projectors = []
+
+        for _ in range(self.num_experts):
+            self.embedding_projectors.append(tf.keras.layers.Dense(
+                self.encoded_expert_dimensionality))
+            self.mask_projectors.append(tf.keras.layers.Dense(
+                self.encoded_expert_dimensionality))
+
     def call(self, inputs):
         """Forward pass on the video encoder.
 
@@ -181,10 +191,27 @@ class VideoEncoder(tf.keras.Model):
         assert len(expert_embeddings) == self.num_experts
 
         aggregated_embeddings = self.temporal_aggregation(expert_embeddings)
+
+        expert_embeddings, masking_vectors = self.split_aggregated_embeddings(
+            aggregated_embeddings)
         output_embedding = self.collaborative_gating(
-            aggregated_embeddings, missing_experts)
+            expert_embeddings, masking_vectors, missing_experts)
 
         return output_embedding
+
+    def split_aggregated_embeddings(self, aggregated_embeddings):
+        expert_embeddings = []
+        masking_vectors = []
+
+        for embedding_projector, masking_projector, aggregated_embedding in zip(
+            self.embedding_projectors,
+            self.mask_projectors,
+            aggregated_embeddings):
+
+            expert_embeddings.append(embedding_projector(aggregated_embedding))
+            masking_vectors.append(masking_projector(aggregated_embedding))
+
+        return expert_embeddings, masking_vectors
 
     def temporal_aggregation(self, inputs):
         """Runs the temporal aggregation module.
@@ -204,7 +231,8 @@ class VideoEncoder(tf.keras.Model):
 
         return aggregated_embeddings
 
-    def collaborative_gating(self, aggregated_embeddings, missing_experts):
+    def collaborative_gating(
+        self, expert_embeddings, masking_vectors, missing_experts):
         """Runs collaborative gating module.
 
         For each aggregated embedding, runs the feedfoward network in
@@ -231,14 +259,14 @@ class VideoEncoder(tf.keras.Model):
         gated_embeddings = []
         experts_availability = 1 - tf.cast(missing_experts, tf.float32)
 
-        for expert_index, embedding in enumerate(aggregated_embeddings):
+        for expert_index, embedding in enumerate(expert_embeddings):
             summed_attentions = 0
             experts_used = 0
 
             expert_available = experts_availability[:, expert_index]
 
-            for other_expert_index, other_embedding in enumerate(
-                aggregated_embeddings):
+            for other_expert_index, mask_vector in enumerate(
+                masking_vectors):
 
                 # if either the expert at expert_index or the expert at
                 # other_expert_index is not available, the attention mask isn't
@@ -248,7 +276,7 @@ class VideoEncoder(tf.keras.Model):
                     :, other_expert_index]
                 
                 attention = self.g_mlp(tf.concat(
-                    [embedding, other_embedding],
+                    [embedding, mask_vector],
                     axis=1,
                 ))
 
