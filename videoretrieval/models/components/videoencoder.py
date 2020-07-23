@@ -65,8 +65,7 @@ class VideoEncoder(tf.keras.Model):
             make_activation_layer=tf.keras.layers.ReLU,
             use_batch_norm=True,
             kernel_initializer="glorot_uniform",
-            bias_initializer="zeros"
-            ):
+            bias_initializer="zeros"):
         """Initialize video encoder.
 
         Args:
@@ -82,7 +81,7 @@ class VideoEncoder(tf.keras.Model):
             kernel_initializer: the strategy used to initialize the weights in
                 dense layer's kernel. Either a string naming the initializer or
                 an instance of tf.keras.initializers.Initializer.
-            bias_initial: the strategy used to initialize the weights in dense
+            bias_initializer: the strategy used to initialize the weights in dense
                 layers' biases. Either a string naming the initializer or
                 an instance of tf.keras.initializers.Initializer.
         """
