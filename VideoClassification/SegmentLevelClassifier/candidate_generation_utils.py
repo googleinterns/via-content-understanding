@@ -15,6 +15,7 @@ class PROBABILITY_HOLDER:
 		class_dataframe = pd.read_csv(class_csv, index_col=0)
 		print(class_dataframe)
 		class_indices = class_dataframe.index.tolist()
+		print(class_indices)
 		num_classes = len(class_indices)
 
 		self.num_classes = num_classes
