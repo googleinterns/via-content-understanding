@@ -12,7 +12,7 @@ class PROBABILITY_HOLDER:
 			k: number of examples to retain per class
 		"""
 		print(class_csv)
-		class_dataframe = pd.read_csv(class_csv)
+		class_dataframe = pd.read_csv(class_csv, index_col=0)
 		print(class_dataframe)
 		class_indices = class_dataframe.index.tolist()
 		num_classes = len(class_indices)
