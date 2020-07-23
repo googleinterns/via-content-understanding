@@ -241,8 +241,6 @@ class PreprocessingDataset():
 
     context, features = tf.io.parse_single_sequence_example(serialized_example, context_features=context_features, sequence_features=sequence_features)
 
-    assert False
-
     video_id = context["id"]
 
     if video_id in self.candidates.keys():
