@@ -52,11 +52,13 @@ class PROBABILITY_HOLDER:
     print(candidate_probs)
     print(probability)
     i = self.binary_search(candidate_probs, probability)
-    
+    print(i)
+    print(candidate_probs[:i] + [candidate_probs] + candidate_probs[i:])
     self.candidate_probs[class_index] = candidate_probs[:i] + [candidate_probs] + candidate_probs[i:]
     self.candidates[class_index] = candidates[:i] + [video_index] + candidates[i:]
     self.candidate_ids[class_index] = candidate_ids[:i] + [video_id] + candidate_ids[i:]
     print(self.candidate_probs[class_index])
+    assert False
 
   def sorted_insert(self, class_index, video_index, probability, video_id):
     """Add video_index to the sorted list, while removing the min.
