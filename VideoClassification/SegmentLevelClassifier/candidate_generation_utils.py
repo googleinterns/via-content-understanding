@@ -64,8 +64,7 @@ class PROBABILITY_HOLDER:
 
     cand_probs = self.candidate_probs[class_index]
     for i in range(1,len(cand_probs)):
-      assert cand_probs[i]
-    print(self.candidate_probs[class_index])
+      assert cand_probs[i] > cand_probs[i-1]
 
   def sorted_insert(self, class_index, video_index, probability, video_id):
     """Add video_index to the sorted list, while removing the min.
