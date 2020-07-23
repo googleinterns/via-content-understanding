@@ -23,25 +23,25 @@ class PROBABILITY_HOLDER:
     self.candidate_ids = [[]] * num_classes
     self.num_videos = 0
   
-def binary_search(self, sorted_list, input):
-  """Binary search for the index in candidate_probs with the closest value to probability that is less than or equal to probability.
+  def binary_search(self, sorted_list, input):
+    """Binary search for the index in candidate_probs with the closest value to probability that is less than or equal to probability.
 
-  Args:
-    sorted_list: list of values to be searched. Sorted in increasing order
-    input: value to search for
-  """
-  low = 0
-  high = len(sorted_list)-1
-  while low <= high:
+    Args:
+      sorted_list: list of values to be searched. Sorted in increasing order
+      input: value to search for
+    """
+    low = 0
+    high = len(sorted_list)-1
+    while low <= high:
+      mid = (low + high) // 2
+      if sorted_list[mid] == input:
+        return mid
+      elif sorted_list[mid] < input:
+        low = mid + 1
+      else:
+        high = mid - 1
     mid = (low + high) // 2
-    if sorted_list[mid] == input:
-      return mid
-    elif sorted_list[mid] < input:
-      low = mid + 1
-    else:
-      high = mid - 1
-  mid = (low + high) // 2
-  return mid
+    return mid
 
 
   def sorted_append(self, class_index, video_index, probability, video_id):
