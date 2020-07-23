@@ -46,7 +46,7 @@ def generate_candidates(input_dataset, model, k, class_csv):
   video_index = 0
   input_dataset = tfds.as_numpy(input_dataset)
   for video in input_dataset:
-    video_id = tf.convert_to_tensor(video[0])[0].eval()
+    video_id = tf.convert_to_tensor(video[0])[0].numpy()
     video_input = tf.convert_to_tensor(video[1])
     print(video_id)
     probability_holder.add_data(video_index, video_id, model.predict(video_input)[0])
