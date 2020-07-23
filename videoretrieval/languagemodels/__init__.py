@@ -1,4 +1,4 @@
-"""Class for managing action recongition experts.
+"""__init__.py for language models package.
 
 Copyright 2020 Google LLC
 
@@ -15,27 +15,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from base import BaseExpert
+from .gpt import OpenAIGPTModel
 
-class I3D(BaseExpert):
-    """Implementation of the I3D expert class."""
-
-    @property
-    def name(self):
-        return "i3d"
-    
-    @property
-    def embedding_shape(self):
-        return (1024,)
-
-
-class R2P1D(BaseExpert):
-    """Implementation of the R(2 + 1)d expert class."""
-
-    @property
-    def name(self):
-        return "r2p1d"
-    
-    @property
-    def embedding_shape(self):
-        return (512,)
+openai_gpt = OpenAIGPTModel()

@@ -17,3 +17,4 @@ __init__ for base package.
 
 from .base_dataset import BaseVideoDataset
 from .base_expert import BaseExpert
+from .base_language_model import BaseLanguageModel
