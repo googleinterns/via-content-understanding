@@ -28,7 +28,15 @@ def save_data(new_data_dir, input_dataset):
     input_dataset: original dataset before candidate generation
     candidates: list of lists where each inner list contains the class indices that the corresponding input data is a candidate for. len(candidates) == len(input_dataset)
   """
+  input_dataset = tfds.as_numpy(input_dataset)
+  for video in input_dataset:
+    example = tf.convert_to_tensor(video[0])
+    contexts = tf.convert_to_tensor(video[1])
+    features = tf.convert_to_tensor(video[2])
 
+    print(example)
+    print(contexts)
+    print(features)
 
 def generate_candidates(input_dataset, model, k, class_csv):
   """Generate top k candidates per class.
@@ -63,9 +71,9 @@ if __name__ == "__main__":
 
   model = load_model("../model_weights.h5")
 
-  candidates = generate_candidates(input_dataset, model, 100, "vocabulary.csv")
+  candidates = generate_candidates(input_dataset, model, 200, "vocabulary.csv")
 
   segment_reader = readers.PreprocessingDataset(candidates=candidates)
   input_dataset = segment_reader.get_dataset("/home/conorfvedova_google_com/data/segments/validation", batch_size=1, type="validate")
 
-  save_data("~/data/segments/new_validation", input_dataset)
+  save_data("~/data/segments/candidate_validation", input_dataset)

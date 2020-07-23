@@ -238,11 +238,14 @@ class PreprocessingDataset():
         feature_name: tf.io.FixedLenSequenceFeature([], dtype=tf.string)
         for feature_name in self.feature_names
     }
-    print(serialized_example)
+
     context, features = tf.io.parse_single_sequence_example(serialized_example, context_features=context_features, sequence_features=sequence_features)
 
-    print(context)
-    print(features)
     assert False
 
-    return context
+    video_id = context["id"]
+
+    if video_id in self.candidates.keys():
+      context["candidate_labels"] = self.candidates[video_id]
+
+    return (serialized_example, context, features)
