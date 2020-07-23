@@ -20,9 +20,9 @@ import numpy as np
 
 def build_similarity_matrix(
     video_embeddings,
-    missing_experts,
     text_embeddings,
-    mixture_weights):
+    mixture_weights
+    missing_experts):
     """Builds a similarity matrix between text_embeddings and video_embeddings.
 
     Let m be the batch size, n be the number of experts, d be the embedding
@@ -31,13 +31,13 @@ def build_similarity_matrix(
     Args:
         video_embeddings: a list of length n, where the ith element is the
             video embedding for the ith expert as a tensor of shape m x d.
-        missing_experts: a boolean tensor of shape b x m, where each element
-            corresponds to a video embedding and indicates the missing experts. 
         text_embeddings: a list of length n, where the ith element is the
             text embedding for the ith expert as a tensor of shape m x d.
         mixture_weights: a tensor of shape m x n, containing mixture weights for
             a corresponding text embedding.
-    
+        missing_experts: a boolean tensor of shape b x m, where each element
+            corresponds to a video embedding and indicates the missing experts. 
+        
     Returns: A batch_size x batch_size tensor, where the value in the ith row
         and jth column is the similarity between the ith text embedding and the
         jth video embedding. 
@@ -98,7 +98,7 @@ def bidirectional_max_margin_ranking_loss(
     batch_size = video_embeddings[0].shape[0]
 
     similarities = build_similarity_matrix(
-        video_embeddings, missing_experts, text_embeddings, mixture_weights)
+        video_embeddings,  text_embeddings, mixture_weights, missing_experts)
 
     similarities_transpose = tf.transpose(similarities)
 
