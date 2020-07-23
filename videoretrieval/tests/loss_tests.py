@@ -100,7 +100,7 @@ class TestBidirectionalMaxMarginRankingLoss(unittest.TestCase):
 
         mock_bad_text_embeddings = [tf.constant([
             [-1.0, 0.0],
-            [0, 1.0],
+            [0.0, 1.0],
             [-1.0, 1.0],
             [0.7, 0.6],
         ])]

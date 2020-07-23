@@ -69,11 +69,11 @@ class TemporalAggregationLayer(tf.keras.layers.Layer):
             kernel_initializer=kernel_initializer,
             bias_initializer=bias_initializer)
 
-    def call(self, input_):
+    def call(self, expert_embedding):
         if self.use_netvlad:
-            features = self.netvlad(input_)
+            features = self.netvlad(expert_embedding)
         else:
-            features = input_
+            features = expert_embedding
 
         output = self.projection_layer(features)
         return tf.math.l2_normalize(output, axis=-1)
