@@ -84,6 +84,7 @@ class PROBABILITY_HOLDER:
 			output_probs: probability output from the video level model. Tensor of shape (video_num_classes,)
 		"""
 		self.num_videos += 1
+
 		#Go through each class and update candidate list if necessary.
 		for class_index in range(self.num_classes):
 			true_class_index = self.class_indices[class_index]

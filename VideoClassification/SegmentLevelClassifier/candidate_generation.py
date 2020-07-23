@@ -63,4 +63,3 @@ if __name__ == "__main__":
   input_dataset = segment_reader.load_dataset("~/data/segments/validation", batch_size=1, type="validate")
 
   save_data(new_data_dir="~/data/segments/new_validation", input_dataset)
-
