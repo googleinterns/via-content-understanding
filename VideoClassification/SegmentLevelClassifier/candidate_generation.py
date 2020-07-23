@@ -6,8 +6,12 @@ import tensorflow as tf
 import tensorflow_datasets as tfds
 
 
-def load_model(model_dir):
-  model_generator = model_lib.VideoClassifier(num_clusters, video_input_shape, audio_input_shape, fc_units=fc_units, num_classes=data_reader.num_classes, num_mixtures=num_mixtures, iterations=iterations)
+def load_model(model_dir, num_clusters=256, batch_size=80, random_frames=True, num_mixtures=2, fc_units=1024, iterations=300, num_classes=3862):
+  video_input_shape = (batch_size, iterations, 1024)
+  audio_input_shape = (batch_size, iterations, 128)
+  input_shape = (iterations, 1152)
+
+  model_generator = model_lib.VideoClassifier(num_clusters, video_input_shape, audio_input_shape, fc_units=fc_units, num_classes=num_classes, num_mixtures=num_mixtures, iterations=iterations)
   
   model = model_generator.build_model(input_shape, batch_size)
 
@@ -56,7 +60,8 @@ if __name__ == "__main__":
   video_reader = readers.VideoDataset()
   input_dataset = video_reader.load_dataset("~/data/segments/validation", batch_size=1, type="validate")
 
-  model = load_model("~/model.h5")
+  model = load_model("../model_weights.h5")
+
   candidates = generate_candidates(input_dataset, model, 100)
 
   segment_reader = readers.PreprocessingDataset(candidates=candidates)
