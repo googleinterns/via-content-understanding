@@ -11,7 +11,9 @@ class PROBABILITY_HOLDER:
 			class_csv: path to csv file containing the indices of the classes used, out of the 3.8k output classes from the video-level classifier.
 			k: number of examples to retain per class
 		"""
+		print(class_csv)
 		class_dataframe = pd.read_csv(class_csv)
+		print(class_dataframe)
 		class_indices = class_dataframe.index.tolist()
 		num_classes = len(class_indices)
 
