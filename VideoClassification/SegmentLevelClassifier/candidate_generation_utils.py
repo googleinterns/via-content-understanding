@@ -105,7 +105,7 @@ def binary_search(self, sorted_list, input):
       elif probability > self.candidates[class_index][0]:
         self.sorted_insert(class_index, video_index, probability, video_id)
 
-  def find_candidates():
+  def find_candidates(self):
     """Amass candidates.
 
     Returns:
