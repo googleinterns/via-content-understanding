@@ -33,7 +33,7 @@ class PROBABILITY_HOLDER:
     i = len(candidate_probs) // 2
     if len(candidate_probs) == 0:
       return 0
-    elif probability > candidate_probs[i]:
+    elif probability < candidate_probs[i]:
       return i+self.binary_search(candidate_probs[i+1:], probability)
     else:
       return self.binary_search(candidate_probs[:i], probability)
@@ -55,6 +55,10 @@ class PROBABILITY_HOLDER:
     self.candidate_probs[class_index] = candidate_probs[:i] + [probability] + candidate_probs[i:]
     self.candidates[class_index] = candidates[:i] + [video_index] + candidates[i:]
     self.candidate_ids[class_index] = candidate_ids[:i] + [video_id] + candidate_ids[i:]
+
+    cand_probs = self.candidate_probs[class_index]
+    for i in range(1,len(cand_probs)):
+      assert cand_probs[i]
     print(self.candidate_probs[class_index])
 
   def sorted_insert(self, class_index, video_index, probability, video_id):
