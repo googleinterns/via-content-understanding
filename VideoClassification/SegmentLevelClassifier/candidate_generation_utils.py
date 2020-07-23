@@ -49,7 +49,8 @@ class PROBABILITY_HOLDER:
     candidate_probs = self.candidate_probs[class_index]
     candidates = self.candidates[class_index]
     candidate_ids = self.candidate_ids[class_index]
-
+    print(candidate_probs)
+    print(probability)
     i = self.binary_search(candidate_probs, probability)
     
     self.candidate_probs[class_index] = candidate_probs[:i] + [candidate_probs] + candidate_probs[i:]
@@ -89,7 +90,6 @@ class PROBABILITY_HOLDER:
     for class_index in range(self.num_classes):
       true_class_index = self.class_indices[class_index]
       probability = output_probs[true_class_index]
-      print(probability)
       if len(self.candidates[class_index]) < self.k:
         self.sorted_append(class_index, video_index, probability, video_id)
       elif output_probs[true_class_index] > self.candidates[class_index][0]:
