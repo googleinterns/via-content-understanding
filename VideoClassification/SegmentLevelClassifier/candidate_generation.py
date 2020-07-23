@@ -20,7 +20,7 @@ def load_model(model_dir, num_clusters=256, batch_size=80, random_frames=True, n
 
   return model
 
-def save_data(new_data_dir, input_dataset, candidates):
+def save_data(new_data_dir, input_dataset):
   """Save data as TFRecords Datasets in new_data_dir.
 
   Args:
@@ -68,4 +68,4 @@ if __name__ == "__main__":
   segment_reader = readers.PreprocessingDataset(candidates=candidates)
   input_dataset = segment_reader.load_dataset("~/data/segments/validation", batch_size=1, type="validate")
 
-  save_data(new_data_dir="~/data/segments/new_validation", input_dataset)
+  save_data("~/data/segments/new_validation", input_dataset)
