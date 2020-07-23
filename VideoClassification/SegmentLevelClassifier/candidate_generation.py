@@ -50,7 +50,7 @@ def generate_candidates(input_dataset, model, k, class_csv):
     video_input = tf.convert_to_tensor(video[1])
     probability_holder.add_data(video_index, video_id, model.predict(video_input)[0])
     video_index += 1
-
+    print(video_index)
   return probability_holder.find_candidates()
 
   
