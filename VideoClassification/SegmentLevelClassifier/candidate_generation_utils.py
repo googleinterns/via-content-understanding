@@ -11,11 +11,8 @@ class PROBABILITY_HOLDER:
 			class_csv: path to csv file containing the indices of the classes used, out of the 3.8k output classes from the video-level classifier.
 			k: number of examples to retain per class
 		"""
-		print(class_csv)
 		class_dataframe = pd.read_csv(class_csv, index_col=0)
-		print(class_dataframe)
 		class_indices = class_dataframe.index.tolist()
-		print(class_indices)
 		num_classes = len(class_indices)
 
 		self.num_classes = num_classes
@@ -92,6 +89,7 @@ class PROBABILITY_HOLDER:
 		for class_index in range(self.num_classes):
 			true_class_index = self.class_indices[class_index]
 			probability = output_probs[true_class_index]
+      print(probability)
 			if len(self.candidates[class_index]) < self.k:
 				self.sorted_append(class_index, video_index, probability, video_id)
 			elif output_probs[true_class_index] > self.candidates[class_index][0]:
