@@ -56,6 +56,7 @@ class PROBABILITY_HOLDER:
     self.candidate_probs[class_index] = candidate_probs[:i] + [candidate_probs] + candidate_probs[i:]
     self.candidates[class_index] = candidates[:i] + [video_index] + candidates[i:]
     self.candidate_ids[class_index] = candidate_ids[:i] + [video_id] + candidate_ids[i:]
+    print(self.candidate_probs[class_index])
 
   def sorted_insert(self, class_index, video_index, probability, video_id):
     """Add video_index to the sorted list, while removing the min.
