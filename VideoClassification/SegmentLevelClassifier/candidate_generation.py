@@ -64,7 +64,7 @@ if __name__ == "__main__":
 
   model = load_model("../model_weights.h5")
 
-  candidates = generate_candidates(input_dataset, model, 100)
+  candidates = generate_candidates(input_dataset, model, 100, "./vocabulary.csv")
 
   segment_reader = readers.PreprocessingDataset(candidates=candidates)
   input_dataset = segment_reader.get_dataset("/home/conorfvedova_google_com/data/segments/validation", batch_size=1, type="validate")
