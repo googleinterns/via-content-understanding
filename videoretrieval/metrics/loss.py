@@ -21,7 +21,7 @@ import numpy as np
 def build_similarity_matrix(
     video_embeddings,
     text_embeddings,
-    mixture_weights
+    mixture_weights,
     missing_experts):
     """Builds a similarity matrix between text_embeddings and video_embeddings.
 
