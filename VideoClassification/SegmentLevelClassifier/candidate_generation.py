@@ -3,6 +3,7 @@ import pandas as pd
 import readers
 import reader_utils
 import tensorflow as tf
+import tensorflow_datasets as tfds
 
 
 def load_model(model_dir):
@@ -38,8 +39,11 @@ def generate_candidates(input_dataset, model, k, class_csv):
   probability_holder = utils.PROBABILITY_HOLDER(class_csv, k)
   
   video_index = 0
+  input_dataset = tfds.as_numpy(input_dataset)
   for video in input_dataset:
-    probability_holder.add_data(video_index, model.predict(video))
+    video_id = tf.convert_to_tensor(video[0])
+    video_input = tf.convert_to_tensor(video[1])
+    probability_holder.add_data(video_index, video_id, model.predict(video_input)[0])
     video_index += 1
 
   return probability_holder.find_candidates()
@@ -47,11 +51,16 @@ def generate_candidates(input_dataset, model, k, class_csv):
   
 
 if __name__ == "__main__":
-  reader = readers.YT8MSegmentsDataset()
-  input_dataset = reader_utils.load_dataset(reader, "~/data/segments/validation")
+  #do candidate gen and keep track of video_ids. Then, pass list of (video_id, class_list) pairs to dataset to then add them while loading data. 
+  #then simply parse that like Ryan and write it in shards
+  video_reader = readers.VideoDataset()
+  input_dataset = video_reader.load_dataset("~/data/segments/validation", batch_size=1, type="validate")
 
   model = load_model("~/model.h5")
   candidates = generate_candidates(input_dataset, model, 100)
 
-  save_data(new_data_dir="~/data/segments/new_validation", input_dataset, candidates)
+  segment_reader = readers.PreprocessingDataset(candidates=candidates)
+  input_dataset = segment_reader.load_dataset("~/data/segments/validation", batch_size=1, type="validate")
+
+  save_data(new_data_dir="~/data/segments/new_validation", input_dataset)
 
