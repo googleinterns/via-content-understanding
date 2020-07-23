@@ -23,20 +23,26 @@ class PROBABILITY_HOLDER:
     self.candidate_ids = [[]] * num_classes
     self.num_videos = 0
   
-  def binary_search(self, candidate_probs, probability):
-    """Binary search for the index in candidate_probs with the closest value to probability that is less than probability.
+def binary_search(self, sorted_list, input):
+  """Binary search for the index in candidate_probs with the closest value to probability that is less than or equal to probability.
 
-    Args:
-      candidate_probs: list of values to be searched
-      probability: value to search for
-    """
-    i = len(candidate_probs) // 2
-    if len(candidate_probs) == 0:
-      return 0
-    elif probability < candidate_probs[i]:
-      return i+self.binary_search(candidate_probs[i+1:], probability)
+  Args:
+    sorted_list: list of values to be searched. Sorted in increasing order
+    input: value to search for
+  """
+  low = 0
+  high = len(sorted_list)-1
+  while low <= high:
+    mid = (low + high) // 2
+    if sorted_list[mid] == input:
+      return mid
+    elif sorted_list[mid] < input:
+      low = mid + 1
     else:
-      return self.binary_search(candidate_probs[:i], probability)
+      high = mid - 1
+  mid = (low + high) // 2
+  return mid
+
 
   def sorted_append(self, class_index, video_index, probability, video_id):
     """Add video_index to the sorted list.
@@ -52,9 +58,9 @@ class PROBABILITY_HOLDER:
 
     i = self.binary_search(candidate_probs, probability)
 
-    self.candidate_probs[class_index] = candidate_probs[:i] + [probability] + candidate_probs[i:]
-    self.candidates[class_index] = candidates[:i] + [video_index] + candidates[i:]
-    self.candidate_ids[class_index] = candidate_ids[:i] + [video_id] + candidate_ids[i:]
+    self.candidate_probs[class_index] = candidate_probs[:i+1] + [probability] + candidate_probs[i+1:]
+    self.candidates[class_index] = candidates[:i+1] + [video_index] + candidates[i+1:]
+    self.candidate_ids[class_index] = candidate_ids[:i+1] + [video_id] + candidate_ids[i+1:]
 
     cand_probs = self.candidate_probs[class_index]
     for i in range(1,len(cand_probs)):
@@ -76,9 +82,9 @@ class PROBABILITY_HOLDER:
 
     i = self.binary_search(candidate_probs, probability)
     
-    self.candidate_probs[class_index] = candidate_probs[:i] + [probability] + candidate_probs[i:]
-    self.candidates[class_index] = candidates[:i] + [video_index] + candidates[i:]
-    self.candidate_ids[class_index] = candidate_ids[:i] + [video_id] + candidate_ids[i:]
+    self.candidate_probs[class_index] = candidate_probs[:i+1] + [probability] + candidate_probs[i+1:]
+    self.candidates[class_index] = candidates[:i+1] + [video_index] + candidates[i+1:]
+    self.candidate_ids[class_index] = candidate_ids[:i+1] + [video_id] + candidate_ids[i+1:]
 
   def add_data(self, video_index, video_id, output_probs):
     """Add a datapoint to be sorted for the candidate generation.
@@ -96,7 +102,7 @@ class PROBABILITY_HOLDER:
       probability = output_probs[true_class_index]
       if len(self.candidates[class_index]) < self.k:
         self.sorted_append(class_index, video_index, probability, video_id)
-      elif output_probs[true_class_index] > self.candidates[class_index][0]:
+      elif probability > self.candidates[class_index][0]:
         self.sorted_insert(class_index, video_index, probability, video_id)
 
   def find_candidates():
