@@ -49,12 +49,10 @@ class PROBABILITY_HOLDER:
     candidate_probs = self.candidate_probs[class_index]
     candidates = self.candidates[class_index]
     candidate_ids = self.candidate_ids[class_index]
-    print(candidate_probs)
-    print(probability)
+    
     i = self.binary_search(candidate_probs, probability)
-    print(i)
-    print(candidate_probs[:i] + [candidate_probs] + candidate_probs[i:])
-    self.candidate_probs[class_index] = candidate_probs[:i] + [candidate_probs] + candidate_probs[i:]
+
+    self.candidate_probs[class_index] = candidate_probs[:i] + [probability] + candidate_probs[i:]
     self.candidates[class_index] = candidates[:i] + [video_index] + candidates[i:]
     self.candidate_ids[class_index] = candidate_ids[:i] + [video_id] + candidate_ids[i:]
     print(self.candidate_probs[class_index])
@@ -75,7 +73,7 @@ class PROBABILITY_HOLDER:
 
     i = self.binary_search(candidate_probs, probability)
     
-    self.candidate_probs[class_index] = candidate_probs[:i] + [candidate_probs] + candidate_probs[i:]
+    self.candidate_probs[class_index] = candidate_probs[:i] + [probability] + candidate_probs[i:]
     self.candidates[class_index] = candidates[:i] + [video_index] + candidates[i:]
     self.candidate_ids[class_index] = candidate_ids[:i] + [video_id] + candidate_ids[i:]
 
