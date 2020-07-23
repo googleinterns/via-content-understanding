@@ -159,7 +159,7 @@ class VideoDataset():
 
     feature_dim = len(batch_video_matrix.get_shape()) - 1
     batch_video_matrix = tf.nn.l2_normalize(batch_video_matrix, feature_dim)
-    print(serialized_example.eval())
+    print(serialized_example)
     print(contexts)
     print(features)
     return (contexts["id"].values, batch_video_matrix, batch_labels)
