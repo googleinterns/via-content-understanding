@@ -7,7 +7,7 @@ import tensorflow as tf
 import tensorflow_datasets as tfds
 
 
-def load_model(model_dir, num_clusters=256, batch_size=80, random_frames=True, num_mixtures=2, fc_units=1024, iterations=300, num_classes=3862):
+def load_model(model_path, num_clusters=256, batch_size=80, random_frames=True, num_mixtures=2, fc_units=1024, iterations=300, num_classes=3862):
   video_input_shape = (batch_size, iterations, 1024)
   audio_input_shape = (batch_size, iterations, 128)
   input_shape = (iterations, 1152)
