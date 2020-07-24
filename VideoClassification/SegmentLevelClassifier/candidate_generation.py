@@ -35,6 +35,7 @@ def save_data(new_data_dir, input_dataset, shard_size=17):
 
   input_dataset = tfds.as_numpy(input_dataset)
   print("here1")
+  print(input_dataset)
   for video in input_dataset:
     context = video[0]
     features = video[1]
