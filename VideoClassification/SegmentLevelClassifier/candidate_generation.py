@@ -23,7 +23,7 @@ def load_model(model_path, num_clusters=256, batch_size=80, random_frames=True, 
 def serialize_to_protobuf(context, features):
   pass
 
-def save_data(new_data_dir, input_dataset, shard_size=17):
+def save_data(new_data_dir, input_dataset, shard_size=10):
   """Save data as TFRecords Datasets in new_data_dir.
 
   Args:
