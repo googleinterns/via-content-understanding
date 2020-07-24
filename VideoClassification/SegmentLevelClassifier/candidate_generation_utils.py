@@ -108,7 +108,8 @@ class PROBABILITY_HOLDER:
     Returns:
       candidates: list of lists where each inner list designates the classes that example was chosen for. len of return value == self.num_videos
     """
-    
+    print(self.candidate_probs)
+    print(self.candidates)
     candidates = {}
     for class_index in range(len(self.candidates)):
       for video_candidate in self.candidates[class_index]:
