@@ -80,8 +80,7 @@ class PROBABILITY_HOLDER:
     """Add a datapoint to be sorted for the candidate generation.
 
     Args:
-      video_index: index denoting the video number within the original dataset
-      video_id: video id attained from the data itself
+      video_id: video id attained from the data itself. Must be hashable. If tensor, do tensor.ref()
       output_probs: probability output from the video level model. Tensor of shape (video_num_classes,)
     """
     self.num_videos += 1
