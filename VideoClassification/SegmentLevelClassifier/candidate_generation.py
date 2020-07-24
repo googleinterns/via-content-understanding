@@ -39,8 +39,8 @@ def save_data(new_data_dir, input_dataset, shard_size=10):
   for video in input_dataset:
     print("yo")
     print(video)
-    context = video[0]
     #features = video[1]
+    print(video["labels"].values)
 
     print(context)
     assert False
