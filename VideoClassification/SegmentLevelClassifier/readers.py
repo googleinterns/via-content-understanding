@@ -234,4 +234,5 @@ class PreprocessingDataset():
         feature_name: tf.io.FixedLenSequenceFeature([], dtype=tf.string)
         for feature_name in self.feature_names
     }
-    return tf.io.parse_single_sequence_example(serialized_example, context_features=context_features, sequence_features=sequence_features)
+    context, features = tf.io.parse_single_sequence_example(serialized_example, context_features=context_features, sequence_features=sequence_features)
+    return (context, features)
