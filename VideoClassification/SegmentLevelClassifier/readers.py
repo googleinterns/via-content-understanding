@@ -240,7 +240,8 @@ class PreprocessingDataset():
     context, features = tf.io.parse_single_sequence_example(serialized_example, context_features=context_features, sequence_features=sequence_features)
 
     print(context)
-    video_id = context["labels"].values
+    video_id = context["id"][0]
+    print(video_id)
     # print(len(self.candidates))
     # print(video_id)
     # print(video_id.ref())
@@ -253,4 +254,4 @@ class PreprocessingDataset():
     # print(context)
     print(context)
     print(features)
-    return (context["id"], context["labels"], context["segment_labels"], context["segment_start_times"], context["segment_score"], features["rgb"], features["audio"])
+    return (context["id"], context["labels"], context["segment_labels"], context["segment_start_times"], context["segment_scores"], features["rgb"], features["audio"])
