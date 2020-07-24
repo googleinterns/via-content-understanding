@@ -242,6 +242,8 @@ class PreprocessingDataset():
     print(context)
     video_id = tf.reshape(context["id"],(1,))[0]
     print(video_id)
+    if video_id == b'Ndaa':
+      print("perfect")
     # print(len(self.candidates))
     # print(video_id)
     # print(video_id.ref())
