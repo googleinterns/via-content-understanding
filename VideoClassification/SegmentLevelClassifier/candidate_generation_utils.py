@@ -20,7 +20,6 @@ class PROBABILITY_HOLDER:
     self.class_indices = class_indices
     self.candidates = [[]] * num_classes
     self.candidate_probs = [[]] * num_classes
-    self.candidate_ids = [[]] * num_classes
     self.num_videos = 0
   
   def binary_search(self, sorted_list, input):
@@ -44,7 +43,7 @@ class PROBABILITY_HOLDER:
     return mid
 
 
-  def sorted_append(self, class_index, video_index, probability, video_id):
+  def sorted_append(self, class_index, probability, video_id):
     """Add video_index to the sorted list.
 
     Args:
@@ -59,10 +58,9 @@ class PROBABILITY_HOLDER:
     i = self.binary_search(candidate_probs, probability)
 
     self.candidate_probs[class_index] = candidate_probs[:i+1] + [probability] + candidate_probs[i+1:]
-    self.candidates[class_index] = candidates[:i+1] + [video_index] + candidates[i+1:]
-    self.candidate_ids[class_index] = candidate_ids[:i+1] + [video_id] + candidate_ids[i+1:]
+    self.candidates[class_index] = candidates[:i+1] + [video_id] + candidates[i+1:]
 
-  def sorted_insert(self, class_index, video_index, probability, video_id):
+  def sorted_insert(self, class_index, probability, video_id):
     """Add video_index to the sorted list, while removing the min.
 
     Args:
@@ -78,10 +76,9 @@ class PROBABILITY_HOLDER:
     i = self.binary_search(candidate_probs, probability)
     
     self.candidate_probs[class_index] = candidate_probs[:i+1] + [probability] + candidate_probs[i+1:]
-    self.candidates[class_index] = candidates[:i+1] + [video_index] + candidates[i+1:]
-    self.candidate_ids[class_index] = candidate_ids[:i+1] + [video_id] + candidate_ids[i+1:]
+    self.candidates[class_index] = candidates[:i+1] + [video_id] + candidates[i+1:]
 
-  def add_data(self, video_index, video_id, output_probs):
+  def add_data(self, video_id, output_probs):
     """Add a datapoint to be sorted for the candidate generation.
 
     Args:
@@ -96,9 +93,9 @@ class PROBABILITY_HOLDER:
       true_class_index = self.class_indices[class_index]
       probability = output_probs[true_class_index]
       if len(self.candidates[class_index]) < self.k:
-        self.sorted_append(class_index, video_index, probability, video_id)
+        self.sorted_append(class_index, probability, video_id)
       elif probability > self.candidates[class_index][0]:
-        self.sorted_insert(class_index, video_index, probability, video_id)
+        self.sorted_insert(class_index, probability, video_id)
 
   def find_candidates(self):
     """Amass candidates.

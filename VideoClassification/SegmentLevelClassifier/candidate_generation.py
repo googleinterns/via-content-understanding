@@ -20,7 +20,7 @@ def load_model(model_path, num_clusters=256, batch_size=80, random_frames=True, 
 
   return model
 
-def save_data(new_data_dir, input_dataset):
+def save_data(new_data_dir, input_dataset, shard_size=17):
   """Save data as TFRecords Datasets in new_data_dir.
 
   Args:
@@ -28,15 +28,14 @@ def save_data(new_data_dir, input_dataset):
     input_dataset: original dataset before candidate generation
     candidates: list of lists where each inner list contains the class indices that the corresponding input data is a candidate for. len(candidates) == len(input_dataset)
   """
+  input_dataset = input_dataset.batch(shard_size).prefetch(tf.data.experimental.AUTOTUNE)
+
   input_dataset = tfds.as_numpy(input_dataset)
   for video in input_dataset:
-    example = tf.convert_to_tensor(video[0])
-    contexts = tf.convert_to_tensor(video[1])
-    features = tf.convert_to_tensor(video[2])
+    context = video[0]
+    features = video[1]
 
-    print(example)
-    print(contexts)
-    print(features)
+
 
 def generate_candidates(input_dataset, model, k, class_csv):
   """Generate top k candidates per class.
@@ -50,15 +49,12 @@ def generate_candidates(input_dataset, model, k, class_csv):
     candidates: list of lists where each inner list contains the class indices that the corresponding input data is a candidate for. len(candidates) == len(input_dataset)
   """
   probability_holder = utils.PROBABILITY_HOLDER(class_csv, k)
-  
-  video_index = 0
+
   input_dataset = tfds.as_numpy(input_dataset)
   for video in input_dataset:
-    video_id = tf.convert_to_tensor(video[0])[0].numpy()
+    video_id = tf.convert_to_tensor(video[0])[0].ref()
     video_input = tf.convert_to_tensor(video[1])
-    probability_holder.add_data(video_index, video_id, model.predict(video_input)[0])
-    video_index += 1
-    print(video_index)
+    probability_holder.add_data(video_id, model.predict(video_input)[0])
   return probability_holder.find_candidates()
 
   

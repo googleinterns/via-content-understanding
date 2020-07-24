@@ -218,8 +218,6 @@ class PreprocessingDataset():
     parser = partial(self._parse_fn, max_quantized_value=max_quantized_value, min_quantized_value=min_quantized_value)
     dataset = dataset.map(parser, num_parallel_calls=tf.data.experimental.AUTOTUNE)
 
-    dataset = dataset.batch(1, drop_remainder=True).prefetch(tf.data.experimental.AUTOTUNE)
-
     return dataset
 
   def _parse_fn(self, serialized_example, max_quantized_value=2, min_quantized_value=-2):
@@ -243,7 +241,7 @@ class PreprocessingDataset():
 
     video_id = context["id"]
 
-    if video_id in self.candidates.keys():
-      context["candidate_labels"] = self.candidates[video_id]
+    if video_id.ref() in self.candidates.keys():
+      context["candidate_labels"] = tf.convert_to_tensor(self.candidates[video_id[0].ref()])
 
-    return (serialized_example, context, features)
+    return (context, features)
