@@ -119,4 +119,5 @@ class PROBABILITY_HOLDER:
     for i in self.candidates:
       for j in i:
         assert j in candidates.keys()
+    print(len(candidates))
     return candidates
