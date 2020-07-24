@@ -31,7 +31,7 @@ def save_data(new_data_dir, input_dataset, shard_size=10):
     input_dataset: original dataset before candidate generation
     candidates: list of lists where each inner list contains the class indices that the corresponding input data is a candidate for. len(candidates) == len(input_dataset)
   """
-  input_dataset = input_dataset.batch(shard_size).prefetch(tf.data.experimental.AUTOTUNE)
+  input_dataset = input_dataset.batch(10).prefetch(tf.data.experimental.AUTOTUNE)
 
   #input_dataset = tfds.as_numpy(input_dataset)
   print("here1")
