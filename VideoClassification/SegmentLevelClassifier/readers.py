@@ -240,7 +240,7 @@ class PreprocessingDataset():
     context, features = tf.io.parse_single_sequence_example(serialized_example, context_features=context_features, sequence_features=sequence_features)
 
     video_id = context["id"]
-
+    print(video_id.ref())
     if video_id.ref() in self.candidates.keys():
       context["candidate_labels"] = tf.convert_to_tensor(self.candidates[video_id[0].ref()])
 
