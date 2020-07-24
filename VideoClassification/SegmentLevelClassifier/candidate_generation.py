@@ -66,7 +66,7 @@ def save_data(new_data_dir, input_dataset, candidates, shard_size=10):
   shard_counter = 0
   shard = []
   for video in input_dataset:
-    video = tf.convert_to_tensor(video)
+    #video = tf.convert_to_tensor(video)
     context = video[0]
     features = video[1]
     print(context)
