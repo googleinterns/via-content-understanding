@@ -76,5 +76,5 @@ if __name__ == "__main__":
 
   segment_reader = readers.PreprocessingDataset(candidates=candidates)
   input_dataset = segment_reader.get_dataset("/home/conorfvedova_google_com/data/segments/validation", batch_size=1, type="validate")
-
+  print("here")
   save_data("~/data/segments/candidate_validation", input_dataset)
