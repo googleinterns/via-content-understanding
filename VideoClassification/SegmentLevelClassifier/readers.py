@@ -254,4 +254,4 @@ class PreprocessingDataset():
     # print(context)
     print(context)
     print(features)
-    return (context, features)#(context["id"], context["labels"], context["segment_labels"], context["segment_start_times"], context["segment_scores"], features["rgb"], features["audio"])
+    return (context)#(context["id"], context["labels"], context["segment_labels"], context["segment_start_times"], context["segment_scores"], features["rgb"], features["audio"])
