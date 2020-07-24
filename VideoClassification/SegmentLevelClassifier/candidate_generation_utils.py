@@ -53,7 +53,6 @@ class PROBABILITY_HOLDER:
     """
     candidate_probs = self.candidate_probs[class_index]
     candidates = self.candidates[class_index]
-    candidate_ids = self.candidate_ids[class_index]
 
     i = self.binary_search(candidate_probs, probability)
 
@@ -71,7 +70,6 @@ class PROBABILITY_HOLDER:
     #Remove min
     candidate_probs = self.candidate_probs[class_index][1:]
     candidates = self.candidates[class_index][1:]
-    candidate_ids = self.candidate_ids[class_index][1:]
 
     i = self.binary_search(candidate_probs, probability)
     
