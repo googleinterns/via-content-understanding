@@ -95,9 +95,13 @@ class PROBABILITY_HOLDER:
         assert probability in self.candidate_probs[class_index]
         assert video_id in self.candidates[class_index]
       elif probability > self.candidates[class_index][0]:
+        min_id = self.candidates[0]
+        min_probs = self.candidate_probs[0]
         self.sorted_insert(class_index, probability, video_id)
         assert probability in self.candidate_probs[class_index]
         assert video_id in self.candidates[class_index]
+        assert min_probs not in self.candidate_probs[class_index]
+        assert min_id not in self.candidates[class_index]
 
   def find_candidates(self):
     """Amass candidates.
