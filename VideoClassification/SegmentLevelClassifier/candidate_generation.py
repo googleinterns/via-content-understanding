@@ -49,6 +49,7 @@ def serialize_video(context, features):
   #       feature_name: tf.io.FixedLenSequenceFeature([], dtype=tf.string)
   #       for feature_name in self.feature_names
   #   }
+  features = tf.train.FeatureLists(feature_lists=features)
   example = tf.train.SequenceExample(feature_lists=features, context=context)
 
   return example.SerializeToString()
@@ -69,6 +70,7 @@ def save_data(new_data_dir, input_dataset, candidates, shard_size=10):
     features = video[1]
     #context = add_candidate_content(context, candidates)
     serialized_video = serialize_video(context, features)
+    print(serialized_video)
     shard.append(serialized_video)
     shard_counter += 1
     if shard_counter == shard_size:
