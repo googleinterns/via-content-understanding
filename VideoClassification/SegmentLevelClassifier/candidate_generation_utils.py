@@ -109,11 +109,15 @@ class PROBABILITY_HOLDER:
     Returns:
       candidates: list of lists where each inner list designates the classes that example was chosen for. len of return value == self.num_videos
     """
-    assert False
+    
     candidates = {}
     for class_index in range(len(self.candidates)):
       for video_candidate in self.candidates[class_index]:
         if video_candidate not in candidates.keys():
           candidates[video_candidate] = []
         candidates[video_candidate].append(class_index)
+
+    for i in self.candidates:
+      for j in i:
+        assert j.ref() in candidates.keys()
     return candidates
