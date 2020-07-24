@@ -89,16 +89,11 @@ class PROBABILITY_HOLDER:
     for class_index in range(self.num_classes):
       true_class_index = self.class_indices[class_index]
       probability = output_probs[true_class_index]
-      if self.num_videos == 11:
-        print(self.candidate_probs[class_index][0])
-        print(probability)
-        print(probability == self.candidate_probs[class_index][0])
-        print(probability > self.candidate_probs[class_index][0])
       if len(self.candidates[class_index]) < self.k:
         self.sorted_append(class_index, probability, video_id)
         assert probability in self.candidate_probs[class_index]
         assert video_id in self.candidates[class_index]
-      elif probability > self.candidates[class_index][0]:
+      elif probability > self.candidate_probs[class_index][0]:
         min_id = self.candidates[class_index][0]
         min_probs = self.candidate_probs[class_index][0]
         self.sorted_insert(class_index, probability, video_id)
