@@ -6,7 +6,6 @@ import reader_utils
 import tensorflow as tf
 import tensorflow_datasets as tfds
 
-
 def load_model(model_path, num_clusters=256, batch_size=80, random_frames=True, num_mixtures=2, fc_units=1024, iterations=300, num_classes=3862):
   video_input_shape = (batch_size, iterations, 1024)
   audio_input_shape = (batch_size, iterations, 128)
@@ -20,10 +19,44 @@ def load_model(model_path, num_clusters=256, batch_size=80, random_frames=True, 
 
   return model
 
-def serialize_to_protobuf(context, features):
-  pass
+def add_candidate_content(context, candidates):
+  """Add the tensor for the classes this particular video is a candidate for.
 
-def save_data(new_data_dir, input_dataset, shard_size=10):
+  context: context of the video
+  candidates: dictionary of candidates. Key is video id and value is list of candidate classes
+  """
+  video_id = tf.convert_to_tensor(context["id"])[0].ref()
+  if video_id in self.candidates.keys():
+    context["candidate_labels"] = tf.convert_to_tensor(self.candidates[video_id])
+  else:
+    context["candidate_labels"] = tf.convert_to_tensor([])
+  return context
+
+def 
+
+def serialize_video(context, features):
+  """Serialize video from context and features.
+
+  context: context of the video
+  features: features of the video
+  """
+  # context_features = {
+  #     "id": tf.io.FixedLenFeature([], tf.string),
+  #     "labels": tf.io.VarLenFeature(tf.int64),
+  #     "segment_labels": tf.io.VarLenFeature(tf.int64),
+  #     "segment_start_times": tf.io.VarLenFeature(tf.int64),
+  #     "segment_scores": tf.io.VarLenFeature(tf.float32)
+  #   }
+  #   sequence_features = {
+  #       feature_name: tf.io.FixedLenSequenceFeature([], dtype=tf.string)
+  #       for feature_name in self.feature_names
+  #   }
+    example = tf.train.SequenceExample(feature_lists=features, context=context)
+
+    return example.SerializeToString()
+
+
+def save_data(new_data_dir, input_dataset, candidates, shard_size=10):
   """Save data as TFRecords Datasets in new_data_dir.
 
   Args:
@@ -31,20 +64,22 @@ def save_data(new_data_dir, input_dataset, shard_size=10):
     input_dataset: original dataset before candidate generation
     candidates: list of lists where each inner list contains the class indices that the corresponding input data is a candidate for. len(candidates) == len(input_dataset)
   """
-
-  #input_dataset = tfds.as_numpy(input_dataset)
-  print("here1")
-  print(input_dataset)
+  shard_counter = 0
+  shard = []
   for video in input_dataset:
-    print("yo")
-    print(video)
-    #features = video[1]
-    print(video["labels"].values)
-
-    print(context)
-    assert False
-
-
+    context = video[0]
+    features = video[1]
+    #context = add_candidate_content(context, candidates)
+    serialized_video = serialize_video(context, features)
+    shard.append(serialized_video)
+    shard_counter += 1
+    if shard_counter == shard_size:
+      shard = tf.convert_to_tensor(shard)
+      shard_dataset = tf.data.Dataset.from_tensor_slices(shard)
+      writer = tf.data.experimental.TFRecordWriter(file_path)
+      writer.write(shard_dataset)
+      shard_counter = 0
+      shard = []
 
 def generate_candidates(input_dataset, model, k, class_csv):
   """Generate top k candidates per class.
@@ -61,7 +96,7 @@ def generate_candidates(input_dataset, model, k, class_csv):
   video_num = 0
   input_dataset = tfds.as_numpy(input_dataset)
   for video in input_dataset:
-    print(video_num)
+    print(f"Processing video number {video_num}")
     video_id = tf.convert_to_tensor(video[0])[0].ref()
     video_input = tf.convert_to_tensor(video[1])
     probability_holder.add_data(video_id, model.predict(video_input)[0])
@@ -80,7 +115,7 @@ if __name__ == "__main__":
 
   candidates = generate_candidates(input_dataset, model, 10, "vocabulary.csv")
 
-  segment_reader = readers.PreprocessingDataset(candidates=candidates)
+  segment_reader = readers.PreprocessingDataset()
   input_dataset = segment_reader.get_dataset("/home/conorfvedova_google_com/data/segments/validation", batch_size=1, type="validate")
   print("here")
-  save_data("~/data/segments/candidate_validation", input_dataset)
+  save_data("~/data/segments/candidate_validation", input_dataset, candidates)

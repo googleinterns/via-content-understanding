@@ -172,7 +172,6 @@ class PreprocessingDataset():
 
   def __init__(  # pylint: disable=dangerous-default-value
       self,
-      candidates,
       num_classes=1000,
       feature_sizes=[1024, 128],
       feature_names=["rgb", "audio"],
@@ -193,14 +192,13 @@ class PreprocessingDataset():
     assert len(feature_names) == len(feature_sizes), (
         "length of feature_names (={}) != length of feature_sizes (={})".format(
             len(feature_names), len(feature_sizes)))
-    self.candidates = candidates
     self.num_classes = num_classes
     self.feature_sizes = feature_sizes
     self.feature_names = feature_names
     self.max_frames = max_frames
     self.segment_size = segment_size
 
-  def get_dataset(self, data_dir, batch_size, type="train", max_quantized_value=2, min_quantized_value=-2):
+  def get_dataset(self, data_dir, batch_size, type="train"):
     """Returns TFRecordDataset after it has been parsed.
 
     Args:
@@ -215,16 +213,15 @@ class PreprocessingDataset():
 
     dataset = files_dataset.interleave(lambda files: tf.data.TFRecordDataset(files, num_parallel_reads=tf.data.experimental.AUTOTUNE))
 
-    parser = partial(self._parse_fn, max_quantized_value=max_quantized_value, min_quantized_value=min_quantized_value)
+    parser = partial(self._parse_fn)
     dataset = dataset.map(parser, num_parallel_calls=tf.data.experimental.AUTOTUNE)
 
     dataset = dataset.batch(1).prefetch(tf.data.experimental.AUTOTUNE)
 
     return dataset
 
-  def _parse_fn(self, serialized_example, max_quantized_value=2, min_quantized_value=-2):
+  def _parse_fn(self, serialized_example):
     """Parse single Serialized Example from the TFRecords."""
-
     # Read/parse frame/segment-level labels.
     context_features = {
       "id": tf.io.FixedLenFeature([], tf.string),
@@ -233,23 +230,8 @@ class PreprocessingDataset():
       "segment_start_times": tf.io.VarLenFeature(tf.int64),
       "segment_scores": tf.io.VarLenFeature(tf.float32)
     }
-
     sequence_features = {
         feature_name: tf.io.FixedLenSequenceFeature([], dtype=tf.string)
         for feature_name in self.feature_names
     }
-
-    context, features = tf.io.parse_single_sequence_example(serialized_example, context_features=context_features, sequence_features=sequence_features)
-
-    # print(len(self.candidates))
-    # print(video_id)
-    # print(video_id.ref())
-    # print(context)
-    # if video_id.ref() in self.candidates.keys():
-    #   context["candidate_labels"] = tf.convert_to_tensor(self.candidates[video_id[0].ref()])
-    #   print(context)
-    # else:
-    #   context["candidate_labels"] = tf.convert_to_tensor([])
-    # print(context)
-
-    return (context, features)#(context["id"], context["labels"], context["segment_labels"], context["segment_start_times"], context["segment_scores"], features["rgb"], features["audio"])
+    return tf.io.parse_single_sequence_example(serialized_example, context_features=context_features, sequence_features=sequence_features)
