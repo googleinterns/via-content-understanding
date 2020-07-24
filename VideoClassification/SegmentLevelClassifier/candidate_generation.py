@@ -52,12 +52,14 @@ def generate_candidates(input_dataset, model, k, class_csv):
     candidates: list of lists where each inner list contains the class indices that the corresponding input data is a candidate for. len(candidates) == len(input_dataset)
   """
   probability_holder = utils.PROBABILITY_HOLDER(class_csv, k)
-
+  video_num = 0
   input_dataset = tfds.as_numpy(input_dataset)
   for video in input_dataset:
+    print(video_num)
     video_id = tf.convert_to_tensor(video[0])[0].ref()
     video_input = tf.convert_to_tensor(video[1])
     probability_holder.add_data(video_id, model.predict(video_input)[0])
+    video_num += 1
   return probability_holder.find_candidates()
 
   
