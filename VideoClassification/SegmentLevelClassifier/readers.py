@@ -250,4 +250,6 @@ class PreprocessingDataset():
     # else:
     #   context["candidate_labels"] = tf.convert_to_tensor([])
     # print(context)
+    print(context)
+    print(features)
     return (context, features)
