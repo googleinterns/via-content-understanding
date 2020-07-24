@@ -243,8 +243,9 @@ class PreprocessingDataset():
     print(len(self.candidates))
     print(video_id)
     print(video_id.ref())
+    print(context)
     if video_id.ref() in self.candidates.keys():
       context["candidate_labels"] = tf.convert_to_tensor(self.candidates[video_id[0].ref()])
       print(context)
-
+    print(context)
     return (context, features)
