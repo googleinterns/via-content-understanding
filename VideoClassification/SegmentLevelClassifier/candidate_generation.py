@@ -42,8 +42,6 @@ def save_data(new_data_dir, input_dataset, shard_size=1):
     features = video[1]
 
     print(context)
-    print(features)
-    print(video)
     assert False
 
 
