@@ -237,23 +237,12 @@ def sample_captions(ds, captions_per_video):
         num_parallel_calls=tf.data.experimental.AUTOTUNE)
 
 def sample_captions_for_encodings(ds, captions_per_video):
-    # def random_index(sample):
-    #     return np.random.randint(0, sample.shape[0])
-
-    # def sample_captions_wrapper(video_ids_batch, encodings, token_lengths):
-    #     index = tf.numpy_function(random_index, [encodings], tf.int64)
-    #     return video_ids_batch[index], encodings[index], token_lengths[index]
-
+    def random_index(sample):
+        return np.random.randint(0, sample.shape[0])
 
     def sample_captions_wrapper(video_ids_batch, encodings, token_lengths):
-        random_weights = tf.random.uniform((captions_per_video,))
-        random_weights, _ = tf.linalg.normalize(random_weights, ord=1)
-
-        encodings = random_weights[:, None] * encodings
-        encodings = tf.reduce_sum(tf.transpose(encodings), axis=-1)
-
-        return video_ids_batch[0], encodings, token_lengths[0]
-
+        index = tf.numpy_function(random_index, [encodings], tf.int64)
+        return video_ids_batch[index], encodings[index], token_lengths[index]
 
     return ds.batch(captions_per_video).map(sample_captions_wrapper,
         num_parallel_calls=tf.data.experimental.AUTOTUNE)
