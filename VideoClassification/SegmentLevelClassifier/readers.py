@@ -243,7 +243,7 @@ class PreprocessingDataset():
     video_id = tf.reshape(context["id"],(1,))[0]
     print(video_id)
     if video_id == b'Ndaa':
-      context["new"] = tf.convert_to_tensor([])
+      context["id"] = tf.convert_to_tensor([])
     # print(len(self.candidates))
     # print(video_id)
     # print(video_id.ref())
