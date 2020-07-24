@@ -253,7 +253,7 @@ class PreprocessingDataset():
     #   context["candidate_labels"] = tf.convert_to_tensor([])
     # print(context)
 
-    tf.io.serialize_tensor()
+    #tf.io.serialize_tensor()
     print(context)
     print(features)
     return (serialized_example)#(context["id"], context["labels"], context["segment_labels"], context["segment_start_times"], context["segment_scores"], features["rgb"], features["audio"])
