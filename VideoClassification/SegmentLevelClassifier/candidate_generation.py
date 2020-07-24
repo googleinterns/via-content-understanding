@@ -32,8 +32,6 @@ def add_candidate_content(context, candidates):
     context["candidate_labels"] = tf.convert_to_tensor([])
   return context
 
-def 
-
 def serialize_video(context, features):
   """Serialize video from context and features.
 
