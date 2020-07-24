@@ -217,7 +217,20 @@ class EncoderFineTuning(tf.keras.Model):
             num_parallel_iterations=self.lm_batch_size)[0]
 
     def language_model_forward_pass(self, text_tokens, text_tokens_lengths):
-        embeddings = self.language_model(text_tokens)[0][:, 0, :]
+        embeddings = []
+        num_tokens = text_tokens.shape[0]
+
+        batches = math.ceil(num_tokens / 64)
+
+        for index in range(batches):
+            text_tokens_shard = text_tokens[index:64*index]
+            embeddings_shard = self.language_model(
+                text_tokens_shard)[0][:, 0, :]
+
+            embeddings.append(embeddings_shard)
+
+        embeddings = tf.concat(embeddings, axis=0)
+        return embeddings
         #return self.zero_padding_tokens_embeddings(
         #    embedding, text_token_lengths)
 
