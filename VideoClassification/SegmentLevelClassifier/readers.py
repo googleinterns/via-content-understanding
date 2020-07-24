@@ -218,6 +218,8 @@ class PreprocessingDataset():
     parser = partial(self._parse_fn, max_quantized_value=max_quantized_value, min_quantized_value=min_quantized_value)
     dataset = dataset.map(parser, num_parallel_calls=tf.data.experimental.AUTOTUNE)
 
+    dataset = dataset.batch(1).prefetch(tf.data.experimental.AUTOTUNE)
+
     return dataset
 
   def _parse_fn(self, serialized_example, max_quantized_value=2, min_quantized_value=-2):
@@ -239,11 +241,6 @@ class PreprocessingDataset():
 
     context, features = tf.io.parse_single_sequence_example(serialized_example, context_features=context_features, sequence_features=sequence_features)
 
-    print(context)
-    video_id = context["id"]
-    print(video_id)
-    if video_id == tf.constant([b'Ndaa']):
-      context["id"] = tf.zeros_like(())
     # print(len(self.candidates))
     # print(video_id)
     # print(video_id.ref())
@@ -255,7 +252,4 @@ class PreprocessingDataset():
     #   context["candidate_labels"] = tf.convert_to_tensor([])
     # print(context)
 
-    #tf.io.serialize_tensor()
-    print(context)
-    print(features)
-    return context#(context["id"], context["labels"], context["segment_labels"], context["segment_start_times"], context["segment_scores"], features["rgb"], features["audio"])
+    return (context, features)#(context["id"], context["labels"], context["segment_labels"], context["segment_start_times"], context["segment_scores"], features["rgb"], features["audio"])
