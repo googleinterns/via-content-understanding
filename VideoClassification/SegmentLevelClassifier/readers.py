@@ -239,6 +239,7 @@ class PreprocessingDataset():
 
     context, features = tf.io.parse_single_sequence_example(serialized_example, context_features=context_features, sequence_features=sequence_features)
 
+    print(context)
     video_id = context["labels"].values
     # print(len(self.candidates))
     # print(video_id)
