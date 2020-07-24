@@ -49,9 +49,10 @@ def serialize_video(context, features):
   #       feature_name: tf.io.FixedLenSequenceFeature([], dtype=tf.string)
   #       for feature_name in self.feature_names
   #   }
-  audio = features["audio"]
+  audio = features["audio"][0]
   rgb = features["rgb"]
   print(tf.shape(audio))
+  print(tf.shape(rgb))
   audio = tf.train.Feature(bytes_list=audio)
   rgb = tf.train.Feature(rgb)
 
