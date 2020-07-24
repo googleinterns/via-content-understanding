@@ -256,4 +256,4 @@ class PreprocessingDataset():
     #tf.io.serialize_tensor()
     print(context)
     print(features)
-    return (serialized_example)#(context["id"], context["labels"], context["segment_labels"], context["segment_start_times"], context["segment_scores"], features["rgb"], features["audio"])
+    return serialized_example#(context["id"], context["labels"], context["segment_labels"], context["segment_start_times"], context["segment_scores"], features["rgb"], features["audio"])
