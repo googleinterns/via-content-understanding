@@ -119,5 +119,5 @@ class PROBABILITY_HOLDER:
 
     for i in self.candidates:
       for j in i:
-        assert j.ref() in candidates.keys()
+        assert j in candidates.keys()
     return candidates
