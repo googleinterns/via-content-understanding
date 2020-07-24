@@ -89,6 +89,7 @@ class PROBABILITY_HOLDER:
     for class_index in range(self.num_classes):
       true_class_index = self.class_indices[class_index]
       probability = output_probs[true_class_index]
+      print(probability)
       if len(self.candidates[class_index]) < self.k:
         self.sorted_append(class_index, probability, video_id)
         assert probability in self.candidate_probs[class_index]
