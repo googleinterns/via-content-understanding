@@ -38,6 +38,9 @@ def save_data(new_data_dir, input_dataset, shard_size=17):
     context = video[0]
     features = video[1]
 
+    print(context)
+    print(features)
+
 
 
 def generate_candidates(input_dataset, model, k, class_csv):
