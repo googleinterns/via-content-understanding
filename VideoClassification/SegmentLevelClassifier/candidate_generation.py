@@ -99,13 +99,6 @@ def serialize_context(context):
   labels =  convert_labels(labels)
   segment_labels = convert_labels(segment_labels)
 
-  print(video_id)
-  print(labels)
-  print(segment_labels)
-  print(segment_start_times)
-  print(segment_scores)
-  print(candidate_labels)
-
   context["id"] = convert_to_feature([video_id.numpy()], "byte")
   context["labels"] = convert_to_feature(labels.numpy(), "int")
   context["segment_labels"] = convert_to_feature(segment_labels.numpy(), "int")
@@ -145,7 +138,6 @@ def save_data(new_data_dir, input_dataset, candidates, file_type="validate", sha
     serialized_video = serialize_video(context, features)
     shard.append(serialized_video)
     shard_counter += 1
-    assert False
     if shard_counter == shard_size:
       shard = tf.convert_to_tensor(shard)
       shard_dataset = tf.data.Dataset.from_tensor_slices(shard)
@@ -156,7 +148,6 @@ def save_data(new_data_dir, input_dataset, candidates, file_type="validate", sha
       shard_counter = 0
       shard_number += 1
       shard = []
-
   #Handles overflow
   if shard_counter != 0:
     shard = tf.convert_to_tensor(shard)
