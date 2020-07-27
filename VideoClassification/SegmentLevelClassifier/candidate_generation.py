@@ -96,13 +96,13 @@ def serialize_context(context):
   segment_scores = context["segment_scores"].values
   labels =  convert_labels(labels)
   segment_labels = convert_labels(segment_labels)
-  print(video_id.numpy())
-  video_id = convert_to_feature([video_id.numpy()], "byte")
+
+  context["id"] = convert_to_feature([video_id.numpy()], "byte")
   context["labels"] = convert_to_feature(labels.numpy(), "int")
   context["segment_labels"] = convert_to_feature(segment_labels.numpy(), "int")
   context["segment_start_times"] = convert_to_feature(segment_start_times.numpy(), "int")
   context["segment_scores"] = convert_to_feature(segment_scores.numpy(), "float")
-  print(video_id)
+
   context = tf.train.Features(feature=context)
   return context
 
