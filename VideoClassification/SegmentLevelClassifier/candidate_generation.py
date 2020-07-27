@@ -33,7 +33,7 @@ def add_candidate_content(context, candidates):
     context["candidate_labels"] = tf.convert_to_tensor(candidates[video_id])
   else:
     context["candidate_labels"] = tf.convert_to_tensor([])
-  print(context)
+  print(context["candidate_labels"])
   return context
 
 def convert_labels(labels, class_csv="vocabulary.csv"):
@@ -97,8 +97,8 @@ def serialize_context(context):
   segment_labels = context["segment_labels"].values
   segment_start_times = context["segment_start_times"].values
   segment_scores = context["segment_scores"].values
-  #labels =  convert_labels(labels)
-  #segment_labels = convert_labels(segment_labels)
+  labels =  convert_labels(labels)
+  segment_labels = convert_labels(segment_labels)
 
   print(video_id)
   print(labels)
