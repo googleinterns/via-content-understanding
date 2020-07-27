@@ -52,18 +52,6 @@ def convert_labels(labels, class_csv="vocabulary.csv"):
       new_labels.append(new_label)
   return tf.convert_to_tensor(new_labels)
 
-def serialize_features(features):
-  """Serialize features.
-
-  features: features of the video
-  """
-  audio = features["audio"][0].numpy().tostring()
-  rgb = features["rgb"][0].numpy().tostring()
-  audio = convert_to_feature([audio], "byte")
-  rgb = convert_to_feature([rgb], "byte")
-  features = {"audio": tf.train.FeatureList(feature=[audio]), "rgb": tf.train.FeatureList(feature=[rgb])}
-  features = tf.train.FeatureLists(feature_list=features)
-  return features
 def convert_to_feature(item, type):
   """Convert item to FeatureList.
 
@@ -83,12 +71,25 @@ def convert_to_feature(item, type):
     print("Invalid type entered for converting feature")
   return item
 
+def serialize_features(features):
+  """Serialize features.
+
+  features: features of the video
+  """
+  audio = features["audio"][0].numpy().tostring()
+  rgb = features["rgb"][0].numpy().tostring()
+  audio = convert_to_feature([audio], "byte")
+  rgb = convert_to_feature([rgb], "byte")
+  features = {"audio": tf.train.FeatureList(feature=[audio]), "rgb": tf.train.FeatureList(feature=[rgb])}
+  features = tf.train.FeatureLists(feature_list=features)
+  return features
+
 def serialize_context(context):
   """Serialize context.
 
   context: context of the video
   """
-  video_id = context["id"]
+  video_id = tf.convert_to_tensor(context["id"])[0]
   labels = context["labels"].values
   segment_labels = context["segment_labels"].values
   segment_start_times = context["segment_start_times"].values
@@ -100,7 +101,7 @@ def serialize_context(context):
   context["segment_labels"] = convert_to_feature(segment_labels.numpy(), "int")
   context["segment_start_times"] = convert_to_feature(segment_start_times.numpy(), "int")
   context["segment_scores"] = convert_to_feature(segment_scores.numpy(), "float")
-
+  print(video_id)
   context = tf.train.Features(feature=context)
   return context
 
