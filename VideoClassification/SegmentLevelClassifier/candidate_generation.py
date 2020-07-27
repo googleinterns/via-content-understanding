@@ -136,6 +136,7 @@ def save_data(new_data_dir, input_dataset, candidates, shard_size=10):
     #context = add_candidate_content(context, candidates)
     serialized_video = serialize_video(context, features)
     print(serialized_video)
+    assert False
     shard.append(serialized_video)
     shard_counter += 1
     if shard_counter == shard_size:
