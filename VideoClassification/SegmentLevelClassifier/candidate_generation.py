@@ -168,6 +168,8 @@ def generate_candidates(input_dataset, model, k, class_csv):
     print(f"Processing video number {video_num}")
     video_id = tf.convert_to_tensor(video[0])[0].ref()
     video_input = tf.convert_to_tensor(video[1])
+    print(video_id)
+    print(video_input)
     probability_holder.add_data(video_id, model.predict(video_input)[0])
     video_num += 1
   return probability_holder.find_candidates()
@@ -178,7 +180,7 @@ if __name__ == "__main__":
   #do candidate gen and keep track of video_ids. Then, pass list of (video_id, class_list) pairs to dataset to then add them while loading data. 
   #then simply parse that like Ryan and write it in shards
   video_reader = readers.VideoDataset()
-  input_dataset = video_reader.get_dataset("/home/conorfvedova_google_com/data/segments/candidate_validation", batch_size=1, type="validate")
+  input_dataset = video_reader.get_dataset("/home/conorfvedova_google_com/data/segments/validation", batch_size=1, type="validate")
 
   model = load_model("../model_weights.h5")
 
