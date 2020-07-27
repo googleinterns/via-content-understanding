@@ -47,10 +47,9 @@ def convert_labels(labels, class_csv="vocabulary.csv"):
   print(labels)
   new_labels = []
   for label in labels:
-    print(label)
-    print(np.nonzero(class_indices == label)[0].tolist())
-    new_label = np.nonzero(class_indices == 3)[0].tolist()[0]
-    new_labels.append(new_label)
+    if label in class_indices:
+      new_label = np.nonzero(class_indices == 3)[0].tolist()[0]
+      new_labels.append(new_label)
   return tf.convert_to_tensor(new_labels)
 
 def serialize_features(features):
