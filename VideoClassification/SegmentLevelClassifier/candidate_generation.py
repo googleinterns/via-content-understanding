@@ -100,7 +100,7 @@ def serialize_context(context):
   segment_labels = convert_labels(segment_labels)
 
 
-  print(candidate_labels)
+  print(candidate_labels.values)
 
   context["id"] = convert_to_feature([video_id.numpy()], "byte")
   context["labels"] = convert_to_feature(labels.numpy(), "int")
