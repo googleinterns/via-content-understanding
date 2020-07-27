@@ -49,7 +49,7 @@ def convert_labels(labels, class_csv="vocabulary.csv"):
   for label in labels:
     print(label)
     print(np.nonzero(class_indices == label)[0].tolist())
-    new_label = np.nonzero(class_indices == label)[0].tolist()[0]
+    new_label = np.nonzero(class_indices == 3)[0].tolist()[0]
     new_labels.append(new_label)
   return tf.convert_to_tensor(new_labels)
 
