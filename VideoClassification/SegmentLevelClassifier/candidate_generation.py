@@ -32,6 +32,23 @@ def add_candidate_content(context, candidates):
     context["candidate_labels"] = tf.convert_to_tensor([])
   return context
 
+def convert_labels(labels, class_csv="vocabulary.csv"):
+  """Convert labels from range [0,3861] to range [0,1000]
+
+  labels: Tensor of labels to be converted
+  class_csv: csv file containing conversion details
+  """
+  class_dataframe = pd.read_csv(class_csv, index_col=0)
+  class_indices = class_dataframe.index.tolist()
+  class_indices = np.array(class_indices)
+
+  labels = labels.numpy()
+  new_labels = []
+  for label in labels:
+    new_label = np.nonzero(class_indices == label)[0].tolist()[0]
+    new_labels.append(new_label)
+  return tf.convert_to_tensor(new_labels)
+
 def serialize_features(features):
   """Serialize features.
 
@@ -57,6 +74,8 @@ def serialize_context(context):
   segment_labels = context["segment_labels"].values
   segment_start_times = context["segment_start_times"].values
   segment_scores = context["segment_scores"].values
+  labels =  convert_labels(labels)
+  segment_labels = convert_labels(segment_labels)
   print(labels)
   print(segment_labels)
   print(segment_start_times)
