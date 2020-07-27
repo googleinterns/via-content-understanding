@@ -44,6 +44,7 @@ def convert_labels(labels, class_csv="vocabulary.csv"):
   class_indices = np.array(class_indices)
 
   labels = labels.numpy()
+  print(labels)
   new_labels = []
   for label in labels:
     print(label)
