@@ -19,9 +19,10 @@ import tensorflow as tf
 
 def add_candidate_content(context, candidates):
   """Add the tensor for the classes this particular video is a candidate for.
-
-  context: context of the video
-  candidates: dictionary of candidates. Key is video id and value is list of candidate classes
+  
+  Args:
+    context: context of the video
+    candidates: dictionary of candidates. Key is video id and value is list of candidate classes
   """
   video_id = tf.convert_to_tensor(context["id"])[0].numpy()
   if video_id in candidates.keys():
@@ -32,9 +33,10 @@ def add_candidate_content(context, candidates):
 
 def convert_labels(labels, class_csv="vocabulary.csv"):
   """Convert labels from range [0,3861] to range [0,1000]
-
-  labels: Tensor of labels to be converted
-  class_csv: csv file containing conversion details
+  
+  Args:
+    labels: Tensor of labels to be converted
+    class_csv: csv file containing conversion details
   """
   class_dataframe = pd.read_csv(class_csv, index_col=0)
   class_indices = class_dataframe.index.tolist()
@@ -52,8 +54,9 @@ def convert_labels(labels, class_csv="vocabulary.csv"):
 def convert_to_feature(item, type):
   """Convert item to FeatureList.
 
-  item: item to be converted
-  type: string denoting the type of item. Can be "float", "byte", or "int"
+  Args:
+    item: item to be converted
+    type: string denoting the type of item. Can be "float", "byte", or "int"
   """
   if type == "float":
     item = tf.train.FloatList(value=item)
@@ -71,7 +74,8 @@ def convert_to_feature(item, type):
 def serialize_features(features):
   """Serialize features.
 
-  features: features of the video
+  Args:
+    features: features of the video
   """
   audio = features["audio"][0].numpy().tostring()
   rgb = features["rgb"][0].numpy().tostring()
@@ -84,7 +88,8 @@ def serialize_features(features):
 def serialize_context(context):
   """Serialize context.
 
-  context: context of the video
+  Args:
+    context: context of the video
   """
   video_id = tf.convert_to_tensor(context["id"])[0]
   labels = context["labels"].values
@@ -108,8 +113,9 @@ def serialize_context(context):
 def serialize_video(context, features):
   """Serialize video from context and features.
 
-  context: context of the video
-  features: features of the video
+  Args:
+    context: context of the video
+    features: features of the video
   """
   features = serialize_features(features)
   context = serialize_context(context)
@@ -145,7 +151,6 @@ def save_data(new_data_dir, input_dataset, candidates, file_type="validate", sha
       shard_counter = 0
       shard_number += 1
       shard = []
-
   #Handles overflow
   if shard_counter != 0:
     print(f"Processing shard number {shard_number}")
