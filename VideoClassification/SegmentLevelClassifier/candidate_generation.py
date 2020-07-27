@@ -154,6 +154,18 @@ def save_data(new_data_dir, input_dataset, candidates, file_type="validate", sha
       shard_number += 1
       shard = []
 
+  #Handles overflow
+  if shard_counter != 0:
+    shard = tf.convert_to_tensor(shard)
+    shard_dataset = tf.data.Dataset.from_tensor_slices(shard)
+    file_name = file_type + str(shard_number)
+    file_path = os.path.join(new_data_dir, '%s.tfrecord' % file_name)
+    writer = tf.data.experimental.TFRecordWriter(file_path)
+    writer.write(shard_dataset)
+    shard_counter = 0
+    shard_number += 1
+    shard = []
+
 def generate_candidates(input_dataset, model, k, class_csv):
   """Generate top k candidates per class.
 
