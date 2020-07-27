@@ -27,6 +27,7 @@ def add_candidate_content(context, candidates):
   context: context of the video
   candidates: dictionary of candidates. Key is video id and value is list of candidate classes
   """
+  print(candidates)
   video_id = tf.convert_to_tensor(context["id"])[0].numpy()
   print(video_id)
   if video_id in candidates.keys():
