@@ -134,7 +134,7 @@ def save_data(new_data_dir, input_dataset, candidates, file_type="validate", sha
   for video in input_dataset:
     context = video[0]
     features = video[1]
-    #context = add_candidate_content(context, candidates)
+    context = add_candidate_content(context, candidates)
     serialized_video = serialize_video(context, features)
     shard.append(serialized_video)
     shard_counter += 1
