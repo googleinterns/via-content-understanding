@@ -14,6 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+import math
 import tensorflow as tf
 import metrics.rankings
 
@@ -207,7 +208,7 @@ class EncoderFineTuning(tf.keras.Model):
         self.lm_batch_size = lm_batch_size
 
     def zero_padding_token_embeddings(self, embedding_batch, lengths):
-        def map_fn(embedding, num_tokens):
+        def map_fn(embedding, num_tokens):`
             output = tf.zeros_like(embedding)
             output = tf.concat(
                 (embedding[:num_tokens], embedding[num_tokens:]), axis=0)
@@ -216,7 +217,7 @@ class EncoderFineTuning(tf.keras.Model):
         return tf.map_fn(map_fn, (embedding_batch, lengths),
             num_parallel_iterations=self.lm_batch_size)[0]
 
-    def language_model_forward_pass(self, text_tokens, text_tokens_lengths):
+    def language_model_forward_pass(self, text_tokens, attention_mask):
         embeddings = []
         num_tokens = text_tokens.shape[0]
 
@@ -224,7 +225,7 @@ class EncoderFineTuning(tf.keras.Model):
 
         for index in range(batches):
             text_tokens_shard = text_tokens[64*index:64*(index+1)]
-            attention_mask_batched = 
+            attention_mask_shard = attention_mask[64*index:64*(index+1)]
             embeddings_shard = self.language_model(
                 text_tokens_shard)[0][:, 0, :]
 
@@ -236,7 +237,7 @@ class EncoderFineTuning(tf.keras.Model):
         #    embedding, text_token_lengths)
 
     def forward_pass(
-        self, video_ids, video_features, text_tokens, text_token_lengths,
+        self, video_ids, video_features, text_tokens, attention_masks,
         missing_experts):
         video_embeddings = self.video_encoder([video_features, missing_experts])
         contextual_embeddings = self.language_model_forward_pass(
