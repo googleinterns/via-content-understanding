@@ -82,6 +82,9 @@ def serialize_context(context):
   print(labels)
   labels = tf.train.Int64List(value=labels.numpy())
   print(labels)
+  print(segment_start_times)
+  segment_start_times = tf.train.Int64List(value=segment_start_times.numpy())
+  print(segment_start_times)
 
   return context
 
