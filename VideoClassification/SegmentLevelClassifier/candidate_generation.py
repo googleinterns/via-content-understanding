@@ -174,7 +174,7 @@ def generate_candidates(input_dataset, model, k, class_csv):
   input_dataset = tfds.as_numpy(input_dataset)
   for video in input_dataset:
     print(f"Processing video number {video_num}")
-    video_id = tf.convert_to_tensor(video[0])[0].ref()
+    video_id = tf.convert_to_tensor(video[0])[0].numpy()
     video_input = tf.convert_to_tensor(video[1])
     probability_holder.add_data(video_id, model.predict(video_input)[0])
     video_num += 1
