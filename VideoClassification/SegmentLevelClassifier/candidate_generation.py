@@ -52,6 +52,7 @@ def serialize_video(context, features):
   audio = features["audio"][0]
   rgb = features["rgb"][0]
   print(audio.numpy())
+  print(audio.numpy().tostring())
   audio = tf.train.BytesList(value=audio.numpy())
   print()
   print()
