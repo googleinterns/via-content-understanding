@@ -51,15 +51,13 @@ def serialize_video(context, features):
   #   }
   audio = features["audio"][0].numpy().tostring()
   rgb = features["rgb"][0].numpy().tostring()
-  print(audio)
   audio = tf.train.BytesList(value=[audio])
   audio = tf.train.Feature(bytes_list=audio)
-  print(audio)
   rgb = tf.train.BytesList(value=[rgb])
   rgb = tf.train.Feature(bytes_list=rgb)
-  print(rgb)
   features = {"audio":tf.train.FeatureList(feature=[audio]), "rgb":tf.train.FeatureList(feature=[rgb])}
   features = tf.train.FeatureLists(feature_list=features)
+  context = tf.train.FeatureLists(feature_list=context)
   example = tf.train.SequenceExample(feature_lists=features, context=context)
 
   return example.SerializeToString()
