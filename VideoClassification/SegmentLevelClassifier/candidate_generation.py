@@ -95,8 +95,8 @@ def serialize_context(context):
   segment_labels = context["segment_labels"].values
   segment_start_times = context["segment_start_times"].values
   segment_scores = context["segment_scores"].values
-  labels =  convert_labels(labels)
-  segment_labels = convert_labels(segment_labels)
+  #labels =  convert_labels(labels)
+  #segment_labels = convert_labels(segment_labels)
 
   print(video_id)
   print(labels)
@@ -138,7 +138,6 @@ def save_data(new_data_dir, input_dataset, candidates, file_type="validate", sha
   shard_number = 0
   shard = []
   for video in input_dataset:
-    #video = tf.convert_to_tensor(video)
     context = video[0]
     features = video[1]
     print(features)
@@ -191,5 +190,5 @@ if __name__ == "__main__":
   candidates = generate_candidates(input_dataset, model, 10, "vocabulary.csv")
 
   segment_reader = readers.PreprocessingDataset()
-  input_dataset = segment_reader.get_dataset("/home/conorfvedova_google_com/data/segments/validation", batch_size=1, type="validate")
+  input_dataset = segment_reader.get_dataset("/home/conorfvedova_google_com/data/segments/candidate_validation", batch_size=1, type="validate")
   save_data("/home/conorfvedova_google_com/data/segments/candidate_validation", input_dataset, candidates)
