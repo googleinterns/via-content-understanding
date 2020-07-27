@@ -119,5 +119,4 @@ class PROBABILITY_HOLDER:
         if video_candidate not in candidates.keys():
           candidates[video_candidate] = []
         candidates[video_candidate].append(class_index)
-
     return candidates
