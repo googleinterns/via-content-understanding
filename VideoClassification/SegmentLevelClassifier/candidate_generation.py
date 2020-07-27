@@ -98,6 +98,12 @@ def serialize_context(context):
   labels =  convert_labels(labels)
   segment_labels = convert_labels(segment_labels)
 
+  print(video_id)
+  print(labels)
+  print(segment_labels)
+  print(segment_start_times)
+  print(segment_scores)
+
   context["id"] = convert_to_feature([video_id.numpy()], "byte")
   context["labels"] = convert_to_feature(labels.numpy(), "int")
   context["segment_labels"] = convert_to_feature(segment_labels.numpy(), "int")
@@ -135,7 +141,6 @@ def save_data(new_data_dir, input_dataset, candidates, file_type="validate", sha
     #video = tf.convert_to_tensor(video)
     context = video[0]
     features = video[1]
-    print(context)
     print(features)
     #context = add_candidate_content(context, candidates)
     serialized_video = serialize_video(context, features)
