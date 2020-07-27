@@ -79,7 +79,7 @@ def serialize_context(context):
   segment_scores = context["segment_scores"].values
   labels =  convert_labels(labels)
   segment_labels = convert_labels(segment_labels)
-
+  print(labels)
   labels = tf.train.Int64List(value=labels.numpy())
   print(labels)
 
