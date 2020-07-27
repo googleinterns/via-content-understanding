@@ -27,11 +27,13 @@ def add_candidate_content(context, candidates):
   context: context of the video
   candidates: dictionary of candidates. Key is video id and value is list of candidate classes
   """
+  print(candidates)
   video_id = tf.convert_to_tensor(context["id"])[0].ref()
   if video_id in self.candidates.keys():
     context["candidate_labels"] = tf.convert_to_tensor(self.candidates[video_id])
   else:
     context["candidate_labels"] = tf.convert_to_tensor([])
+  print(context)
   return context
 
 def convert_labels(labels, class_csv="vocabulary.csv"):
@@ -113,7 +115,6 @@ def serialize_context(context):
   context = tf.train.Features(feature=context)
   return context
 
-
 def serialize_video(context, features):
   """Serialize video from context and features.
 
@@ -124,7 +125,6 @@ def serialize_video(context, features):
   context = serialize_context(context)
   example = tf.train.SequenceExample(feature_lists=features, context=context)
   return example.SerializeToString()
-
 
 def save_data(new_data_dir, input_dataset, candidates, file_type="validate", shard_size=5):
   """Save data as TFRecords Datasets in new_data_dir.
@@ -140,8 +140,7 @@ def save_data(new_data_dir, input_dataset, candidates, file_type="validate", sha
   for video in input_dataset:
     context = video[0]
     features = video[1]
-    print(features)
-    #context = add_candidate_content(context, candidates)
+    context = add_candidate_content(context, candidates)
     serialized_video = serialize_video(context, features)
     shard.append(serialized_video)
     shard_counter += 1
@@ -185,12 +184,12 @@ if __name__ == "__main__":
   #do candidate gen and keep track of video_ids. Then, pass list of (video_id, class_list) pairs to dataset to then add them while loading data. 
   #then simply parse that like Ryan and write it in shards
   video_reader = readers.VideoDataset()
-  input_dataset = video_reader.get_dataset("/home/conorfvedova_google_com/data/segments/candidate_validation", batch_size=1, type="validate")
+  input_dataset = video_reader.get_dataset("/home/conorfvedova_google_com/data/segments/validation", batch_size=1, type="validate")
 
   model = load_model("../model_weights.h5")
 
   candidates = generate_candidates(input_dataset, model, 10, "vocabulary.csv")
 
   segment_reader = readers.PreprocessingDataset()
-  input_dataset = segment_reader.get_dataset("/home/conorfvedova_google_com/data/segments/candidate_validation", batch_size=1, type="validate")
+  input_dataset = segment_reader.get_dataset("/home/conorfvedova_google_com/data/segments/validation", batch_size=1, type="validate")
   save_data("/home/conorfvedova_google_com/data/segments/candidate_validation", input_dataset, candidates)
