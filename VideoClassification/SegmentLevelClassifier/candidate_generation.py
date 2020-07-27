@@ -186,4 +186,4 @@ if __name__ == "__main__":
 
   segment_reader = readers.PreprocessingDataset()
   input_dataset = segment_reader.get_dataset("/home/conorfvedova_google_com/data/segments/validation", batch_size=1, type="validate")
-  save_data("~/data/segments/candidate_validation", input_dataset, candidates)
+  save_data("/home/conorfvedova_google_com/data/segments/candidate_validation", input_dataset, candidates)
