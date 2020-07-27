@@ -135,10 +135,13 @@ def save_data(new_data_dir, input_dataset, candidates, file_type="validate", sha
     #video = tf.convert_to_tensor(video)
     context = video[0]
     features = video[1]
+    print(context)
+    print(features)
     #context = add_candidate_content(context, candidates)
     serialized_video = serialize_video(context, features)
     shard.append(serialized_video)
     shard_counter += 1
+    assert False
     if shard_counter == shard_size:
       shard = tf.convert_to_tensor(shard)
       shard_dataset = tf.data.Dataset.from_tensor_slices(shard)
@@ -168,14 +171,9 @@ def generate_candidates(input_dataset, model, k, class_csv):
     print(f"Processing video number {video_num}")
     video_id = tf.convert_to_tensor(video[0])[0].ref()
     video_input = tf.convert_to_tensor(video[1])
-    print(video_id)
-    print(video_input)
-
     probability_holder.add_data(video_id, model.predict(video_input)[0])
     video_num += 1
   return probability_holder.find_candidates()
-
-  
 
 if __name__ == "__main__":
   #do candidate gen and keep track of video_ids. Then, pass list of (video_id, class_list) pairs to dataset to then add them while loading data. 
@@ -186,7 +184,7 @@ if __name__ == "__main__":
   model = load_model("../model_weights.h5")
 
   candidates = generate_candidates(input_dataset, model, 10, "vocabulary.csv")
-  assert False
+
   segment_reader = readers.PreprocessingDataset()
   input_dataset = segment_reader.get_dataset("/home/conorfvedova_google_com/data/segments/validation", batch_size=1, type="validate")
   save_data("/home/conorfvedova_google_com/data/segments/candidate_validation", input_dataset, candidates)
