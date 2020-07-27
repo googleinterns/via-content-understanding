@@ -59,20 +59,30 @@ def serialize_features(features):
   """
   audio = features["audio"][0].numpy().tostring()
   rgb = features["rgb"][0].numpy().tostring()
-  audio = tf.train.BytesList(value=[audio])
-  audio = tf.train.Feature(bytes_list=audio)
-  rgb = tf.train.BytesList(value=[rgb])
-  rgb = tf.train.Feature(bytes_list=rgb)
+  audio = convert_to_feature([audio], "byte")
+  rgb = convert_to_feature([rgb], "byte")
   features = {"audio":tf.train.FeatureList(feature=[audio]), "rgb":tf.train.FeatureList(feature=[rgb])}
   features = tf.train.FeatureLists(feature_list=features)
   return features
-def convert_to_feature(item):
-  """Convert item to Feature type using int64List.
+def convert_to_feature(item, type):
+  """Convert item to FeatureList.
 
   item: item to be converted
+  type: string denoting the type of item. Can be "float", "byte", or "int"
   """
-  item = tf.train.Int64List(value=item.numpy())
-  return tf.train.Feature(int_list=item)
+  if type == "float":
+    item = tf.train.FloatList(value=item)
+    item = tf.train.Feature(float_list=item)
+  elif type == "byte":
+    item = tf.train.BytesList(value=item)
+    item = tf.train.Feature(bytes_list=item)
+  elif type == "int":
+    item = tf.train.Int64List(value=item)
+    item = tf.train.Feature(int64_list=item)
+  else:
+    print("Invalid type entered for converting feature")
+  item = tf.train.FeatureList(feature=[item])
+  return item
 
 def serialize_context(context):
   """Serialize context.
@@ -87,12 +97,10 @@ def serialize_context(context):
   labels =  convert_labels(labels)
   segment_labels = convert_labels(segment_labels)
 
-  labels = tf.train.Int64List(value=labels.numpy())
-  segment_labels = tf.train.Int64List(value=segment_labels.numpy())
-  segment_start_times = tf.train.Int64List(value=segment_start_times.numpy())
-  segment_scores = tf.train.Int64List(value=segment_scores.numpy())
-
-
+  context["labels"] = convert_to_feature(labels.numpy(), "int")
+  context["segment_labels"] = convert_to_feature(segment_labels.numpy(), "int")
+  context["segment_start_times"] = convert_to_feature(segment_start_times.numpy(), "int")
+  context["segment_scores"] = convert_to_feature(segment_scores.numpy(), "float")
 
   return context
 
