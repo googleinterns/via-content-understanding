@@ -27,16 +27,11 @@ def add_candidate_content(context, candidates):
   context: context of the video
   candidates: dictionary of candidates. Key is video id and value is list of candidate classes
   """
-  print(candidates)
   video_id = tf.convert_to_tensor(context["id"])[0].numpy()
-  print(video_id)
   if video_id in candidates.keys():
-    print(candidates[video_id])
     context["candidate_labels"] = tf.convert_to_tensor(candidates[video_id])
   else:
     context["candidate_labels"] = tf.convert_to_tensor([])
-  print(context["candidate_labels"])
-  assert False
   return context
 
 def convert_labels(labels, class_csv="vocabulary.csv"):
