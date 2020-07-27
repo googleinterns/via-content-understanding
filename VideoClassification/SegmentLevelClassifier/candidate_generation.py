@@ -51,12 +51,12 @@ def serialize_video(context, features):
   #   }
   audio = features["audio"][0]
   rgb = features["rgb"][0]
-  print(tf.shape(audio))
-  print(tf.shape(rgb))
   print(audio.numpy())
   audio = tf.train.BytesList(value=audio.numpy())
+  print(audio)
   audio = tf.train.Feature(bytes_list=audio)
   print(audio)
+  assert False
   rgb = tf.train.Feature(bytes_list=rgb)
 
   features = {"audio":tf.train.FeatureList(feature=audio), "rgb":tf.train.FeatureList(feature=rgb)}
@@ -80,8 +80,6 @@ def save_data(new_data_dir, input_dataset, candidates, shard_size=10):
     #video = tf.convert_to_tensor(video)
     context = video[0]
     features = video[1]
-    print(context)
-    print(features)
     #context = add_candidate_content(context, candidates)
     serialized_video = serialize_video(context, features)
     print(serialized_video)

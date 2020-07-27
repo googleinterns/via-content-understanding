@@ -235,4 +235,7 @@ class PreprocessingDataset():
         for feature_name in self.feature_names
     }
     context, features = tf.io.parse_single_sequence_example(serialized_example, context_features=context_features, sequence_features=sequence_features)
+
+    #features["rgb"] = tf.io.decode_raw(features["rgb"], tf.uint8)
+    #features["audio"] = tf.io.decode_raw(features["audio"], tf.uint8)
     return (context, features)
