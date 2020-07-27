@@ -61,7 +61,7 @@ def serialize_features(features):
   rgb = features["rgb"][0].numpy().tostring()
   audio = convert_to_feature([audio], "byte")
   rgb = convert_to_feature([rgb], "byte")
-  features = {"audio":tf.train.FeatureList(feature=[audio]), "rgb":tf.train.FeatureList(feature=[rgb])}
+  features = {"audio":audio, "rgb":rgb}
   features = tf.train.FeatureLists(feature_list=features)
   return features
 def convert_to_feature(item, type):
@@ -102,6 +102,7 @@ def serialize_context(context):
   context["segment_start_times"] = convert_to_feature(segment_start_times.numpy(), "int")
   context["segment_scores"] = convert_to_feature(segment_scores.numpy(), "float")
 
+  context = features = tf.train.Features(feature=context)
   return context
 
 
