@@ -66,6 +66,13 @@ def serialize_features(features):
   features = {"audio":tf.train.FeatureList(feature=[audio]), "rgb":tf.train.FeatureList(feature=[rgb])}
   features = tf.train.FeatureLists(feature_list=features)
   return features
+def convert_to_feature(item):
+  """Convert item to Feature type using int64List.
+
+  item: item to be converted
+  """
+  item = tf.train.Int64List(value=item.numpy())
+  return tf.train.Feature(int_list=item)
 
 def serialize_context(context):
   """Serialize context.
@@ -79,12 +86,13 @@ def serialize_context(context):
   segment_scores = context["segment_scores"].values
   labels =  convert_labels(labels)
   segment_labels = convert_labels(segment_labels)
-  print(labels)
+
   labels = tf.train.Int64List(value=labels.numpy())
-  print(labels)
-  print(segment_start_times)
+  segment_labels = tf.train.Int64List(value=segment_labels.numpy())
   segment_start_times = tf.train.Int64List(value=segment_start_times.numpy())
-  print(segment_start_times)
+  segment_scores = tf.train.Int64List(value=segment_scores.numpy())
+
+
 
   return context
 
