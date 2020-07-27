@@ -59,7 +59,7 @@ def replace_video_id_with_expert_features_wrapper(precomputed_features):
 
         return (video_id, tuple(expert_features), ids, missing_modalities)
 
-    def encodings_wrapper(video_id, encoded, num_tokens):
+    def encodings_wrapper(video_id, encoded, attention_mask):
         expert_data = tf.numpy_function(
             get_expert_features, [video_id], output_shape)
 
@@ -70,7 +70,7 @@ def replace_video_id_with_expert_features_wrapper(precomputed_features):
             video_id,
             tuple(expert_features),
             encoded,
-            num_tokens,
+            attention_mask,
             missing_modalities)
 
     return wrapper, encodings_wrapper
@@ -108,19 +108,19 @@ def update_dataset_shape_wrapper(experts, language_model):
             missing_modalities)
 
     def map_fn_encodings(
-        video_id, expert_features, encodings, num_tokens, missing_modalities):
+        video_id, expert_features, encodings, attention_mask, missing_modalities):
         for expert_feature, shape in zip(expert_features, expert_shapes):
             expert_feature.set_shape(shape)
 
         encodings.set_shape((37,))
         missing_modalities.set_shape(num_experts)
-        num_tokens.set_shape([])
+        attention_mask.set_shape((37,))
 
         return (
             video_id,
             expert_features,
             encodings,
-            num_tokens,
+            attention_mask,
             missing_modalities)
 
     return map_fn, map_fn_encodings

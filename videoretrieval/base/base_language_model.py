@@ -69,4 +69,6 @@ class BaseLanguageModel(AbstractClass):
     @property
     def zero_pad(self):
         return False
-    
+
+    def get_attention_mask(self, encoded_ids):
+        padding_token_start_index = encoded_ids.index(self.pad_token_id)

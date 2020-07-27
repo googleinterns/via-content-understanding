@@ -251,9 +251,6 @@ def unserialize_encodings_wrapper(text_max_length):
         tensor of size text_max_length x contextual_embeddings_dim.
     """ 
 
-    def get_encoding_length(encoding):
-        return encoding.shape[0]
-
     def unserialize_data(serialized_item):
         """Unserializes a serialized protobuf feature.
 
@@ -266,18 +263,12 @@ def unserialize_encodings_wrapper(text_max_length):
         encodings = tf.io.parse_tensor(
             example["serialized_encodings"], tf.int64)
 
-        encoding_length = tf.numpy_function(
-            get_encoding_length, [encodings], tf.int64)
+        first_pad_token_index = encodings.index(0)
 
-        return (video_id, encodings, encoding_length)
+        attention_mask = [1] * first_pad_token_index + [0] * (
+            37 - first_pad_token_index)
 
-        if encoding_length >= text_max_length:
-            return (video_id, encodings[:text_max_length], encoding_length)
-        else:
-            output = tf.zeros(text_max_length - encoding_length, tf.int64)
-            
-            output = tf.concat([encodings, output], axis=0)
-            return (video_id, output, encoding_length)
+        return (video_id, encodings, attention_mask)
 
     return unserialize_data
 

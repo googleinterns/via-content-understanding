@@ -66,12 +66,13 @@ class BERTModel(BaseLanguageModel):
     """An implementation of BaseLanguageModel for the openai-gpt1 model."""
 
     max_input_length = 37
-    _batch_size = 10
+    _batch_size = 64
 
     def __init__(self):
         self.model = TFBertModel.from_pretrained("bert-base-uncased")
         self.tokenizer = BertTokenizerFast.from_pretrained("bert-base-uncased")
-        self.tokenizer.model_max_length = self.max_input_length   
+        self.tokenizer.model_max_length = self.max_input_length
+        self.pad_token_id = 0
 
     @property
     def name(self):
@@ -119,5 +120,6 @@ class BERTModel(BaseLanguageModel):
 
         Returns: a tensor of contextual embeddings.
         """
+        attention_mask = self.get_attention_mask(ids)
 
-        return [self.model(ids)[0][:, 0, :]]
+        return [self.model(ids, attention_mask=attention_mask)[0][:, 0, :]]

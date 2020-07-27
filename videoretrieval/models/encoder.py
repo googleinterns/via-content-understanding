@@ -223,7 +223,8 @@ class EncoderFineTuning(tf.keras.Model):
         batches = math.ceil(num_tokens / 64)
 
         for index in range(batches):
-            text_tokens_shard = text_tokens[index:64*index]
+            text_tokens_shard = text_tokens[64*index:64*(index+1)]
+            attention_mask_batched = 
             embeddings_shard = self.language_model(
                 text_tokens_shard)[0][:, 0, :]
 
