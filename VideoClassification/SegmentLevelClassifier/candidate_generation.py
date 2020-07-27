@@ -32,23 +32,11 @@ def add_candidate_content(context, candidates):
     context["candidate_labels"] = tf.convert_to_tensor([])
   return context
 
-def serialize_video(context, features):
-  """Serialize video from context and features.
+def serialize_features(features):
+  """Serialize features.
 
-  context: context of the video
   features: features of the video
   """
-  # context_features = {
-  #     "id": tf.io.FixedLenFeature([], tf.string),
-  #     "labels": tf.io.VarLenFeature(tf.int64),
-  #     "segment_labels": tf.io.VarLenFeature(tf.int64),
-  #     "segment_start_times": tf.io.VarLenFeature(tf.int64),
-  #     "segment_scores": tf.io.VarLenFeature(tf.float32)
-  #   }
-  #   sequence_features = {
-  #       feature_name: tf.io.FixedLenSequenceFeature([], dtype=tf.string)
-  #       for feature_name in self.feature_names
-  #   }
   audio = features["audio"][0].numpy().tostring()
   rgb = features["rgb"][0].numpy().tostring()
   audio = tf.train.BytesList(value=[audio])
@@ -57,7 +45,32 @@ def serialize_video(context, features):
   rgb = tf.train.Feature(bytes_list=rgb)
   features = {"audio":tf.train.FeatureList(feature=[audio]), "rgb":tf.train.FeatureList(feature=[rgb])}
   features = tf.train.FeatureLists(feature_list=features)
-  print(context)
+  return features
+
+def serialize_context(context):
+  """Serialize context.
+
+  context: context of the video
+  """
+  video_id = context["id"]
+  labels = context["labels"].values
+  segment_labels = context["segment_labels"].values
+  segment_start_times = context["segment_start_times"].values
+  segment_scores = context["segment_scores"].values
+  print(labels)
+  print(segment_labels)
+  print(segment_start_times)
+  print(segment_scores)
+
+def serialize_video(context, features):
+  """Serialize video from context and features.
+
+  context: context of the video
+  features: features of the video
+  """
+  features = serialize_features(features)
+  context = serialize_context(context)
+
   context = tf.train.FeatureLists(feature_list=context)
   example = tf.train.SequenceExample(feature_lists=features, context=context)
 
