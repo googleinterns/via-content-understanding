@@ -144,6 +144,7 @@ def save_data(new_data_dir, input_dataset, candidates, file_type="validate", sha
     serialized_video = serialize_video(context, features)
     shard.append(serialized_video)
     shard_counter += 1
+    assert False
     if shard_counter == shard_size:
       shard = tf.convert_to_tensor(shard)
       shard_dataset = tf.data.Dataset.from_tensor_slices(shard)
