@@ -10,13 +10,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-Certain utility functions used to create the model.
+File containing dataset readers
 """
-
 from functools import partial
 import os
 import reader_utils as utils
 import tensorflow as tf
+
 class VideoDataset():
   """Reads TFRecords of SequenceExamples.
 
