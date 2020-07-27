@@ -152,6 +152,7 @@ def save_data(new_data_dir, input_dataset, candidates, file_type="validate", sha
 
   #Handles overflow
   if shard_counter != 0:
+    print(f"Processing shard number {shard_number}")
     shard = tf.convert_to_tensor(shard)
     shard_dataset = tf.data.Dataset.from_tensor_slices(shard)
     file_name = file_type + str(shard_number)
