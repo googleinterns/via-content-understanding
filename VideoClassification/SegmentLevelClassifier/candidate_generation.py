@@ -80,7 +80,8 @@ def serialize_context(context):
   labels =  convert_labels(labels)
   segment_labels = convert_labels(segment_labels)
 
-  tf.train.Int64List(value=labels.numpy())
+  labels = tf.train.Int64List(value=labels.numpy())
+  print(labels)
 
   return context
 
