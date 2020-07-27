@@ -143,7 +143,7 @@ def save_data(new_data_dir, input_dataset, candidates, file_type="validate", sha
       shard = tf.convert_to_tensor(shard)
       shard_dataset = tf.data.Dataset.from_tensor_slices(shard)
       file_name = file_type + str(shard_number)
-      file_path = os.path.join(data_dir, '%s.tfrecord' % file_name)
+      file_path = os.path.join(new_data_dir, '%s.tfrecord' % file_name)
       writer = tf.data.experimental.TFRecordWriter(file_path)
       writer.write(shard_dataset)
       shard_counter = 0
