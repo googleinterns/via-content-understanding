@@ -119,7 +119,7 @@ def serialize_video(context, features):
   return example.SerializeToString()
 
 
-def save_data(new_data_dir, input_dataset, candidates, shard_size=10):
+def save_data(new_data_dir, input_dataset, candidates, file_type="validate", shard_size=5):
   """Save data as TFRecords Datasets in new_data_dir.
 
   Args:
@@ -128,6 +128,7 @@ def save_data(new_data_dir, input_dataset, candidates, shard_size=10):
     candidates: list of lists where each inner list contains the class indices that the corresponding input data is a candidate for. len(candidates) == len(input_dataset)
   """
   shard_counter = 0
+  shard_number = 0
   shard = []
   for video in input_dataset:
     #video = tf.convert_to_tensor(video)
@@ -140,9 +141,12 @@ def save_data(new_data_dir, input_dataset, candidates, shard_size=10):
     if shard_counter == shard_size:
       shard = tf.convert_to_tensor(shard)
       shard_dataset = tf.data.Dataset.from_tensor_slices(shard)
+      file_name = file_type + shard_number
+      file_path = os.path.join(data_dir, '%s.tfrecord' % file_name)
       writer = tf.data.experimental.TFRecordWriter(file_path)
       writer.write(shard_dataset)
       shard_counter = 0
+      shard_number += 1
       shard = []
 
 def generate_candidates(input_dataset, model, k, class_csv):
