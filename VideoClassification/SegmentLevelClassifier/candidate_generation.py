@@ -58,7 +58,7 @@ def serialize_video(context, features):
   rgb = tf.train.BytesList(value=[rgb])
   rgb = tf.train.Feature(bytes_list=rgb)
   print(rgb)
-  features = {"audio":tf.train.FeatureList(feature=audio), "rgb":tf.train.FeatureList(feature=rgb)}
+  features = {"audio":tf.train.FeatureList(feature=[audio]), "rgb":tf.train.FeatureList(feature=[rgb])}
   features = tf.train.FeatureLists(feature_list=features)
   example = tf.train.SequenceExample(feature_lists=features, context=context)
 
