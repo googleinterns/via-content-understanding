@@ -185,5 +185,5 @@ if __name__ == "__main__":
   candidates = generate_candidates(input_dataset, model, 10, "vocabulary.csv")
 
   segment_reader = readers.PreprocessingDataset()
-  input_dataset = segment_reader.get_dataset("/home/conorfvedova_google_com/data/segments/validation", batch_size=1, type="validate")
+  input_dataset = segment_reader.get_dataset("/home/conorfvedova_google_com/data/segments/candidate_validation", batch_size=1, type="validate")
   save_data("/home/conorfvedova_google_com/data/segments/candidate_validation", input_dataset, candidates)
