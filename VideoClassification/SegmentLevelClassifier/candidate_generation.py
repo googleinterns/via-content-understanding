@@ -44,11 +44,9 @@ def convert_labels(labels, class_csv="vocabulary.csv"):
   class_indices = np.array(class_indices)
 
   labels = labels.numpy()
-  print(labels)
   new_labels = []
   for label in labels:
     check = np.nonzero(class_indices == label)
-    print(check)
     if np.any(check):
       new_label = check[0].tolist()[0]
       new_labels.append(new_label)
@@ -81,10 +79,11 @@ def serialize_context(context):
   segment_scores = context["segment_scores"].values
   labels =  convert_labels(labels)
   segment_labels = convert_labels(segment_labels)
-  print(labels)
-  print(segment_labels)
-  print(segment_start_times)
-  print(segment_scores)
+
+  tf.train.Int64List(value=labels.numpy())
+
+  return context
+
 
 def serialize_video(context, features):
   """Serialize video from context and features.
@@ -94,10 +93,7 @@ def serialize_video(context, features):
   """
   features = serialize_features(features)
   context = serialize_context(context)
-
-  context = tf.train.FeatureLists(feature_list=context)
   example = tf.train.SequenceExample(feature_lists=features, context=context)
-
   return example.SerializeToString()
 
 
