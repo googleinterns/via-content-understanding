@@ -83,7 +83,7 @@ class VideoDataset():
     Returns:
       dataset: TFRecordDataset of the input training data
     """
-    files = tf.io.matching_files(os.path.join(data_dir, '%s*.tfrecord' % type))
+    files = tf.io.matching_files(os.path.join(data_dir, '%s0000.tfrecord' % type))
 
     
     files_dataset = tf.data.Dataset.from_tensor_slices(files)
