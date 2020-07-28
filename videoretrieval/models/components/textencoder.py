@@ -27,7 +27,7 @@ class TextEncoder(tf.keras.Model):
     produced by the corresponding video encoder. This model should be trained
     in concert with a video encoder.
 
-    The contextual embeddings are first aggregated using netvlad to a fixed
+    The contextual embeddings are first aggregated using NetVLAD to a fixed
     length vector. Then, for each expert in the corresponding video encoder,
     this fixed length vector is passed through a Gated Embedding Module to
     produce a shard of an embedding. The fixed length vector is also passed
@@ -48,14 +48,15 @@ class TextEncoder(tf.keras.Model):
     """
     def __init__(self,
             num_of_experts,
-            encoded_expert_dimensionality=768,
-            gem_layers=1,
-            moe_dense_layers=1,
+            num_netvlad_clusters,
+            ghost_clusters,
+            language_model_dimensionality,
+            encoded_expert_dimensionality,
             kernel_initializer="glorot_uniform",
             bias_initializer="zeros"):
         """Initialize this model.
 
-        Parameters:
+        Args:
             num_of_experts: number of experts used in the video encoder.
             num_netvlad_clusters: number of clusters in NetVLAD.
             ghost_clusters: number of ghost clusters in NetVLAD.
@@ -64,76 +65,51 @@ class TextEncoder(tf.keras.Model):
             encoded_expert_dimensionality: the dimensionality video experts
                 embeddings are computed down to.
             kernel_initializer: the strategy used to initialize the weights in
-                dense layers' kernel.
+                dense layers' kernel. The default is glorot uniform, the default
+                strategy for keras.
             bias_initial: the strategy used to initialize the weights in dense
-                layers' biases.
+                layers' biases. The default is zeros, the default strategy for
+                keras.
         """
         super(TextEncoder, self).__init__()
 
         self.num_of_experts = num_of_experts
+        self.num_netvlad_clusters = num_netvlad_clusters
+        self.language_model_dimensionality = language_model_dimensionality
+        self.netvlad = NetVLAD(num_netvlad_clusters, ghost_clusters)
         self.encoded_expert_dimensionality = encoded_expert_dimensionality
 
         self.make_gems(
-            gem_layers,
             kernel_initializer=kernel_initializer,
             bias_initializer=bias_initializer)
 
         self.make_dense_layers(
-            moe_dense_layers,
             kernel_initializer=kernel_initializer,
             bias_initializer=bias_initializer)
 
-    def make_gems(self, layers_per_gem, kernel_initializer, bias_initializer):
+    def make_gems(self, kernel_initializer, bias_initializer):
         """Initialize gated embedding modules."""
         self.gems = []
 
-        if type(layers_per_gem) == int:
-            layers_per_gem = [layers_per_gem] * self.num_of_experts
-        elif type(layers_per_gem) == list:
-            assert len(layers_per_gem) == self.num_of_experts
-        else:
-            raise ValueError()
-
-        for num_layers in layers_per_gem:
-            assert type(num_layers) == int
-            assert num_layers
-
-            expert_gems = []
-
-            for _ in range(num_layers):
-                expert_gems.append(GatedEmbeddingModule(
-                    self.encoded_expert_dimensionality,
-                    kernel_initializer=kernel_initializer,
-                    bias_initializer=bias_initializer))
-
-            self.gems.append(tf.keras.Sequential(expert_gems))
+        for _ in range(self.num_of_experts):
+            self.gems.append(GatedEmbeddingModule(
+                self.encoded_expert_dimensionality,
+                kernel_initializer=kernel_initializer,
+                bias_initializer=bias_initializer))
 
 
-    def make_dense_layers(self, moe_dense_layers, kernel_initializer, bias_initializer):
+    def make_dense_layers(self, kernel_initializer, bias_initializer):
         """Make dense layer used for generating mixture of embedding weights.
         Note: "moe" stands for mixture of embeddings weights. 
         """
 
-        moe_layers = []
-
-        assert moe_dense_layers >= 1
-
-        for _ in range(moe_dense_layers - 1):
-            moe_layers.append(tf.keras.layers.Dense(
-                self.num_of_experts,
-                activation="relu",
-                kernel_initializer=kernel_initializer,
-                bias_initializer=bias_initializer))
-
-        moe_layers.append(tf.keras.layers.Dense(
+        self.moe_dense = tf.keras.layers.Dense(
             self.num_of_experts,
             activation="softmax",
             kernel_initializer=kernel_initializer,
-            bias_initializer=bias_initializer))
+            bias_initializer=bias_initializer)
 
-        self.moe_dense = tf.keras.Sequential(moe_layers)
-
-    def call(self, input_):
+    def call(self, contextual_embeddings):
         """Executes a forward pass on the text encoder.
 
         First, the text is aggregated using netvlad. These aggregated
@@ -141,8 +117,8 @@ class TextEncoder(tf.keras.Model):
         the normalized embeddings. The aggregated text embeddings are also
         inputted into a dense layer to generate the mixture weights.
 
-        Parameters:
-            input_: a batch of contextual embeddings.
+        Args:
+            contextual_embeddings: a batch of contextual embeddings.
 
         Returns: a tuple of two elements. First, a list of embeddings for the
         text captions. Each element of this list is a tensor of shape batch size
@@ -150,14 +126,18 @@ class TextEncoder(tf.keras.Model):
         for the embeddings of shape batch size x number of experts.
         """
 
+        cls_token = contextual_embeddings[:, 0, :]
+        aggregated_embeddings = self.netvlad(contextual_embeddings)
+
+        aggregated_embeddings = tf.concat([
+            cls_token, aggregated_embeddings], axis=1)
+
         expert_embeddings = []
 
         for expert_gated_embedding_module in self.gems:
-            expert_embedding = expert_gated_embedding_module(
-                input_)
+            expert_embeddings.append(expert_gated_embedding_module(
+                aggregated_embeddings))
 
-            expert_embeddings.append(expert_embedding)
-
-        mixture_weights = self.moe_dense(input_)
+        mixture_weights = self.moe_dense(aggregated_embeddings)
 
         return expert_embeddings, mixture_weights

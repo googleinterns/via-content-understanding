@@ -88,7 +88,7 @@ class BERTModel(BaseLanguageModel):
 
     @property
     def contextual_embeddings_shape(self):
-        return (768, )
+        return (37, 768)
 
     @property
     def zero_pad(self):
@@ -122,4 +122,4 @@ class BERTModel(BaseLanguageModel):
         """
         attention_mask = self.get_attention_mask(ids)
 
-        return [self.model(ids, attention_mask=attention_mask)[0][:, 0, :]]
+        return [self.model(ids, attention_mask=attention_mask)[0]]
