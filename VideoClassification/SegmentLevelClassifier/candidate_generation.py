@@ -53,9 +53,9 @@ def generate_candidates(input_dataset, model, k, class_csv):
 
 if __name__ == "__main__":
   video_reader = readers.VideoDataset()
-  input_dataset = video_reader.get_dataset("/home/conorfvedova_google_com/data/segments/validation", batch_size=1, type="validate")
+  input_dataset = video_reader.get_dataset("/home/conorfvedova_google_com/data/segments/test", batch_size=1, type="test")
   model = load_model("../model_weights.h5")
   candidates = generate_candidates(input_dataset, model, 200, "vocabulary.csv")
   segment_reader = readers.PreprocessingDataset()
-  input_dataset = segment_reader.get_dataset("/home/conorfvedova_google_com/data/segments/validation", batch_size=1, type="validate")
-  writer.save_data("/home/conorfvedova_google_com/data/segments/candidate_validation", input_dataset, candidates)
+  input_dataset = segment_reader.get_dataset("/home/conorfvedova_google_com/data/segments/test", batch_size=1, type="test")
+  writer.save_data("/home/conorfvedova_google_com/data/segments/candidate_test", input_dataset, candidates)
