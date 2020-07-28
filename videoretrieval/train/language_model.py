@@ -57,12 +57,13 @@ def get_language_model_inference_function(language_model):
         number of tokens in the tokenized caption.
     """
 
-    def inference(ids):
-        return language_model(ids)
+    def inference(ids, attention_mask):
+        return language_model(ids, attention_mask)
 
-    def wrapper(video_id, ids, tokens):
-        contextual_embeddings = tf.py_function(inference, [ids], tf.float32)
-        return video_id, contextual_embeddings, tokens
+    def wrapper(video_id, ids, attention_mask):
+        contextual_embeddings = tf.py_function(
+            inference, [ids, attention_mask], tf.float32)
+        return video_id, contextual_embeddings, attention_mask
 
     return wrapper
 

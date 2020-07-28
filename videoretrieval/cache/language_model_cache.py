@@ -263,10 +263,13 @@ def unserialize_encodings_wrapper(text_max_length):
         encodings = tf.io.parse_tensor(
             example["serialized_encodings"], tf.int64)
 
-        first_pad_token_index = encodings.index(0)
+        padding_token_indexes = tf.where(encodings == 0)
+        padding_token_indexes = tf.concat(
+            [padding_token_indexes, [[0]]], axis=0)
 
-        attention_mask = [1] * first_pad_token_index + [0] * (
-            37 - first_pad_token_index)
+        padding_start_index = padding_token_indexes[0]0
+        attention_mask = tf.repeat([
+            1, 0], [padding_start_index, 37 - padding_start_index])
 
         return (video_id, encodings, attention_mask)
 

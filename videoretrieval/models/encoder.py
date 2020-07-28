@@ -208,7 +208,7 @@ class EncoderFineTuning(tf.keras.Model):
         self.lm_batch_size = lm_batch_size
 
     def zero_padding_token_embeddings(self, embedding_batch, lengths):
-        def map_fn(embedding, num_tokens):`
+        def map_fn(embedding, num_tokens):
             output = tf.zeros_like(embedding)
             output = tf.concat(
                 (embedding[:num_tokens], embedding[num_tokens:]), axis=0)
@@ -227,8 +227,7 @@ class EncoderFineTuning(tf.keras.Model):
             text_tokens_shard = text_tokens[64*index:64*(index+1)]
             attention_mask_shard = attention_mask[64*index:64*(index+1)]
             embeddings_shard = self.language_model(
-                text_tokens_shard)[0][:, 0, :]
-
+                text_tokens_shard, attention_mask=attention_mask_shard)[0]
             embeddings.append(embeddings_shard)
 
         embeddings = tf.concat(embeddings, axis=0)
@@ -241,7 +240,7 @@ class EncoderFineTuning(tf.keras.Model):
         missing_experts):
         video_embeddings = self.video_encoder([video_features, missing_experts])
         contextual_embeddings = self.language_model_forward_pass(
-            text_tokens, text_token_lengths)
+            text_tokens, attention_masks)
         text_embeddings, mixture_weights = self.text_encoder(
             contextual_embeddings)
         return video_embeddings, text_embeddings, mixture_weights

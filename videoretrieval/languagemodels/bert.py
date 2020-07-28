@@ -66,7 +66,7 @@ class BERTModel(BaseLanguageModel):
     """An implementation of BaseLanguageModel for the openai-gpt1 model."""
 
     max_input_length = 37
-    _batch_size = 64
+    _batch_size = 10
 
     def __init__(self):
         self.model = TFBertModel.from_pretrained("bert-base-uncased")
@@ -108,11 +108,11 @@ class BERTModel(BaseLanguageModel):
 
         tokenized = self.tokenizer(text, padding="max_length")
 
-        input_ids = tokenized["input_ids"]
+        input_ids = tokenized["input_ids"][:37]
 
-        return input_ids[:self.max_input_length], self.max_input_length
+        return input_ids, tokenized["attention_mask"][:37]
 
-    def forward(self, ids):
+    def forward(self, ids, attention_mask):
         """A forward pass on the model.
 
         Parameters:
@@ -120,6 +120,4 @@ class BERTModel(BaseLanguageModel):
 
         Returns: a tensor of contextual embeddings.
         """
-        attention_mask = self.get_attention_mask(ids)
-
         return [self.model(ids, attention_mask=attention_mask)[0]]

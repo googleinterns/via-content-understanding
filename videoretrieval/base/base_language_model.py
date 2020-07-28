@@ -24,9 +24,9 @@ class BaseLanguageModel(AbstractClass):
 
     max_input_length = None
 
-    def __call__(self, ids):
+    def __call__(self, ids, attention_mask):
         """Does a forward pass on the language model."""
-        return self.forward(ids)
+        return self.forward(ids, attention_mask)
 
     @property
     @abstractmethod
@@ -69,6 +69,3 @@ class BaseLanguageModel(AbstractClass):
     @property
     def zero_pad(self):
         return False
-
-    def get_attention_mask(self, encoded_ids):
-        padding_token_start_index = encoded_ids.index(self.pad_token_id)
