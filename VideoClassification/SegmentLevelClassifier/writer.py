@@ -124,7 +124,7 @@ def serialize_video(context, features):
   example = tf.train.SequenceExample(feature_lists=features, context=context)
   return example.SerializeToString()
 
-def save_data(new_data_dir, input_dataset, candidates, file_type="validate", shard_size=17):
+def save_data(new_data_dir, input_dataset, candidates, file_type="test", shard_size=17):
   """Save data as TFRecords Datasets in new_data_dir.
 
   Args:
