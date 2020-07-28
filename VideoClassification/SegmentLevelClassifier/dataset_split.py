@@ -18,4 +18,7 @@ import pandas as pd
 import tensorflow as tf
 
 if __name__ == "__main__":
-	data = 
+  video_reader = readers.SegmentDataset()
+  input_dataset = video_reader.get_dataset("/home/conorfvedova_google_com/data/segments/validation", batch_size=1, type="validate")
+
+  writer.split_data("/home/conorfvedova_google_com/data/segments/candidate_validation", input_dataset)
