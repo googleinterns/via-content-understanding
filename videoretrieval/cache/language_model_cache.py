@@ -223,18 +223,6 @@ def unserialize_embeddings_wrapper(text_max_length):
             example["serialized_embeddings"], tf.float32)
 
         return (video_id, contextual_embeddings)
-        embedding_length = tf.numpy_function(
-            get_embedding_length, [contextual_embeddings], tf.int64)
-
-        if embedding_length >= text_max_length:
-            return (video_id, contextual_embeddings[:text_max_length])
-        else:
-            output = tf.zeros((
-                text_max_length - embedding_length,
-                contextual_embeddings_dim))
-            
-            output = tf.concat([contextual_embeddings, output], axis=0)
-            return (video_id, output)
 
     return unserialize_data
 
@@ -267,7 +255,7 @@ def unserialize_encodings_wrapper(text_max_length):
         padding_token_indexes = tf.concat(
             [padding_token_indexes, [[0]]], axis=0)
 
-        padding_start_index = padding_token_indexes[0]0
+        padding_start_index = padding_token_indexes[0][0]
         attention_mask = tf.repeat([
             1, 0], [padding_start_index, 37 - padding_start_index])
 
@@ -307,5 +295,5 @@ def get_cached_language_model_embeddings(
 
     return dataset.map(
         unserialize_embeddings_wrapper(
-            *language_model.contextual_embeddings_shape),
+            language_model.contextual_embeddings_shape[0]),
         num_parallel_calls=tf.data.experimental.AUTOTUNE)

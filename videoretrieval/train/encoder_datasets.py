@@ -264,13 +264,13 @@ def generate_encoder_datasets(language_model, source_dataset, experts):
         modalities.  
     """
     train_ds = cache.get_cached_language_model_embeddings(
-        source_dataset, language_model, "train").cache()
+        source_dataset, language_model, "train")
 
     valid_ds = cache.get_cached_language_model_embeddings(
-        source_dataset, language_model, "valid").cache()
+        source_dataset, language_model, "valid")
 
     test_ds = cache.get_cached_language_model_embeddings(
-        source_dataset, language_model, "test").cache()
+        source_dataset, language_model, "test")
 
     train_ds = sample_captions(train_ds, source_dataset.captions_per_video)
 

@@ -63,6 +63,10 @@ def get_language_model_inference_function(language_model):
     def wrapper(video_id, ids, attention_mask):
         contextual_embeddings = tf.py_function(
             inference, [ids, attention_mask], tf.float32)
+
+        contextual_embeddings = contextual_embeddings * tf.cast(
+            attention_mask, tf.float32)[:, :, None]
+
         return video_id, contextual_embeddings, attention_mask
 
     return wrapper
