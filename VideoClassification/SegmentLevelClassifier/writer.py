@@ -216,8 +216,8 @@ def split_data(data_dir, input_dataset, shard_size=85, num_classes=1000, file_ty
       new_context["segment_start_time"] = tf.constant(segment_start_times[segment_index])
       new_context["segment_score"] = tf.constant(context["segment_scores"].values.numpy()[segment_index])
       new_features = {}
-      new_features["rgb"] = features["rgb"].numpy()[segment_start_times[segment_index]:segment_start_times[segment_index]+5]
-      new_features["audio"] = features["audio"].numpy()[segment_start_times[segment_index]:segment_start_times[segment_index]+5]
+      new_features["rgb"] = features["rgb"][0].numpy()[segment_start_times[segment_index]:segment_start_times[segment_index]+5]
+      new_features["audio"] = features["audio"][0].numpy()[segment_start_times[segment_index]:segment_start_times[segment_index]+5]
       print(features["rgb"])
       print(new_context)
       print(new_features)
