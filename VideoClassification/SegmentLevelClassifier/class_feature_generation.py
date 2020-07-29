@@ -85,6 +85,7 @@ def compute_and_save(data_dir, input_dataset):
     comparison_index = 0
     for comparison_segment in comparison_dataset:
       #Check if segment to compare with has already been calculated.
+      print(f"Comparing with comparison {comparison_index}")
       comparison_context = comparison_segment[0]
       comparison_features = comparison_segment[1]
       comparison_video_id = tf.convert_to_tensor(comparison_context["id"])[0].numpy()
