@@ -71,62 +71,61 @@ def compute_and_save(data_dir, input_dataset):
     print(context)
     print(features)
 
-    label = context["segment_label"][0].numpy()
-    data_reader = readers.SegmentDataset(class_num=label)
-    comparison_dataset = reader.get_dataset("/home/conorfvedova_google_com/data/segments/split_validation", batch_size=1, type="class")
+    # label = context["segment_label"][0].numpy()
+    # data_reader = readers.SegmentDataset(class_num=label)
+    # comparison_dataset = reader.get_dataset("/home/conorfvedova_google_com/data/segments/split_validation", batch_size=1, type="class")
 
-    #If new class, clear computation memory and save shard.
-    if label != previous_class and len(shard) > 0:
-      writer.save_shard(data_dir, shard, "class", previous_class)
-      shard = []
-      computation_holder = []
-      previous_class = label
-      current_index = 0
-    print(context)
-    print(features)
-    computation_holder.append([])
-    comparison_index = 0
-    for comparison_segment in comparison_dataset:
-      #Check if segment to compare with has already been calculated.
-      comparison_context = segment[0]
-      comparison_features = segment[1]
-      comparison_video_id = tf.convert_to_tensor(comparison_context["id"])[0].numpy()
-      print("here")
-      print(comparison_context)
-      print(comparison_features)
-      if comparison_index < len(computation_holder) - 1:
-        previous_values = computation_holder[comparison_index][current_index]
-        computation_holder[current_index].append(previous_values)
-        total_positive += previous_values[0]
-        total_negative += previous_values[1]
-      else:
-        if video_id == comparison_video_id:
-          positive, negative = 0,0
-        else:
-          segment_score = comparison_context["segment_score"][0].numpy()
-          positive, negative = 0,0
-          if segment_score == 0:
-            negative = calculate_cosine(features["rgb"][0].numpy(), comparison_features["rgb"][0].numpy())
-            negative += calculate_cosine(features["audio"][0].numpy(), comparison_features["audio"][0].numpy())
-          else:
-            positive = calculate_cosine(features["rgb"][0].numpy(), comparison_features["rgb"][0].numpy())
-            positive += calculate_cosine(features["audio"][0].numpy(), comparison_features["audio"][0].numpy())
-        computation_holder[current_index].append((positive, negative))
-        total_positive += positive
-        total_negative += negative
-      comparison_index += 1
-      print(total_positive)
-      print(total_negative)
-      if comparison_index == 6:
-        assert False
+    # #If new class, clear computation memory and save shard.
+    # if label != previous_class and len(shard) > 0:
+    #   writer.save_shard(data_dir, shard, "class", previous_class)
+    #   shard = []
+    #   computation_holder = []
+    #   previous_class = label
+    #   current_index = 0
+    # print(context)
+    # print(features)
+    # computation_holder.append([])
+    # comparison_index = 0
+    # for comparison_segment in comparison_dataset:
+    #   #Check if segment to compare with has already been calculated.
+    #   comparison_context = segment[0]
+    #   comparison_features = segment[1]
+    #   comparison_video_id = tf.convert_to_tensor(comparison_context["id"])[0].numpy()
+    #   print(comparison_context)
+    #   print(comparison_features)
+    #   if comparison_index < len(computation_holder) - 1:
+    #     previous_values = computation_holder[comparison_index][current_index]
+    #     computation_holder[current_index].append(previous_values)
+    #     total_positive += previous_values[0]
+    #     total_negative += previous_values[1]
+    #   else:
+    #     if video_id == comparison_video_id:
+    #       positive, negative = 0,0
+    #     else:
+    #       segment_score = comparison_context["segment_score"][0].numpy()
+    #       positive, negative = 0,0
+    #       if segment_score == 0:
+    #         negative = calculate_cosine(features["rgb"][0].numpy(), comparison_features["rgb"][0].numpy())
+    #         negative += calculate_cosine(features["audio"][0].numpy(), comparison_features["audio"][0].numpy())
+    #       else:
+    #         positive = calculate_cosine(features["rgb"][0].numpy(), comparison_features["rgb"][0].numpy())
+    #         positive += calculate_cosine(features["audio"][0].numpy(), comparison_features["audio"][0].numpy())
+    #     computation_holder[current_index].append((positive, negative))
+    #     total_positive += positive
+    #     total_negative += negative
+    #   comparison_index += 1
+    #   print(total_positive)
+    #   print(total_negative)
+    #   if comparison_index == 6:
+    #     assert False
 
-    #Serialize segment with new features and add it to a list for shard.
-    #When shard is filled, save data
-    features["class_features"] = tf.convert_to_tensor([total_positive, total_negative])
+    # #Serialize segment with new features and add it to a list for shard.
+    # #When shard is filled, save data
+    # features["class_features"] = tf.convert_to_tensor([total_positive, total_negative])
 
-    shard.append(writer.serialize_data(context, features, "segment"))
+    # shard.append(writer.serialize_data(context, features, "segment"))
 
-    current_index += 1
+    # current_index += 1
 
 
 if __name__ == "__main__":
