@@ -32,8 +32,8 @@ class PROBABILITY_HOLDER:
     self.num_classes = num_classes
     self.k = k
     self.class_indices = class_indices
-    self.candidates = [[]] * num_classes
-    self.candidate_probs = [[]] * num_classes
+    self.candidates = [[] for i in range(num_classes)]
+    self.candidate_probs = [[] for i in range(num_classes)]
     self.num_videos = 0
   
   def binary_search(self, sorted_list, input):
