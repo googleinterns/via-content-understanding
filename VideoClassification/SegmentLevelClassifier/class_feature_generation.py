@@ -114,7 +114,8 @@ def compute_and_save(data_dir, input_dataset):
       comparison_index += 1
       print(total_positive)
       print(total_negative)
-      assert False
+      if comparison_index == 2:
+        assert False
 
     #Serialize segment with new features and add it to a list for shard.
     #When shard is filled, save data
