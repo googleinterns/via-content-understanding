@@ -116,6 +116,7 @@ def compute_and_save(data_dir, input_dataset):
     #When shard is filled, save data
     features["class_features"] = tf.convert_to_tensor([total_positive, total_negative])
 
+    shard.append(writer.serialize_data(context, features, "segment"))
 
     current_index += 1
 

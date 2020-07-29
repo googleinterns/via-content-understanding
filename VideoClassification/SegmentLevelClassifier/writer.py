@@ -85,6 +85,22 @@ def serialize_features(features):
   features = tf.train.FeatureLists(feature_list=features)
   return features
 
+def serialize_class_features(features):
+  """Serialize features.
+
+  Args:
+    features: features of the video
+  """
+  audio = features["audio"][0].numpy().tostring()
+  rgb = features["rgb"][0].numpy().tostring()
+  class_features = features["class_features"].numpy()
+  audio = convert_to_feature([audio], "byte")
+  rgb = convert_to_feature([rgb], "byte")
+  class_features = convert_to_feature([class_features], "int")
+  features = {"audio": tf.train.FeatureList(feature=[audio]), "rgb": tf.train.FeatureList(feature=[rgb]), "class_features": tf.train.FeatureList(feature=[class_features])}
+  features = tf.train.FeatureLists(feature_list=features)
+  return features
+
 def serialize_video_context(context):
   """Serialize context for a video.
 
@@ -134,13 +150,17 @@ def serialize_data(context, features, type):
   Args:
     context: context of the video
     features: features of the video
-    type: type of data to store. Can either be video or segment
+    type: type of data to store. Can either be video, segment, or csf.
   """
-  features = serialize_features(features)
   if type == "video":
     context = serialize_video_context(context)
+    features = serialize_features(features)
   elif type == "segment":
     context = serialize_segment_context(context)
+    features = serialize_features(features)
+  elif type == "csf":
+    context = serialize_segment_context(context)
+    features = serialize_class_features(features)
   else:
     print("Incorrect type chosen for serialization.")
   example = tf.train.SequenceExample(feature_lists=features, context=context)
