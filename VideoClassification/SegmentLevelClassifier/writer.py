@@ -224,9 +224,9 @@ def split_data(data_dir, input_dataset, shard_size=85, num_classes=1000, file_ty
       #Need to make type uint8!!
       new_rgb = features["rgb"][:,segment_start_times[segment_index]:segment_start_times[segment_index]+5,:]
       print(new_rgb)
-      new_audio = features["audio"][0].numpy()[segment_start_times[segment_index]:segment_start_times[segment_index]+5]
+      new_audio = features["audio"][:,segment_start_times[segment_index]:segment_start_times[segment_index]+5,:]
       new_features["rgb"] = new_rgb
-      new_features["audio"] = tf.convert_to_tensor([new_audio])
+      new_features["audio"] = new_audio
 
       label = new_context["segment_label"]
       label = convert_labels(label).numpy()[0]
