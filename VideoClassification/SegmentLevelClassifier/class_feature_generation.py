@@ -72,7 +72,7 @@ def compute_and_save(data_dir, input_dataset):
 
     label = context["segment_label"][0].numpy()
     data_reader = readers.SegmentDataset(class_num=label)
-    comparison_dataset = reader.get_dataset("/home/conorfvedova_google_com/data/segments/split_validation", batch_size=1, type="class")
+    comparison_dataset = data_reader.get_dataset("/home/conorfvedova_google_com/data/segments/split_validation", batch_size=1, type="class")
 
     #If new class, clear computation memory and save shard.
     if label != previous_class:
