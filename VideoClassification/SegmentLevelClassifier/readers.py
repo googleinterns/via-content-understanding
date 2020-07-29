@@ -372,6 +372,7 @@ class SegmentDataset():
     self.max_frames = max_frames
     self.segment_size = segment_size
     self.class_num = class_num
+    print(class_num)
 
   def get_dataset(self, data_dir, batch_size, type="train"):
     """Returns TFRecordDataset after it has been parsed.
