@@ -74,7 +74,7 @@ def compute_and_save(data_dir, input_dataset):
     comparison_dataset = reader.get_dataset("/home/conorfvedova_google_com/data/segments/split_validation", batch_size=1, type="class")
 
     #If new class, clear computation memory and save shard.
-    if label != previous_class:
+    if label != previous_class and len(shard) > 0:
       writer.save_shard(data_dir, shard, "class", previous_class)
       shard = []
       computation_holder = []
