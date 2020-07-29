@@ -386,6 +386,7 @@ class SegmentDataset():
       files = tf.io.matching_files(os.path.join(data_dir, '%s*.tfrecord' % type))
       print(files)
     else:
+      print(self.class_num)
       files = tf.io.matching_files(os.path.join(data_dir, '%s.tfrecord' % (type+str(self.class_num))))
       print(files)
     
