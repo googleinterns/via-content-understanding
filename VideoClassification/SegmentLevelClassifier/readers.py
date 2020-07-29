@@ -383,6 +383,7 @@ class SegmentDataset():
     """
     if self.class_num == -1:
       files = tf.io.matching_files(os.path.join(data_dir, '%s*.tfrecord' % type))
+      print(files)
     else:
       files = tf.io.matching_files(os.path.join(data_dir, '%s.tfrecord' % (type+str(self.class_num))))
       print(files)
