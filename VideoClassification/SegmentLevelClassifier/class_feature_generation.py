@@ -80,7 +80,8 @@ def compute_and_save(data_dir, input_dataset):
       computation_holder = []
       previous_class = label
       current_index = 0
-
+    print(context)
+    print(features)
     computation_holder.append([])
     comparison_index = 0
     for comparison_segment in comparison_dataset:
@@ -88,6 +89,8 @@ def compute_and_save(data_dir, input_dataset):
       comparison_context = segment[0]
       comparison_features = segment[1]
       comparison_video_id = tf.convert_to_tensor(comparison_context["id"])[0].numpy()
+      print(comparison_context)
+      print(comparison_features)
       if comparison_index < len(computation_holder) - 1:
         previous_values = computation_holder[comparison_index][current_index]
         computation_holder[current_index].append(previous_values)
@@ -111,6 +114,7 @@ def compute_and_save(data_dir, input_dataset):
       comparison_index += 1
       print(total_positive)
       print(total_negative)
+      assert False
 
     #Serialize segment with new features and add it to a list for shard.
     #When shard is filled, save data
