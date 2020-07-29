@@ -219,7 +219,7 @@ def split_data(data_dir, input_dataset, shard_size=85, num_classes=1000, file_ty
       new_features["rgb"] = features["rgb"].numpy()[segment_start_times[segment_index]:segment_start_times[segment_index]+5]
       new_features["audio"] = features["audio"].numpy()[segment_start_times[segment_index]:segment_start_times[segment_index]+5]
 
-      label = context["segment_label"]
+      label = new_context["segment_label"]
       label = convert_labels(label).numpy()
       serialized_video = serialize_data(new_context, new_features, "segment")
       video_holder[label].append(serialized_video)
