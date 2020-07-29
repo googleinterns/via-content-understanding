@@ -349,7 +349,8 @@ class SegmentDataset():
       feature_names=["rgb", "audio"],
       max_frames=300,
       segment_size=5,
-      shuffle=True):
+      shuffle=True,
+      class_num=-1):
     """Construct a SegmentDataset.
 
     Args:
@@ -359,6 +360,7 @@ class SegmentDataset():
       max_frames: the maximum number of frames to process.
       segment_size: number of frames per segment.
       shuffle: set to True to shuffle the data per epoch.
+      class_num: determines which class file to read. To read all files, do not modify class_num.
     """
 
     assert len(feature_names) == len(feature_sizes), (
@@ -369,6 +371,7 @@ class SegmentDataset():
     self.feature_names = feature_names
     self.max_frames = max_frames
     self.segment_size = segment_size
+    self.class_num = class_num
 
   def get_dataset(self, data_dir, batch_size, type="train"):
     """Returns TFRecordDataset after it has been parsed.
@@ -378,7 +381,10 @@ class SegmentDataset():
     Returns:
       dataset: TFRecordDataset of the input training data
     """
-    files = tf.io.matching_files(os.path.join(data_dir, '%s*.tfrecord' % type))
+    if self.class_num == -1:
+      files = tf.io.matching_files(os.path.join(data_dir, '%s*.tfrecord' % type))
+    else:
+      files = tf.io.matching_files(os.path.join(data_dir, '%s.tfrecord' % (type+str(self.class_num))))
     
     files_dataset = tf.data.Dataset.from_tensor_slices(files)
     files_dataset = files_dataset.batch(tf.cast(tf.shape(files)[0], tf.int64))
