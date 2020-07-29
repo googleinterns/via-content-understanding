@@ -125,7 +125,7 @@ def serialize_segment_context(context):
   context["segment_label"] = convert_to_feature(segment_label.numpy(), "int")
   context["segment_start_time"] = convert_to_feature(segment_start_time.numpy(), "int")
   context["segment_score"] = convert_to_feature(segment_score.numpy(), "float")
-
+  print(context)
   context = tf.train.Features(feature=context)
   return context
 
@@ -213,8 +213,8 @@ def split_data(data_dir, input_dataset, shard_size=85, num_classes=1000, file_ty
       new_context = {}
       new_context["id"] = context["id"]
       new_context["segment_label"] = tf.convert_to_tensor([context["segment_labels"].values.numpy()[segment_index]])
-      new_context["segment_start_time"] = tf.constant(segment_start_times[segment_index])
-      new_context["segment_score"] = tf.constant(context["segment_scores"].values.numpy()[segment_index])
+      new_context["segment_start_time"] = tf.convert_to_tensor([segment_start_times[segment_index]])
+      new_context["segment_score"] = tf.convert_to_tensor([context["segment_scores"].values.numpy()[segment_index]])
       new_features = {}
       new_rgb = features["rgb"][0].numpy()[segment_start_times[segment_index]:segment_start_times[segment_index]+5]
       new_audio = features["audio"][0].numpy()[segment_start_times[segment_index]:segment_start_times[segment_index]+5]
