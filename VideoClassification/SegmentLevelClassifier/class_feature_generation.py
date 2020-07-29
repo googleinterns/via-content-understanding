@@ -43,7 +43,7 @@ def calculate_cosine(segment1, segment2):
     segment1: Matrix of vectors to compare
     segment2: Matrix of vectors to compare
   """
-  
+
 
 def compute_and_save(data_dir, input_dataset):
   """Compute class specific features for input_dataset and save them to data_dir.
@@ -109,12 +109,15 @@ def compute_and_save(data_dir, input_dataset):
     #Serialize segment with new features and add it to a list for shard.
     #When shard is filled, save data
     features["class_features"] = tf.convert_to_tensor([total_positive, total_negative])
-    
+
 
     current_index += 1
 
 
 if __name__ == "__main__":
-  reader = readers.SegmentReader()
+  reader = readers.SegmentDataset()
   input_dataset = reader.get_dataset("/home/conorfvedova_google_com/data/segments/split_validation", batch_size=1, type="class")
+  for i in input_dataset:
+    print(input_dataset)
+  assert False
   compute_and_save("/home/conorfvedova_google_com/data/segments/split_validation", input_dataset)
