@@ -385,6 +385,7 @@ class SegmentDataset():
       files = tf.io.matching_files(os.path.join(data_dir, '%s*.tfrecord' % type))
     else:
       files = tf.io.matching_files(os.path.join(data_dir, '%s.tfrecord' % (type+str(self.class_num))))
+      print(files)
     
     files_dataset = tf.data.Dataset.from_tensor_slices(files)
     files_dataset = files_dataset.batch(tf.cast(tf.shape(files)[0], tf.int64))
