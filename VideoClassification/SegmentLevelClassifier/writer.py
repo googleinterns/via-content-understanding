@@ -47,6 +47,7 @@ def convert_labels(labels, class_csv="vocabulary.csv"):
   for label in labels:
     check = np.nonzero(class_indices == label)
     print(check)
+    print(class_indices)
     if np.any(check):
       new_label = check[0].tolist()[0]
       new_labels.append(new_label)
