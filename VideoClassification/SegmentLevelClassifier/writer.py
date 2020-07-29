@@ -125,7 +125,6 @@ def serialize_segment_context(context):
   context["segment_label"] = convert_to_feature(segment_label.numpy(), "int")
   context["segment_start_time"] = convert_to_feature(segment_start_time.numpy(), "int")
   context["segment_score"] = convert_to_feature(segment_score.numpy(), "float")
-  print(context)
   context = tf.train.Features(feature=context)
   return context
 
@@ -210,6 +209,7 @@ def split_data(data_dir, input_dataset, shard_size=85, num_classes=1000, file_ty
     features = video[1]
     segment_start_times = context["segment_start_times"].values.numpy()
     for segment_index in range(len(segment_start_times)):
+      print(f"Processing Segment number {segment_index}")
       new_context = {}
       new_context["id"] = context["id"]
       new_context["segment_label"] = tf.convert_to_tensor([context["segment_labels"].values.numpy()[segment_index]])
@@ -220,15 +220,10 @@ def split_data(data_dir, input_dataset, shard_size=85, num_classes=1000, file_ty
       new_audio = features["audio"][0].numpy()[segment_start_times[segment_index]:segment_start_times[segment_index]+5]
       new_features["rgb"] = tf.convert_to_tensor(new_rgb)
       new_features["audio"] = tf.convert_to_tensor(new_audio)
-      print(features["rgb"])
-      print(new_context)
-      print(new_features)
       label = new_context["segment_label"]
       label = convert_labels(label).numpy()[0]
-      print(label)
       serialized_video = serialize_data(new_context, new_features, "segment")
       video_holder[label].append(serialized_video)
-      assert False
   
   for shard_number in range(len(video_holder)):
     save_shard(data_dir, video_holder[shard_number], file_type, shard_number)
