@@ -204,6 +204,7 @@ def split_data(data_dir, input_dataset, shard_size=85, num_classes=1000, file_ty
   #Features: rgb, audio for 1 segment
   #Convert input_dataset from video level data to multiple segments.
   video_holder = [[]]*num_classes
+  print(video_holder)
   video_number = 0
   for video in input_dataset:
     print(f"Processing video number {video_number}")
@@ -225,6 +226,7 @@ def split_data(data_dir, input_dataset, shard_size=85, num_classes=1000, file_ty
       label = new_context["segment_label"]
       label = convert_labels(label).numpy()[0]
       serialized_video = serialize_data(new_context, new_features, "segment")
+
       video_holder[label].append(serialized_video)
       print(len(video_holder[201]))
       print(label)
