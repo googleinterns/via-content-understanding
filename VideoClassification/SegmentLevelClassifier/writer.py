@@ -222,6 +222,7 @@ def split_data(data_dir, input_dataset, shard_size=85, num_classes=1000, file_ty
       new_features["rgb"] = tf.convert_to_tensor(new_rgb)
       new_features["audio"] = tf.convert_to_tensor(new_audio)
       label = new_context["segment_label"]
+      print(label)
       label = convert_labels(label).numpy()[0]
       serialized_video = serialize_data(new_context, new_features, "segment")
       video_holder[label].append(serialized_video)
