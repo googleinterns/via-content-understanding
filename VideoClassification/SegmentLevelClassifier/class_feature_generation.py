@@ -120,7 +120,7 @@ def compute_and_save(data_dir, input_dataset):
         assert False
 
     #Serialize segment with new features and add it to a list for shard.
-    #When shard is filled, save data
+    #When shard is filled, save datas
     features["class_features"] = tf.convert_to_tensor([total_positive, total_negative])
 
     shard.append(writer.serialize_data(context, features, "segment"))
@@ -129,6 +129,6 @@ def compute_and_save(data_dir, input_dataset):
 
 
 if __name__ == "__main__":
-  reader = readers.SegmentDataset(class_num=201)
+  reader = readers.SegmentDataset()
   input_dataset = reader.get_dataset("/home/conorfvedova_google_com/data/segments/split_validation", batch_size=1, type="class")
   compute_and_save("/home/conorfvedova_google_com/data/segments/split_validation", input_dataset)
