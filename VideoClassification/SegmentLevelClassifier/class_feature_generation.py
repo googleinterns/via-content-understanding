@@ -68,8 +68,6 @@ def compute_and_save(data_dir, input_dataset):
     video_id = tf.convert_to_tensor(context["id"])[0].numpy()
     total_positive = 0
     total_negative = 0
-    print(context)
-    print(features)
 
     label = context["segment_label"][0].numpy()
     data_reader = readers.SegmentDataset(class_num=label)
@@ -110,8 +108,6 @@ def compute_and_save(data_dir, input_dataset):
         total_positive += positive
         total_negative += negative
       comparison_index += 1
-      if comparison_index == 6:
-        assert False
 
     #Serialize segment with new features and add it to a list for shard.
     #When shard is filled, save datas
