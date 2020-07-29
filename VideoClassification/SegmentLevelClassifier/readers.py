@@ -372,7 +372,6 @@ class SegmentDataset():
     self.max_frames = max_frames
     self.segment_size = segment_size
     self.class_num = class_num
-    print(class_num)
 
   def get_dataset(self, data_dir, batch_size, type="train"):
     """Returns TFRecordDataset after it has been parsed.
@@ -384,11 +383,8 @@ class SegmentDataset():
     """
     if self.class_num == -1:
       files = tf.io.matching_files(os.path.join(data_dir, '%s*.tfrecord' % type))
-      print(files)
     else:
-      print(self.class_num)
       files = tf.io.matching_files(os.path.join(data_dir, '%s.tfrecord' % (type+str(self.class_num))))
-      print(files)
     
     files_dataset = tf.data.Dataset.from_tensor_slices(files)
     files_dataset = files_dataset.batch(tf.cast(tf.shape(files)[0], tf.int64))
