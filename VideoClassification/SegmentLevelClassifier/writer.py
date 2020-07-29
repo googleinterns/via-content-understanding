@@ -225,11 +225,6 @@ def split_data(data_dir, input_dataset, shard_size=85, num_classes=1000, file_ty
       label = convert_labels(label).numpy()[0]
       serialized_video = serialize_data(new_context, new_features, "segment")
       video_holder[label].append(serialized_video)
-      print(label)
-    video_number += 1
-  for i in range(len(video_holder)):
-    print(len(video_holder[i]))
-  print(len(video_holder))
-  assert False
+
   for shard_number in range(len(video_holder)):
     save_shard(data_dir, video_holder[shard_number], file_type, shard_number)
