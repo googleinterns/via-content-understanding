@@ -110,7 +110,7 @@ def serialize_video_context(context):
   return context
 
 def serialize_segment_context(context):
-    """Serialize context for a segment.
+  """Serialize context for a segment.
 
   Args:
     context: context of the video
