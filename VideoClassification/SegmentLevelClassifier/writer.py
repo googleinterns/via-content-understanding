@@ -77,7 +77,9 @@ def serialize_features(features):
   Args:
     features: features of the video
   """
+  print(features["audio"])
   audio = features["audio"][0].numpy().tostring()
+  print(tf.io.decode_raw(audio, tf.uint8))
   rgb = features["rgb"][0].numpy().tostring()
   audio = convert_to_feature([audio], "byte")
   rgb = convert_to_feature([rgb], "byte")
@@ -226,6 +228,7 @@ def split_data(data_dir, input_dataset, shard_size=85, num_classes=1000, file_ty
       label = new_context["segment_label"]
       label = convert_labels(label).numpy()[0]
       serialized_video = serialize_data(new_context, new_features, "segment")
+      assert False
       print(video_holder[label])
       video_holder[label].append(serialized_video)
       print(len(video_holder[201]))
