@@ -15,6 +15,7 @@ Compute and add Class specific features to the data.
 import numpy as np
 import readers
 import tensorflow as tf
+import writer
 
 #1. Split data into segments
 # A.Includes making reader which get segments.
