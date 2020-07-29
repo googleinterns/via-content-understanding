@@ -203,7 +203,7 @@ def split_data(data_dir, input_dataset, shard_size=85, num_classes=1000, file_ty
   #Context: id, label, score
   #Features: rgb, audio for 1 segment
   #Convert input_dataset from video level data to multiple segments.
-  video_holder = [[]]*num_classes
+  video_holder = [[] for i in range(num_classes)]
   print(len(video_holder))
   video_number = 0
   for video in input_dataset:
