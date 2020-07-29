@@ -12,6 +12,7 @@ limitations under the License.
 
 Compute and add Class specific features to the data.
 """
+import numpy as np
 import readers
 import tensorflow as tf
 
@@ -35,13 +36,17 @@ import tensorflow as tf
 #CSF will store said data and then add it in shards
 
 def calculate_cosine(segment1, segment2):
-  """Calculate the cosine of the angle between segment1 and segment2. Modified to work with matrices.
+  """Calculate the cosine of the angle between segment1 and segment2. Modified to work with matrices by applying mean of cosine similarities.
 
   Args:
     segment1: Matrix of vectors to compare
     segment2: Matrix of vectors to compare
   """
-  pass
+  similarity = []
+  for i in range(len(segment1)):
+    similarity.append(np.dot(segment1[i], segment2[i]) / (np.norm(segment1[i])*np.norm(segment2[i])))
+  similarity = np.array(similarity)
+  return np.mean(similarity)
 
 def compute_and_save(data_dir, input_dataset):
   """Compute class specific features for input_dataset and save them to data_dir.
@@ -63,7 +68,7 @@ def compute_and_save(data_dir, input_dataset):
     total_positive = 0
     total_negative = 0
 
-    label = context["segment_label"].numpy()
+    label = context["segment_label"][0].numpy()
     data_reader = readers.SegmentReader(class_num=label)
     comparison_dataset = reader.get_dataset("/home/conorfvedova_google_com/data/segments/split_validation", batch_size=1, type="class")
 
@@ -91,18 +96,20 @@ def compute_and_save(data_dir, input_dataset):
         if video_id == comparison_video_id:
           positive, negative = 0,0
         else:
-          segment_score = comparison_context["segment_score"].numpy()
+          segment_score = comparison_context["segment_score"][0].numpy()
           positive, negative = 0,0
           if segment_score == 0:
-            negative = calculate_cosine(features["rgb"], comparison_features["rgb"])
-            negative += calculate_cosine(features["audio"], comparison_features["audio"])
+            negative = calculate_cosine(features["rgb"][0].numpy(), comparison_features["rgb"][0].numpy())
+            negative += calculate_cosine(features["audio"][0].numpy(), comparison_features["audio"][0].numpy())
           else:
-            positive = calculate_cosine(features["rgb"], comparison_features["rgb"])
-            positive += calculate_cosine(features["audio"], comparison_features["audio"])
+            positive = calculate_cosine(features["rgb"][0].numpy(), comparison_features["rgb"][0].numpy())
+            positive += calculate_cosine(features["audio"][0].numpy(), comparison_features["audio"][0].numpy())
         computation_holder[current_index].append((positive, negative))
         total_positive += positive
         total_negative += negative
       comparison_index += 1
+      print(total_positive)
+      print(total_negative)
 
     #Serialize segment with new features and add it to a list for shard.
     #When shard is filled, save data
@@ -113,12 +120,6 @@ def compute_and_save(data_dir, input_dataset):
 
 
 if __name__ == "__main__":
-  reader = readers.SegmentDataset(class_num=201)
+  reader = readers.SegmentDataset()
   input_dataset = reader.get_dataset("/home/conorfvedova_google_com/data/segments/split_validation", batch_size=1, type="class")
-  for i in input_dataset:
-    context = i[0]
-    features = i[1]
-    print(context)
-    print(features)
-  assert False
   compute_and_save("/home/conorfvedova_google_com/data/segments/split_validation", input_dataset)
