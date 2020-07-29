@@ -162,7 +162,7 @@ class VideoDataset():
     batch_video_matrix = tf.nn.l2_normalize(batch_video_matrix, feature_dim)
     return (contexts["id"], batch_video_matrix, batch_labels)
 
-class PreprocessingDataset():
+class BasicDataset():
   """Reads TFRecords of SequenceExamples for Segment level data.
 
   The TFRecords must contain SequenceExamples with the sparse in64 'labels'
@@ -171,7 +171,7 @@ class PreprocessingDataset():
   back into a range between min_quantized_value and max_quantized_value.
   """
 
-  def __init__(  # pylint: disable=dangerous-default-value
+  def __init__(
       self,
       num_classes=1000,
       feature_sizes=[1024, 128],
@@ -179,7 +179,7 @@ class PreprocessingDataset():
       max_frames=300,
       segment_size=5,
       shuffle=True):
-    """Construct a PreprocessingDataset.
+    """Construct a BasicDataset.
 
     Args:
       num_classes: a positive integer for the number of classes.
@@ -241,8 +241,8 @@ class PreprocessingDataset():
     features["audio"] = tf.io.decode_raw(features["audio"], tf.uint8)
     return (context, features)
 
-class SegmentDataset():
-  """Reads TFRecords of SequenceExamples for Segment level data and transforms them into Segments.
+class SplitDataset():
+  """Reads TFRecords of SequenceExamples for Segment level data. Used for the input pipeline where data is split.
 
   The TFRecords must contain SequenceExamples with the sparse in64 'labels'
   context feature and a fixed length byte-quantized feature vector, obtained
@@ -250,7 +250,7 @@ class SegmentDataset():
   back into a range between min_quantized_value and max_quantized_value.
   """
 
-  def __init__(  # pylint: disable=dangerous-default-value
+  def __init__(
       self,
       num_classes=1000,
       feature_sizes=[1024, 128],
@@ -258,7 +258,7 @@ class SegmentDataset():
       max_frames=300,
       segment_size=5,
       shuffle=True):
-    """Construct a SegmentDataset.
+    """Construct a SplitDataset.
 
     Args:
       num_classes: a positive integer for the number of classes.
@@ -316,6 +316,19 @@ class SegmentDataset():
     }
     context, features = tf.io.parse_single_sequence_example(serialized_example, context_features=context_features, sequence_features=sequence_features)
 
-    features["rgb"] = tf.io.decode_raw(features["rgb"], tf.uint8)
-    features["audio"] = tf.io.decode_raw(features["audio"], tf.uint8)
+    num_features = len(self.feature_names)
+    assert num_features > 0, "No feature selected: feature_names is empty!"
+
+    assert len(self.feature_names) == len(self.feature_sizes), (
+        "length of feature_names (={}) != length of feature_sizes (={})".format(
+            len(self.feature_names), len(self.feature_sizes)))
+
+    feature_matrices = [None] * num_features  # an array of different features
+    for feature_index in range(num_features):
+      feature_matrix = tf.reshape(tf.io.decode_raw(features[self.feature_names[feature_index]], tf.uint8), 
+                                    [-1, self.feature_sizes[feature_index]])
+      feature_matrices[feature_index] = feature_matrix
+
+    features["rgb"] = feature_matrices[0]
+    features["audio"] = feature_matrices[1]
     return (context, features)

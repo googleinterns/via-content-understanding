@@ -12,13 +12,10 @@ limitations under the License.
 
 Split dataset into segments used for Class Feature Generation.
 """
-import numpy as np
-import os
-import pandas as pd
-import tensorflow as tf
+import readers
+import writer
 
 if __name__ == "__main__":
-  video_reader = readers.SegmentDataset()
-  input_dataset = video_reader.get_dataset("/home/conorfvedova_google_com/data/segments/validation", batch_size=1, type="validate")
-
-  writer.split_data("/home/conorfvedova_google_com/data/segments/candidate_validation", input_dataset)
+  segment_reader = readers.SplitDataset()
+  input_dataset = segment_reader.get_dataset("/home/conorfvedova_google_com/data/segments/validation", batch_size=1, type="validate")
+  writer.split_data("/home/conorfvedova_google_com/data/segments/split_validation", input_dataset)

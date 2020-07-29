@@ -53,14 +53,6 @@ def resize_axis(tensor, axis, new_size, fill_value=0):
   resized.set_shape(new_shape)
   return resized
 
-def get_reader(feature_names='rgb,audio', feature_sizes='1024,128'):
-  # Convert feature_names and feature_sizes to lists of values.
-  feature_names, feature_sizes = _get_list_of_feature_names_and_sizes(feature_names, feature_sizes)
-
-  reader = readers.YT8MFrameFeatureDataset(feature_names=feature_names, feature_sizes=feature_sizes)
-
-  return reader
-
 def _get_list_of_feature_names_and_sizes(feature_names, feature_sizes):
   """Extract the list of feature names and the dimensionality of each feature from string of comma separated values.
 

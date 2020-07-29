@@ -85,8 +85,8 @@ def serialize_features(features):
   features = tf.train.FeatureLists(feature_list=features)
   return features
 
-def serialize_context(context):
-  """Serialize context.
+def serialize_video_context(context):
+  """Serialize context for a video.
 
   Args:
     context: context of the video
@@ -104,23 +104,65 @@ def serialize_context(context):
   context["labels"] = convert_to_feature(labels.numpy(), "int")
   context["segment_labels"] = convert_to_feature(segment_labels.numpy(), "int")
   context["segment_start_times"] = convert_to_feature(segment_start_times.numpy(), "int")
-  context["segment_scores"] = convert_to_feature(segment_scores.numpy(), "float")
-  context["candidate_labels"] = convert_to_feature(candidate_labels.numpy(), "int")
+  context["segment_score"] = convert_to_feature(segment_scores.numpy(), "float")
 
   context = tf.train.Features(feature=context)
   return context
 
-def serialize_video(context, features):
-  """Serialize video from context and features.
+def serialize_segment_context(context):
+    """Serialize context for a segment.
+
+  Args:
+    context: context of the video
+  """
+  video_id = tf.convert_to_tensor(context["id"])[0]
+  segment_label = context["segment_label"]
+  segment_start_time = context["segment_start_time"]
+  segment_score = context["segment_score"]
+  segment_label = convert_labels(segment_label)
+
+  context["id"] = convert_to_feature([video_id.numpy()], "byte")
+  context["segment_label"] = convert_to_feature(segment_label.numpy(), "int")
+  context["segment_start_time"] = convert_to_feature(segment_start_time.numpy(), "int")
+  context["segment_score"] = convert_to_feature(segment_score.numpy(), "float")
+
+  context = tf.train.Features(feature=context)
+  return context
+
+def serialize_data(context, features, type):
+  """Serialize video or segment from context and features.
 
   Args:
     context: context of the video
     features: features of the video
+    type: type of data to store. Can either be video or segment
   """
   features = serialize_features(features)
-  context = serialize_context(context)
+  if type == "video":
+    context = serialize_video_context(context)
+  elif type == "segment":
+    context = serialize_segment_context(context)
+  else:
+    print("Incorrect type chosen for serialization.")
   example = tf.train.SequenceExample(feature_lists=features, context=context)
   return example.SerializeToString()
+
+def save_shard(data_dir, shard, file_type, shard_number):
+  """Save a shard data to data_dir as a TFRecords file.
+
+  Args:
+    data_dir: directory for file to be saved
+    shard: list of serialized examples to be saved
+    file_type: prefix of file name.
+    shard_number: suffix of file name.
+  """
+  print(f"Processing shard number {shard_number}")
+  shard = tf.convert_to_tensor(shard)
+  shard_dataset = tf.data.Dataset.from_tensor_slices(shard)
+  file_name = file_type + str(shard_number)
+  file_path = os.path.join(data_dir, '%s.tfrecord' % file_name)
+  writer = tf.data.experimental.TFRecordWriter(file_path)
+  writer.write(shard_dataset)
 
 def save_data(new_data_dir, input_dataset, candidates, file_type="test", shard_size=17):
   """Save data as TFRecords Datasets in new_data_dir.
@@ -137,29 +179,50 @@ def save_data(new_data_dir, input_dataset, candidates, file_type="test", shard_s
     context = video[0]
     features = video[1]
     context = add_candidate_content(context, candidates)
-    serialized_video = serialize_video(context, features)
+    serialized_video = serialize_data(context, features)
     shard.append(serialized_video)
     shard_counter += 1
     if shard_counter == shard_size:
-      print(f"Processing shard number {shard_number}")
-      shard = tf.convert_to_tensor(shard)
-      shard_dataset = tf.data.Dataset.from_tensor_slices(shard)
-      file_name = file_type + str(shard_number)
-      file_path = os.path.join(new_data_dir, '%s.tfrecord' % file_name)
-      writer = tf.data.experimental.TFRecordWriter(file_path)
-      writer.write(shard_dataset)
+      save_shard(new_data_dir, shard, file_type, shard_number)
       shard_counter = 0
       shard_number += 1
       shard = []
   #Handles overflow
   if shard_counter != 0:
-    print(f"Processing shard number {shard_number}")
-    shard = tf.convert_to_tensor(shard)
-    shard_dataset = tf.data.Dataset.from_tensor_slices(shard)
-    file_name = file_type + str(shard_number)
-    file_path = os.path.join(new_data_dir, '%s.tfrecord' % file_name)
-    writer = tf.data.experimental.TFRecordWriter(file_path)
-    writer.write(shard_dataset)
+    save_shard(new_data_dir, shard, file_type, shard_number)
     shard_counter = 0
     shard_number += 1
     shard = []
+
+def split_data(data_dir, input_dataset, shard_size=85, num_classes=1000, file_type="class"):
+  """Save data as TFRecords Datasets in new_data_dir.
+
+  Args:
+    new_data_dir: string giving the directory to save TFRecords Files
+    input_dataset: original dataset before candidate generation
+  """
+  #Context: id, label, score
+  #Features: rgb, audio for 1 segment
+  #Convert input_dataset from video level data to multiple segments.
+  video_holder = [[]]*num_classes
+  for video in input_dataset:
+    context = video[0]
+    features = video[1]
+    segment_start_times = context["segment_start_times"].values.numpy()
+    for segment_index in range(len(segment_start_times)):
+      new_context = {}
+      new_context["id"] = context["id"]
+      new_context["segment_label"] = tf.constant(context["segment_labels"].values.numpy()[segment_index])
+      new_context["segment_start_time"] = tf.constant(segment_start_times[segment_index])
+      new_context["segment_score"] = tf.constant(context["segment_scores"].values.numpy()[segment_index])
+      new_features = {}
+      new_features["rgb"] = features["rgb"].numpy()[segment_start_times[segment_index]:segment_start_times[segment_index]+5]
+      new_features["audio"] = features["audio"].numpy()[segment_start_times[segment_index]:segment_start_times[segment_index]+5]
+
+      label = context["segment_label"]
+      label = convert_labels(label).numpy()
+      serialized_video = serialize_data(new_context, new_features, "segment")
+      video_holder[label].append(serialized_video)
+  
+  for shard_number in range(len(video_holder)):
+    save_shard(data_dir, video_holder[shard_number], file_type, shard_number)
