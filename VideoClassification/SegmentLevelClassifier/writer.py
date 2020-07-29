@@ -157,7 +157,6 @@ def save_shard(data_dir, shard, file_type, shard_number):
   """
   print(f"Processing shard number {shard_number}")
   shard = tf.convert_to_tensor(shard)
-  print(shard)
   shard_dataset = tf.data.Dataset.from_tensor_slices(shard)
   file_name = file_type + str(shard_number)
   file_path = os.path.join(data_dir, '%s.tfrecord' % file_name)
@@ -228,4 +227,5 @@ def split_data(data_dir, input_dataset, shard_size=85, num_classes=1000, file_ty
       video_holder[label].append(serialized_video)
     video_number += 1
   for shard_number in range(len(video_holder)):
-    save_shard(data_dir, video_holder[shard_number], file_type, shard_number)
+    if len(video_holder[shard_number]) != 0:
+      save_shard(data_dir, video_holder[shard_number], file_type, shard_number)
