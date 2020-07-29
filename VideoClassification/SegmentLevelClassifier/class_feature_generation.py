@@ -116,6 +116,9 @@ if __name__ == "__main__":
   reader = readers.SegmentDataset(class_num=201)
   input_dataset = reader.get_dataset("/home/conorfvedova_google_com/data/segments/split_validation", batch_size=1, type="class")
   for i in input_dataset:
-    print(input_dataset)
+    context = i[0]
+    features = i[1]
+    print(context)
+    print(features)
   assert False
   compute_and_save("/home/conorfvedova_google_com/data/segments/split_validation", input_dataset)
