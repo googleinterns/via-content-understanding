@@ -76,14 +76,12 @@ def compute_and_save(data_dir, input_dataset):
     comparison_dataset = reader.get_dataset("/home/conorfvedova_google_com/data/segments/split_validation", batch_size=1, type="class")
 
     #If new class, clear computation memory and save shard.
-    if label != previous_class and len(shard) > 0:
+    if label != previous_class:
       writer.save_shard(data_dir, shard, "class", previous_class)
       shard = []
       computation_holder = []
       previous_class = label
       current_index = 0
-    print(context)
-    print(features)
     computation_holder.append([])
     comparison_index = 0
     for comparison_segment in comparison_dataset:
@@ -91,8 +89,6 @@ def compute_and_save(data_dir, input_dataset):
       comparison_context = comparison_segment[0]
       comparison_features = comparison_segment[1]
       comparison_video_id = tf.convert_to_tensor(comparison_context["id"])[0].numpy()
-      print(comparison_context)
-      print(comparison_features)
       if comparison_index < len(computation_holder) - 1:
         previous_values = computation_holder[comparison_index][current_index]
         computation_holder[current_index].append(previous_values)
@@ -114,8 +110,6 @@ def compute_and_save(data_dir, input_dataset):
         total_positive += positive
         total_negative += negative
       comparison_index += 1
-      print(total_positive)
-      print(total_negative)
       if comparison_index == 6:
         assert False
 
