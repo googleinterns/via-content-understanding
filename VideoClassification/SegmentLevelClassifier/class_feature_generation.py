@@ -68,6 +68,8 @@ def compute_and_save(data_dir, input_dataset):
     video_id = tf.convert_to_tensor(context["id"])[0].numpy()
     total_positive = 0
     total_negative = 0
+    print(context)
+    print(features)
 
     label = context["segment_label"][0].numpy()
     data_reader = readers.SegmentDataset(class_num=label)
@@ -89,6 +91,7 @@ def compute_and_save(data_dir, input_dataset):
       comparison_context = segment[0]
       comparison_features = segment[1]
       comparison_video_id = tf.convert_to_tensor(comparison_context["id"])[0].numpy()
+      print("here")
       print(comparison_context)
       print(comparison_features)
       if comparison_index < len(computation_holder) - 1:
