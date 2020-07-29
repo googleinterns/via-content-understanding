@@ -157,6 +157,7 @@ def save_shard(data_dir, shard, file_type, shard_number):
   """
   print(f"Processing shard number {shard_number}")
   shard = tf.convert_to_tensor(shard)
+  print(shard)
   shard_dataset = tf.data.Dataset.from_tensor_slices(shard)
   file_name = file_type + str(shard_number)
   file_path = os.path.join(data_dir, '%s.tfrecord' % file_name)
