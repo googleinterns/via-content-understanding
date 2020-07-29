@@ -12,9 +12,7 @@ limitations under the License.
 
 Compute and add Class specific features to the data.
 """
-import numpy as np
-import os
-import pandas as pd
+import readers
 import tensorflow as tf
 
 #1. Split data into segments
@@ -43,7 +41,7 @@ def calculate_cosine(segment1, segment2):
     segment1: Matrix of vectors to compare
     segment2: Matrix of vectors to compare
   """
-
+  pass
 
 def compute_and_save(data_dir, input_dataset):
   """Compute class specific features for input_dataset and save them to data_dir.
