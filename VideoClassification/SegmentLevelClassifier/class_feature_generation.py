@@ -73,7 +73,7 @@ def compute_and_save(data_dir, input_dataset):
 
     label = context["segment_label"][0].numpy()
     data_reader = readers.SegmentDataset(class_num=label)
-    comparison_dataset = reader.get_dataset("/home/conorfvedova_google_com/data/segments/split_comparison", batch_size=1, type="class")
+    comparison_dataset = reader.get_dataset("/home/conorfvedova_google_com/data/segments/split_validation", batch_size=1, type="class")
 
     #If new class, clear computation memory and save shard.
     if label != previous_class and len(shard) > 0:
@@ -88,8 +88,8 @@ def compute_and_save(data_dir, input_dataset):
     comparison_index = 0
     for comparison_segment in comparison_dataset:
       #Check if segment to compare with has already been calculated.
-      comparison_context = segment[0]
-      comparison_features = segment[1]
+      comparison_context = comparison_segment[0]
+      comparison_features = comparison_segment[1]
       comparison_video_id = tf.convert_to_tensor(comparison_context["id"])[0].numpy()
       print(comparison_context)
       print(comparison_features)
@@ -131,4 +131,4 @@ def compute_and_save(data_dir, input_dataset):
 if __name__ == "__main__":
   reader = readers.SegmentDataset()
   input_dataset = reader.get_dataset("/home/conorfvedova_google_com/data/segments/split_validation", batch_size=1, type="class")
-  compute_and_save("/home/conorfvedova_google_com/data/segments/split_validation", input_dataset)
+  compute_and_save("/home/conorfvedova_google_com/data/segments/input_train_data", input_dataset)
