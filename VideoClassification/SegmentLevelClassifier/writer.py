@@ -226,7 +226,7 @@ def split_data(data_dir, input_dataset, shard_size=85, num_classes=1000, file_ty
       label = new_context["segment_label"]
       label = convert_labels(label).numpy()[0]
       serialized_video = serialize_data(new_context, new_features, "segment")
-
+      print(video_holder[label])
       video_holder[label].append(serialized_video)
       print(len(video_holder[201]))
       print(label)
