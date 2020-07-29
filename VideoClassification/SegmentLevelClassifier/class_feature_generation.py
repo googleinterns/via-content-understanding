@@ -76,6 +76,9 @@ def compute_and_save(data_dir, input_dataset):
 
     #If new class, clear computation memory and save shard.
     if label != previous_class:
+      print(label)
+      print(previous_class)
+      assert False
       writer.save_shard(data_dir, shard, "class", previous_class)
       shard = []
       computation_holder = []
