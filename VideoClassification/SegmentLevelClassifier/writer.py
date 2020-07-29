@@ -212,7 +212,7 @@ def split_data(data_dir, input_dataset, shard_size=85, num_classes=1000, file_ty
     for segment_index in range(len(segment_start_times)):
       new_context = {}
       new_context["id"] = context["id"]
-      new_context["segment_label"] = tf.constant([context["segment_labels"].values.numpy()[segment_index]])
+      new_context["segment_label"] = tf.convert_to_tensor([context["segment_labels"].values.numpy()[segment_index]])
       new_context["segment_start_time"] = tf.constant(segment_start_times[segment_index])
       new_context["segment_score"] = tf.constant(context["segment_scores"].values.numpy()[segment_index])
       new_features = {}
@@ -224,7 +224,7 @@ def split_data(data_dir, input_dataset, shard_size=85, num_classes=1000, file_ty
       print(new_context)
       print(new_features)
       label = new_context["segment_label"]
-      label = convert_labels([label]).numpy()[0]
+      label = convert_labels(label).numpy()[0]
       serialized_video = serialize_data(new_context, new_features, "segment")
       video_holder[label].append(serialized_video)
   
