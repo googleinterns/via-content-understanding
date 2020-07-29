@@ -77,10 +77,7 @@ def serialize_features(features):
   Args:
     features: features of the video
   """
-  print(features["audio"])
-  print(features["audio"][0].numpy())
   audio = features["audio"][0].numpy().tostring()
-  print(tf.io.decode_raw(audio, tf.uint8))
   rgb = features["rgb"][0].numpy().tostring()
   audio = convert_to_feature([audio], "byte")
   rgb = convert_to_feature([rgb], "byte")
@@ -221,17 +218,13 @@ def split_data(data_dir, input_dataset, shard_size=85, num_classes=1000, file_ty
       new_context["segment_start_time"] = tf.convert_to_tensor([segment_start_times[segment_index]])
       new_context["segment_score"] = tf.convert_to_tensor([context["segment_scores"].values.numpy()[segment_index]])
       new_features = {}
-      #Need to make type uint8!!
-      new_rgb = features["rgb"][:,segment_start_times[segment_index]:segment_start_times[segment_index]+5,:]
-      print(new_rgb)
-      new_audio = features["audio"][:,segment_start_times[segment_index]:segment_start_times[segment_index]+5,:]
-      new_features["rgb"] = new_rgb
-      new_features["audio"] = new_audio
+      new_features["rgb"] = features["rgb"][:,segment_start_times[segment_index]:segment_start_times[segment_index]+5,:]
+      new_features["audio"] = features["audio"][:,segment_start_times[segment_index]:segment_start_times[segment_index]+5,:]
 
       label = new_context["segment_label"]
       label = convert_labels(label).numpy()[0]
       serialized_video = serialize_data(new_context, new_features, "segment")
-      assert False
+
       print(video_holder[label])
       video_holder[label].append(serialized_video)
       print(len(video_holder[201]))
