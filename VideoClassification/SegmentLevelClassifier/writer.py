@@ -228,6 +228,6 @@ def split_data(data_dir, input_dataset, shard_size=85, num_classes=1000, file_ty
       video_holder[label].append(serialized_video)
       print(label)
     video_number += 1
-  print(len(video_holder[201])
+  print(len(video_holder[201]))
   for shard_number in range(len(video_holder)):
     save_shard(data_dir, video_holder[shard_number], file_type, shard_number)
