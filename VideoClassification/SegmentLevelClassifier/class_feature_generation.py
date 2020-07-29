@@ -63,6 +63,7 @@ def compute_and_save(data_dir, input_dataset):
   previous_class = 0
   current_index = 0
   for segment in input_dataset:
+    print(f"Processing segment {current_index}")
     context = segment[0]
     features = segment[1]
     video_id = tf.convert_to_tensor(context["id"])[0].numpy()
