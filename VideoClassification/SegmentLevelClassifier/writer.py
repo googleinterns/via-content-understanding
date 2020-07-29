@@ -78,6 +78,7 @@ def serialize_features(features):
     features: features of the video
   """
   print(features["audio"])
+  print(features["audio"][0].numpy())
   audio = features["audio"][0].numpy().tostring()
   print(tf.io.decode_raw(audio, tf.uint8))
   rgb = features["rgb"][0].numpy().tostring()
