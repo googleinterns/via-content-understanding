@@ -45,7 +45,7 @@ def calculate_cosine(segment1, segment2):
   """
   similarity = []
   for i in range(len(segment1)):
-    similarity.append(np.dot(segment1[i], segment2[i]) / (np.norm(segment1[i])*np.norm(segment2[i])))
+    similarity.append(np.dot(segment1[i], segment2[i]) / (np.linalg.norm(segment1[i])*np.linalg.norm(segment2[i])))
   similarity = np.array(similarity)
   return np.mean(similarity)
 
