@@ -231,6 +231,8 @@ def split_data(data_dir, input_dataset, shard_size=85, num_classes=1000, file_ty
       print(len(video_holder[201]))
       print(label)
     video_number += 1
+    if video_number == 2:
+      assert False
   print(len(video_holder[200]))
   assert False
   for shard_number in range(len(video_holder)):
