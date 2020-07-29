@@ -208,6 +208,7 @@ def split_data(data_dir, input_dataset, shard_size=85, num_classes=1000, file_ty
     context = video[0]
     features = video[1]
     segment_start_times = context["segment_start_times"].values.numpy()
+    print(segment_start_times)
     for segment_index in range(len(segment_start_times)):
       print(f"Processing Segment number {segment_index}")
       new_context = {}
