@@ -52,9 +52,6 @@ def compute_and_save(data_dir, input_dir, num_classes=1000):
     video_holder = []
     storing_holder = []
     for segment in input_dataset:
-      context = segment[0]
-      features = segment[1]
-      storing_holder.append((context, features))
       context = context.copy()
       features = features.copy()
       features["rgb"] = features["rgb"][0].numpy()
@@ -63,9 +60,8 @@ def compute_and_save(data_dir, input_dir, num_classes=1000):
       context["segment_score"] = context["segment_score"][0].numpy()
       video_holder.append((context, features))
 
-    for segment_index in range(len(video_holder)):
+    for segment in video_holder:
       print(f"Processing segment {num_segment}")
-      segment = video_holder[segment_index]
       context = segment[0]
       features = segment[1]
       video_id = context["id"]
@@ -92,10 +88,8 @@ def compute_and_save(data_dir, input_dir, num_classes=1000):
           total_negative += negative
       first_of_class = False
       serialization_time = time.time()
-      save_context = storing_holder[segment_index][0]
-      save_features = storing_holder[segment_index][1]
-      save_features["class_features"] = tf.convert_to_tensor([total_positive, total_negative])
-      shard.append(writer.serialize_data(save_context, save_features, "csf"))
+      features["class_features"] = np.array([total_positive, total_negative])
+      shard.append(writer.serialize_data(context.copy(), features.copy(), "csf"))
       num_segment += 1
       print(f"Serialization time {time.time() - serialization_time}")
 

@@ -91,9 +91,9 @@ def serialize_class_features(features):
   Args:
     features: features of the video
   """
-  audio = features["audio"][0].numpy().tostring()
-  rgb = features["rgb"][0].numpy().tostring()
-  class_features = features["class_features"].numpy()
+  audio = features["audio"].tostring()
+  rgb = features["rgb"].tostring()
+  class_features = features["class_features"]
   audio = convert_to_feature([audio], "byte")
   rgb = convert_to_feature([rgb], "byte")
   class_features = convert_to_feature(class_features, "float")
@@ -144,6 +144,23 @@ def serialize_segment_context(context):
   context = tf.train.Features(feature=context)
   return context
 
+def serialize_class_segment_context(context):
+  """Serialize context for a segment from class feature generation.
+
+  Args:
+    context: context of the video
+  """
+  segment_label = context["segment_label"]
+  segment_start_time = context["segment_start_time"]
+  segment_label = convert_labels(segment_label)
+
+  context["id"] = convert_to_feature([context["id"]], "byte")
+  context["segment_label"] = convert_to_feature(segment_label.numpy(), "int")
+  context["segment_start_time"] = convert_to_feature(segment_start_time.numpy(), "int")
+  context["segment_score"] = convert_to_feature([context["segment_score"]], "float")
+  context = tf.train.Features(feature=context)
+  return context
+
 def serialize_data(context, features, type):
   """Serialize video or segment from context and features.
 
@@ -159,7 +176,7 @@ def serialize_data(context, features, type):
     context = serialize_segment_context(context)
     features = serialize_features(features)
   elif type == "csf":
-    context = serialize_segment_context(context)
+    context = serialize_class_segment_context(context)
     features = serialize_class_features(features)
   else:
     print("Incorrect type chosen for serialization.")
