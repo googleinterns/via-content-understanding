@@ -44,6 +44,7 @@ def train(data_dir, epochs=6, lr=0.0002, num_clusters=10, batch_size=80, fc_unit
   model.summary()
   
   for i in train_dataset:
+    print(i[0])
     print(model.fit(i[0]))
 
   #Implement callbacks
