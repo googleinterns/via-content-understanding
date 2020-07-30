@@ -538,7 +538,7 @@ class InputDataset():
     print(features)
     video_matrix = tf.concat(feature_matrices, 1)
     class_features_list = features[self.feature_names[2]]
-    class_features_list = tf.reshape(tf.cast(tf.io.decode_raw(class_features_list, tf.uint8), tf.float32), [2,])
+    class_features_list = tf.reshape(tf.cast(tf.io.decode_raw(class_features_list, tf.uint8), tf.int64), [2,])
     print(class_features_list)
     print(context["segment_label"])
     class_features_list = tf.concat([context["segment_label"], class_features_list],0)
