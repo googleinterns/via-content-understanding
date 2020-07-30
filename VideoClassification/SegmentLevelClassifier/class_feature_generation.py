@@ -127,7 +127,7 @@ def compute_and_save(data_dir, input_dataset):
 
 
 if __name__ == "__main__":
-  reader = readers.SegmentDataset()
+  reader = readers.SegmentDataset(class_num=0)
   input_dataset = reader.get_dataset("/home/conorfvedova_google_com/data/segments/split_validation", batch_size=1, type="class")
   #compute_and_save("/home/conorfvedova_google_com/data/segments/input_train_data", input_dataset)
   for segment in input_dataset:
