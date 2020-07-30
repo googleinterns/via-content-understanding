@@ -536,6 +536,8 @@ class InputDataset():
       feature_matrices[feature_index] = feature_matrix
     video_matrix = tf.concat(feature_matrices, 1)
     class_features_list = features[self.feature_names[2]]
+    print(class_features_list)
+    print(context["segment_label"])
     class_features_list = tf.concat(context["segment_label"], class_features_list)
     label = context["segment_score"]
     feature_dim = len(video_matrix.get_shape()) - 1
