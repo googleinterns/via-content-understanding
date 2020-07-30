@@ -96,6 +96,7 @@ def compute_and_save(data_dir, input_dir, num_classes=1000):
               positive += calculate_cosine(features["audio"][0].numpy(), comparison_features["audio"][0].numpy())
             total_positive += positive
             total_negative += negative
+        first_of_class = False
       else:
         print(video_holder)
         print(len(video_holder))
