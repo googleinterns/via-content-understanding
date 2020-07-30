@@ -544,4 +544,4 @@ class InputDataset():
     print(label)
     feature_dim = len(video_matrix.get_shape()) - 1
     video_matrix = tf.nn.l2_normalize(video_matrix, feature_dim)
-    return ({"input_1": video_matrix, "input_2": class_features_list}, label)
+    return ((video_matrix, class_features_list), label)
