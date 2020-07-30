@@ -261,7 +261,6 @@ def split_data(data_dir, input_dataset, shard_size=85, num_classes=1000, file_ty
         print(context)
         print(features)
         print(f"Error, video not long enough {video_size} for segment start time {segment_time}")
-        assert False
     video_number += 1
   for shard_number in range(len(video_holder)):
     if len(video_holder[shard_number]) != 0:
