@@ -541,7 +541,7 @@ class InputDataset():
     class_features_list = tf.reshape(tf.io.decode_raw(class_features_list, tf.float32), [2,])
     print(class_features_list)
     print(context["segment_label"])
-    segment_label = tf.reshape(context["segment_label"], [1,])
+    segment_label = tf.reshape(tf.cast(context["segment_label"], tf.float32), [1,])
     class_features_list = tf.concat([segment_label, class_features_list],0)
     label = context["segment_score"]
     feature_dim = len(video_matrix.get_shape()) - 1
