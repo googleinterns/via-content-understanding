@@ -490,7 +490,7 @@ class InputDataset():
                                       min_quantized_value)
     return feature_matrix
 
-  def get_dataset(self, data_dir, batch_size, type="train"):
+  def get_dataset(self, data_dir, batch_size, type="train", max_quantized_value=2, min_quantized_value=-2):
     """Returns TFRecordDataset after it has been parsed.
 
     Args:
