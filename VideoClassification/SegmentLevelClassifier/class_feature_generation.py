@@ -79,13 +79,16 @@ def compute_and_save(data_dir, input_dir, num_classes=1000):
             negative += calculate_cosine(features["audio"][0].numpy(), comparison_features["audio"][0].numpy())
             print(f"Negative Calculation time {time.time() - realer_time}")
           else:
+            post_time = time.time()
             positive = calculate_cosine(features["rgb"][0].numpy(), comparison_features["rgb"][0].numpy())
             positive += calculate_cosine(features["audio"][0].numpy(), comparison_features["audio"][0].numpy())
+            print(f"Positive Calculation time {time.time() - post_time}")
           total_positive += positive
           total_negative += negative
         #print(f"Real time {time.time() - real_calc_time}")
       first_of_class = False
       print(f"Calculation time {time.time() - calculation_time}")
+      assert False
       # else:
       #   for comparison_segment_index in range(len(video_holder)):
       #     comparison_segment = video_holder[comparison_segment_index]
