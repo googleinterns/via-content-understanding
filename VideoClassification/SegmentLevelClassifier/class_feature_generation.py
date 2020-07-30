@@ -17,25 +17,6 @@ import readers
 import tensorflow as tf
 import writer
 
-#1. Split data into segments
-# A.Includes making reader which get segments.
-# B.Code that will then split segments. Need to get data on a segment basis.
-#2. (Segment, cand_class) pairs. Will loop through each tuple and get 
-
-#Use previous reader, get segments and then shoot them out.
-#Said segments are already labelled.
-#Retain metadata bc CSF are not compared within same video.
-#Compile list of train segments per class. Each segment has 5760 ints. 273k segments split among all classes.
-#Use said list to calculate CSF.
-#Else can just loop through all data but this seems bad.
-
-#Generate class specific features for both train and test.
-#If we have 1000 files. Then have a dataset of all segments
-#Make a file which splits data into segments and also stores data into 1000 class files.
-#CSF Generation will then loop through dataset of all segments and for each one, it will look at the class chosen
-#for it, loop through said class file and get distance between segment and all others except ones that match the video id.
-#CSF will store said data and then add it in shards
-
 def calculate_cosine(segment1, segment2):
   """Calculate the cosine of the angle between segment1 and segment2. Modified to work with matrices by applying mean of cosine similarities.
 
@@ -59,7 +40,7 @@ def compute_and_save(data_dir, input_dir, num_classes=1000):
   #Need to take into account segment_weights
   #Store previous computations to speed up runtime
   num_segment = 0
-  for label in range(187, num_classes):
+  for label in range(num_classes):
     shard = []
     input_dataset_reader = readers.SegmentDataset(class_num=label)
     input_dataset = input_dataset_reader.get_dataset("/home/conorfvedova_google_com/data/segments/split_validation", batch_size=1, type="class")
