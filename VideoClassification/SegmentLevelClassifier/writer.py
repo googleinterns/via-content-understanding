@@ -228,6 +228,7 @@ def split_data(data_dir, input_dataset, shard_size=85, num_classes=1000, file_ty
   video_number = 0
   for video in input_dataset:
     print(f"Processing video number {video_number}")
+    video_number += 1
     context = video[0]
     features = video[1]
     if tf.convert_to_tensor(context["id"])[0].numpy() == "nKut":
