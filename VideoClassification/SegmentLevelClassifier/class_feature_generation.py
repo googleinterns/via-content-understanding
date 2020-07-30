@@ -98,8 +98,8 @@ def compute_and_save(data_dir, input_dir, num_classes=1000):
         first_of_class = False
         print(time.time() - start_time)
       else:
+        start_time = time.time()
         for comparison_segment_index in range(len(video_holder)):
-          start_time = time.time()
           comparison_segment = video_holder[comparison_segment_index]
           comparison_context = comparison_segment[0]
           comparison_features = comparison_segment[1]
