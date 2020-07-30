@@ -517,8 +517,9 @@ class InputDataset():
     }
     sequence_features = {
         feature_name: tf.io.FixedLenSequenceFeature([], dtype=tf.string)
-        for feature_name in self.feature_names
+        for feature_name in self.feature_names[:2]
     }
+    sequence_features[self.feature_names[-1]] = tf.io.FixedLenSequenceFeature([], dtype=tf.float32)
     context, features = tf.io.parse_single_sequence_example(serialized_example, context_features=context_features, sequence_features=sequence_features)
     num_features = len(self.feature_names) - 1
 
@@ -538,7 +539,7 @@ class InputDataset():
     print(features)
     video_matrix = tf.concat(feature_matrices, 1)
     class_features_list = features[self.feature_names[2]]
-    class_features_list = tf.reshape(tf.io.decode_raw(class_features_list, tf.float32), [2,])
+    class_features_list = tf.reshape(class_features_list, [2,])
     print(class_features_list)
     print(context["segment_label"])
     segment_label = tf.reshape(tf.cast(context["segment_label"], tf.float32), [1,])
