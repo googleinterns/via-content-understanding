@@ -30,7 +30,7 @@ def calculate_cosine(segment1, segment2):
   similarity = np.array(similarity)
   return np.mean(similarity)
 
-def compute_and_save(data_dir, input_dir, num_classes=1000):
+def compute_and_save(data_dir, input_dir, type_comparison="train", num_classes=1000):
   """Compute class specific features for input_dataset and save them to data_dir.
 
   Args:
