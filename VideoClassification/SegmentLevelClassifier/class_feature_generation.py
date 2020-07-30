@@ -16,6 +16,7 @@ import numpy as np
 import readers
 import tensorflow as tf
 import writer
+import time
 
 #1. Split data into segments
 # A.Includes making reader which get segments.
@@ -73,6 +74,7 @@ def compute_and_save(data_dir, input_dir, num_classes=1000):
       total_positive = 0
       total_negative = 0
       if first_of_class:
+        start_time = time.time()
         comparison_data_reader = readers.SegmentDataset(class_num=label)
         comparison_dataset = comparison_data_reader.get_dataset("/home/conorfvedova_google_com/data/segments/split_comparison", batch_size=1, type="class")
         for comparison_segment in comparison_dataset:
@@ -94,12 +96,10 @@ def compute_and_save(data_dir, input_dir, num_classes=1000):
             total_positive += positive
             total_negative += negative
         first_of_class = False
-        
+        print(time.time() - start_time)
       else:
-        num_temperoo = 0
         for comparison_segment_index in range(len(video_holder)):
-          print(comparison_segment_index)
-          num_temperoo += 1
+          start_time = time.time()
           comparison_segment = video_holder[comparison_segment_index]
           comparison_context = comparison_segment[0]
           comparison_features = comparison_segment[1]
@@ -117,6 +117,8 @@ def compute_and_save(data_dir, input_dir, num_classes=1000):
               positive += calculate_cosine(features["audio"][0].numpy(), comparison_features["audio"][0].numpy())
             total_positive += positive
             total_negative += negative
+          print(time.time() - start_time)
+          assert False
       features["class_features"] = tf.convert_to_tensor([total_positive, total_negative])
       shard.append(writer.serialize_data(context, features, "csf"))
       num_segment += 1
