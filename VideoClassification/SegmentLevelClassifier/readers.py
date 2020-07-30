@@ -511,7 +511,7 @@ class InputDataset():
     """Parse single Serialized Example from the TFRecords."""
     context_features = {
       "id": tf.io.FixedLenFeature([], tf.string),
-      #"segment_label": tf.io.FixedLenFeature([], tf.int64),
+      "segment_label": tf.io.FixedLenFeature([], tf.int64),
       "segment_start_time": tf.io.FixedLenFeature([], tf.int64),
       "segment_score": tf.io.FixedLenFeature([], tf.float32)  
     }
@@ -539,8 +539,6 @@ class InputDataset():
     video_matrix = tf.concat(feature_matrices, 1)
     class_features_list = features[self.feature_names[2]]
     class_features_list = tf.reshape(class_features_list, [2,])
-    print(class_features_list)
-    print(context["segment_label"])
     segment_label = tf.reshape(tf.cast(context["segment_label"], tf.float32), [1,])
     class_features_list = tf.concat([segment_label, class_features_list],0)
     label = context["segment_score"]
