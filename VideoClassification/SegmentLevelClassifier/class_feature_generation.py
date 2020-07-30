@@ -94,12 +94,11 @@ def compute_and_save(data_dir, input_dir, num_classes=1000):
           total_negative += negative
         comparison_index += 1
       features["class_features"] = tf.convert_to_tensor([total_positive, total_negative])
-      shard.append(writer.serialize_data(context, features, "segment"))
+      shard.append(writer.serialize_data(context, features, "csf"))
       num_segment += 1
-      print(total_positive)
-      print(total_negative)
+
       if total_negative == 0 or total_positive == 0:
-        print(num_segment-1)
+        print(f"Invalid calculation for segment {num_segment-1}")
         assert False
     writer.save_shard(data_dir, shard, "class", label)
 
