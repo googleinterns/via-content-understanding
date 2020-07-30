@@ -117,8 +117,8 @@ def compute_and_save(data_dir, input_dir, num_classes=1000):
               positive += calculate_cosine(features["audio"][0].numpy(), comparison_features["audio"][0].numpy())
             total_positive += positive
             total_negative += negative
-          print(time.time() - start_time)
-          assert False
+        print(time.time() - start_time)
+        assert False
       features["class_features"] = tf.convert_to_tensor([total_positive, total_negative])
       shard.append(writer.serialize_data(context, features, "csf"))
       num_segment += 1
