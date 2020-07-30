@@ -538,7 +538,7 @@ class InputDataset():
     class_features_list = features[self.feature_names[2]]
     print(class_features_list)
     print(context["segment_label"])
-    class_features_list = tf.concat(context["segment_label"], class_features_list)
+    #class_features_list = tf.concat(context["segment_label"], class_features_list)
     label = context["segment_score"]
     feature_dim = len(video_matrix.get_shape()) - 1
     video_matrix = tf.nn.l2_normalize(video_matrix, feature_dim)
