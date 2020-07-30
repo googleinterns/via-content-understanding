@@ -98,9 +98,13 @@ def compute_and_save(data_dir, input_dir, num_classes=1000):
             segment_score = comparison_context["segment_score"][0].numpy()
             positive, negative = 0,0
             if segment_score == 0:
+              if num_segment == 187:
+                print("NO")
               negative = calculate_cosine(features["rgb"][0].numpy(), comparison_features["rgb"][0].numpy())
               negative += calculate_cosine(features["audio"][0].numpy(), comparison_features["audio"][0].numpy())
             else:
+              if num_segment == 187:
+                print("YES")
               positive = calculate_cosine(features["rgb"][0].numpy(), comparison_features["rgb"][0].numpy())
               positive += calculate_cosine(features["audio"][0].numpy(), comparison_features["audio"][0].numpy())
           computation_holder[current_index].append((positive, negative))
@@ -113,6 +117,8 @@ def compute_and_save(data_dir, input_dir, num_classes=1000):
       num_segment += 1
       print(total_positive)
       print(total_negative)
+      if num_segment == 187:
+        assert False
     writer.save_shard(data_dir, shard, "class", label)
 
 
