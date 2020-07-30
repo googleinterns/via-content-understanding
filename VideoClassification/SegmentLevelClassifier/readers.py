@@ -538,10 +538,11 @@ class InputDataset():
     print(features)
     video_matrix = tf.concat(feature_matrices, 1)
     class_features_list = features[self.feature_names[2]]
-    class_features_list = tf.reshape(tf.cast(tf.io.decode_raw(class_features_list, tf.uint8), tf.int64), [2,])
+    class_features_list = tf.reshape(tf.io.decode_raw(class_features_list, tf.float32), [2,])
     print(class_features_list)
     print(context["segment_label"])
-    class_features_list = tf.concat([context["segment_label"], class_features_list],0)
+    segment_label = tf.reshape(context["segment_label"], [1,])
+    class_features_list = tf.concat([segment_label, class_features_list],0)
     label = context["segment_score"]
     feature_dim = len(video_matrix.get_shape()) - 1
     video_matrix = tf.nn.l2_normalize(video_matrix, feature_dim)
