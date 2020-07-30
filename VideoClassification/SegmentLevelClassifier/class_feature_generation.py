@@ -100,7 +100,7 @@ def compute_and_save(data_dir, input_dir, num_classes=1000):
       if total_negative == 0 or total_positive == 0:
         print(f"Invalid calculation for segment {num_segment-1}")
         assert False
-    writer.save_shard(data_dir, shard, "class", label)
+    writer.save_shard(data_dir, shard, "train", label)
 
 
 if __name__ == "__main__":
