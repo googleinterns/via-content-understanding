@@ -256,8 +256,9 @@ def split_data(data_dir, input_dataset, shard_size=85, num_classes=1000, file_ty
         serialized_video = serialize_data(new_context, new_features, "segment")
         video_holder[label].append(serialized_video)
       else:
-        print(tf.shape(features["rgb"])[1])
-        print(f"Error, video not long enough {tf.shape(features["rgb"])[1]} for segment start time {segment_start_times[segment_index]}")
+        video_size = tf.shape(features["rgb"])[1]
+        segment_time = segment_start_times[segment_index]
+        print(f"Error, video not long enough {video_size} for segment start time {segment_time}")
     video_number += 1
   for shard_number in range(len(video_holder)):
     if len(video_holder[shard_number]) != 0:
