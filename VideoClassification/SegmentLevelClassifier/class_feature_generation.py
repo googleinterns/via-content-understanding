@@ -117,6 +117,8 @@ def compute_and_save(data_dir, input_dir, num_classes=1000):
       num_segment += 1
       print(total_positive)
       print(total_negative)
+      if total_negative == 0 or total_positive == 0:
+        print(num_segment-1)
     writer.save_shard(data_dir, shard, "class", label)
 
 
