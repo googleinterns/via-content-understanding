@@ -529,7 +529,6 @@ class InputDataset():
     
     feature_matrices = [None] * (num_features-1)
     for feature_index in range(num_features-1):
-      print(feature)
       feature_matrix = self.get_video_matrix(
         features[self.feature_names[feature_index]], self.feature_sizes[feature_index],
         max_quantized_value, min_quantized_value
