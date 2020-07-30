@@ -50,17 +50,26 @@ def compute_and_save(data_dir, input_dir, num_classes=1000):
     input_dataset_reader = readers.SegmentDataset(class_num=label)
     input_dataset = input_dataset_reader.get_dataset("/home/conorfvedova_google_com/data/segments/split_validation", batch_size=1, type="class")
     first_of_class = True
-    #Preload Data
+    #Preload Data and convert to numpy for calculations
     video_holder = []
+    storing_holder = []
     for segment in input_dataset:
       context = segment[0]
       features = segment[1]
+      storing_holder.append((context, features))
+      context = context.copy()
+      features = features.copy()
+      features["rgb"] = features["rgb"][0].numpy()
+      features["audio"] = features["audio"][0].numpy()
+      context["id"] = tf.convert_to_tensor(context["id"])[0].numpy()
+      context["segment_score"] = context["segment_score"][0].numpy()
       video_holder.append((context, features))
-    for segment in video_holder:
+    for segment_index in range(len(video_holder)):
       print(f"Processing segment {num_segment}")
+      segment = video_holder[segment_index]
       context = segment[0]
       features = segment[1]
-      video_id = tf.convert_to_tensor(context["id"])[0].numpy()
+      video_id = context["id"]
       total_positive = 0
       total_negative = 0
       #if first_of_class:
@@ -70,23 +79,23 @@ def compute_and_save(data_dir, input_dir, num_classes=1000):
         comparison_context = comparison_segment[0]
         comparison_features = comparison_segment[1]
         #video_holder.append((comparison_context, comparison_features))
-        comparison_video_id = tf.convert_to_tensor(comparison_context["id"])[0].numpy()
+        comparison_video_id = comparison_context["id"]
         if video_id == comparison_video_id:
           positive, negative = 0,0
         else:
           weird_time = time.time()
-          segment_score = comparison_context["segment_score"][0].numpy()
+          segment_score = comparison_context["segment_score"]
           print(f"Weird time {time.time() - weird_time}")
           positive, negative = 0,0
           if segment_score == 0:
             realer_time = time.time()
-            negative = calculate_cosine(features["rgb"][0].numpy(), comparison_features["rgb"][0].numpy())
-            negative += calculate_cosine(features["audio"][0].numpy(), comparison_features["audio"][0].numpy())
+            negative = calculate_cosine(features["rgb"], comparison_features["rgb"])
+            negative += calculate_cosine(features["audio"], comparison_features["audio"])
             print(f"Negative Calculation time {time.time() - realer_time}")
           else:
             post_time = time.time()
-            positive = calculate_cosine(features["rgb"][0].numpy(), comparison_features["rgb"][0].numpy())
-            positive += calculate_cosine(features["audio"][0].numpy(), comparison_features["audio"][0].numpy())
+            positive = calculate_cosine(features["rgb"], comparison_features["rgb"])
+            positive += calculate_cosine(features["audio"], comparison_features["audio"])
             print(f"Positive Calculation time {time.time() - post_time}")
           total_positive += positive
           total_negative += negative
@@ -94,28 +103,11 @@ def compute_and_save(data_dir, input_dir, num_classes=1000):
       first_of_class = False
       print(f"Calculation time {time.time() - calculation_time}")
       assert False
-      # else:
-      #   for comparison_segment_index in range(len(video_holder)):
-      #     comparison_segment = video_holder[comparison_segment_index]
-      #     comparison_context = comparison_segment[0]
-      #     comparison_features = comparison_segment[1]
-      #     comparison_video_id = tf.convert_to_tensor(comparison_context["id"])[0].numpy()
-      #     if video_id == comparison_video_id:
-      #       positive, negative = 0,0
-      #     else:
-      #       segment_score = comparison_context["segment_score"][0].numpy()
-      #       positive, negative = 0,0
-      #       if segment_score == 0:
-      #         negative = calculate_cosine(features["rgb"][0].numpy(), comparison_features["rgb"][0].numpy())
-      #         negative += calculate_cosine(features["audio"][0].numpy(), comparison_features["audio"][0].numpy())
-      #       else:
-      #         positive = calculate_cosine(features["rgb"][0].numpy(), comparison_features["rgb"][0].numpy())
-      #         positive += calculate_cosine(features["audio"][0].numpy(), comparison_features["audio"][0].numpy())
-      #       total_positive += positive
-      #       total_negative += negative
       serialization_time = time.time()
-      features["class_features"] = tf.convert_to_tensor([total_positive, total_negative])
-      shard.append(writer.serialize_data(context.copy(), features.copy(), "csf"))
+      save_context = storing_holder[segment_index][0]
+      save_features = storing_holder[segment_index][1]
+      save_features["class_features"] = tf.convert_to_tensor([total_positive, total_negative])
+      shard.append(writer.serialize_data(save_context, save_features, "csf"))
       num_segment += 1
       print(f"Serialization time {time.time() - serialization_time}")
 
