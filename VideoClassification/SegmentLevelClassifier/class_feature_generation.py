@@ -61,6 +61,7 @@ def compute_and_save(data_dir, input_dir, num_classes=1000):
       total_positive = 0
       total_negative = 0
       #if first_of_class:
+      calculation_time = time.time()
       for comparison_segment in video_holder:
         comparison_context = comparison_segment[0]
         comparison_features = comparison_segment[1]
@@ -80,6 +81,7 @@ def compute_and_save(data_dir, input_dir, num_classes=1000):
           total_positive += positive
           total_negative += negative
       first_of_class = False
+      print(f"Calculation time {time.time() - calculation_time}")
       # else:
       #   for comparison_segment_index in range(len(video_holder)):
       #     comparison_segment = video_holder[comparison_segment_index]
@@ -99,9 +101,11 @@ def compute_and_save(data_dir, input_dir, num_classes=1000):
       #         positive += calculate_cosine(features["audio"][0].numpy(), comparison_features["audio"][0].numpy())
       #       total_positive += positive
       #       total_negative += negative
+      serialization_time = time.time()
       features["class_features"] = tf.convert_to_tensor([total_positive, total_negative])
       shard.append(writer.serialize_data(context.copy(), features.copy(), "csf"))
       num_segment += 1
+      print(f"Serialization time {time.time() - serialization_time}")
 
       if total_negative == 0 or total_positive == 0:
         print(f"Invalid calculation for segment {num_segment-1}")
