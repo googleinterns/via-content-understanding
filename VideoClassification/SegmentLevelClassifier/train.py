@@ -40,7 +40,7 @@ def crossentropy(y_actual, y_predicted, epsilon=10e-6, alpha=0.5):
   return tf.math.reduce_mean(tf.math.reduce_sum(cross_entropy_loss, 1))
 
 
-def train(data_dir, epochs=20, lr=0.0002, num_clusters=10, batch_size=20, fc_units=512):
+def train(data_dir, epochs=100, lr=0.0002, num_clusters=10, batch_size=20, fc_units=512):
   """Train the video classifier model.
 
   Args:
