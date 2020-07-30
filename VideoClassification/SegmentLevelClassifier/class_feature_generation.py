@@ -113,12 +113,12 @@ def compute_and_save(data_dir, input_dir, num_classes=1000):
         comparison_index += 1
       features["class_features"] = tf.convert_to_tensor([total_positive, total_negative])
       shard.append(writer.serialize_data(context, features, "segment"))
+      if num_segment == 187:
+        assert False
       current_index += 1
       num_segment += 1
       print(total_positive)
       print(total_negative)
-      if num_segment == 187:
-        assert False
     writer.save_shard(data_dir, shard, "class", label)
 
 
