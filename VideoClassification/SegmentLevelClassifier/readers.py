@@ -511,7 +511,7 @@ class InputDataset():
     """Parse single Serialized Example from the TFRecords."""
     context_features = {
       "id": tf.io.FixedLenFeature([], tf.string),
-      "segment_label": tf.io.FixedLenFeature([], tf.int64),
+      #"segment_label": tf.io.FixedLenFeature([], tf.int64),
       "segment_start_time": tf.io.FixedLenFeature([], tf.int64),
       "segment_score": tf.io.FixedLenFeature([], tf.float32)  
     }
@@ -519,7 +519,7 @@ class InputDataset():
         feature_name: tf.io.FixedLenSequenceFeature([], dtype=tf.string)
         for feature_name in self.feature_names[:2]
     }
-    #sequence_features[self.feature_names[-1]] = tf.io.FixedLenSequenceFeature([], dtype=tf.float32)
+    sequence_features[self.feature_names[-1]] = tf.io.FixedLenSequenceFeature([], dtype=tf.float32)
     context, features = tf.io.parse_single_sequence_example(serialized_example, context_features=context_features, sequence_features=sequence_features)
     num_features = len(self.feature_names) - 1
 
