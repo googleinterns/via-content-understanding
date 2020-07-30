@@ -254,6 +254,8 @@ def split_data(data_dir, input_dataset, shard_size=85, num_classes=1000, file_ty
       else:
         video_size = tf.shape(features["rgb"])[1]
         segment_time = segment_start_times[segment_index]
+        print(context)
+        print(features)
         print(f"Error, video not long enough {video_size} for segment start time {segment_time}")
         assert False
     video_number += 1
