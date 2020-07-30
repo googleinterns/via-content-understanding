@@ -89,6 +89,8 @@ def compute_and_save(data_dir, input_dir, num_classes=1000):
             negative = calculate_cosine(features["rgb"][0].numpy(), comparison_features["rgb"][0].numpy())
             negative += calculate_cosine(features["audio"][0].numpy(), comparison_features["audio"][0].numpy())
           else:
+            print(comparison_features)
+            print(comparison_context)
             positive = calculate_cosine(features["rgb"][0].numpy(), comparison_features["rgb"][0].numpy())
             positive += calculate_cosine(features["audio"][0].numpy(), comparison_features["audio"][0].numpy())
           total_positive += positive
