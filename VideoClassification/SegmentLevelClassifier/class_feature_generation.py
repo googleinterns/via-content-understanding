@@ -71,7 +71,9 @@ def compute_and_save(data_dir, input_dir, num_classes=1000):
         if video_id == comparison_video_id:
           positive, negative = 0,0
         else:
+          weird_time = time.time()
           segment_score = comparison_context["segment_score"][0].numpy()
+          print(f"Weird time {time.time() - weird_time}")
           positive, negative = 0,0
           if segment_score == 0:
             realer_time = time.time()
