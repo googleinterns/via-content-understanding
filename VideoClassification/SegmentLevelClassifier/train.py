@@ -18,7 +18,7 @@ import readers
 import reader_utils
 import tensorflow as tf
 
-def train(data_dir, epochs=6, lr=0.0002, num_clusters=10, batch_size=80, fc_units=1024):
+def train(data_dir, epochs=6, lr=0.0002, num_clusters=10, batch_size=10, fc_units=512):
   """Train the video classifier model.
 
   Args:
