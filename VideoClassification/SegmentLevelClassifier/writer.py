@@ -26,9 +26,9 @@ def add_candidate_content(context, candidates):
   """
   video_id = tf.convert_to_tensor(context["id"])[0].numpy()
   if video_id in candidates.keys():
-    context["candidate_labels"] = tf.convert_to_tensor(candidates[video_id])
+    context["candidate_labels"] = np.array(candidates[video_id])
   else:
-    context["candidate_labels"] = tf.convert_to_tensor([])
+    context["candidate_labels"] = np.array([])
   return context
 
 def convert_labels(labels, class_csv="vocabulary.csv"):
@@ -121,6 +121,7 @@ def serialize_video_context(context):
   context["segment_labels"] = convert_to_feature(segment_labels.numpy(), "int")
   context["segment_start_times"] = convert_to_feature(segment_start_times.numpy(), "int")
   context["segment_score"] = convert_to_feature(segment_scores.numpy(), "float")
+  context["candidate_labels"] = convert_to_feature(candidate_labels, "int")
 
   context = tf.train.Features(feature=context)
   return context

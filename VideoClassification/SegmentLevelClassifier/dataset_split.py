@@ -17,5 +17,5 @@ import writer
 
 if __name__ == "__main__":
   segment_reader = readers.SplitDataset()
-  input_dataset = segment_reader.get_dataset("/home/conorfvedova_google_com/data/segments/validation", batch_size=1, type="validate")
-  writer.split_data("/home/conorfvedova_google_com/data/segments/split_validation", input_dataset)
+  input_dataset = segment_reader.get_dataset("/home/conorfvedova_google_com/data/segments/candidate_test", batch_size=1, type="test")
+  writer.split_data("/home/conorfvedova_google_com/data/segments/split_test", input_dataset)

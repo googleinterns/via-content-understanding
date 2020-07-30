@@ -18,28 +18,6 @@ import readers
 import reader_utils
 import tensorflow as tf
 
-def crossentropy(y_actual, y_predicted, epsilon=10e-6, alpha=0.5):
-  """Custom Crossentropy function used for stability.
-
-  Args:
-    y_actual: actual output labels
-    y_predicted: predicted output label probabilities
-    epsilon: Small value to ensure log is not taken of 0. 10e-6 is default.
-    alpha: Magnifies the contribution of correctly predicting as opposed to incorrectly predicting. Alpha of 0.5 is default scaling and does not modify the loss.
-
-  Returns:
-    tensor giving the loss for y_actual versus y_predicted.
-  """
-  float_labels = tf.cast(y_actual, tf.float32)
-
-  print(float_labels)
-  print(y_predicted)
-  cross_entropy_loss = 2*(alpha*float_labels * tf.math.log(y_predicted + epsilon) + (1-alpha)*(1 - float_labels) * tf.math.log(1 - y_predicted + epsilon))
-  cross_entropy_loss = tf.math.negative(cross_entropy_loss)
-
-  return tf.math.reduce_mean(tf.math.reduce_sum(cross_entropy_loss, 1))
-
-
 def train(data_dir, epochs=100, lr=0.0002, num_clusters=10, batch_size=20, fc_units=512):
   """Train the video classifier model.
 
