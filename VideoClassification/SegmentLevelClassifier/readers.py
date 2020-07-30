@@ -527,8 +527,9 @@ class InputDataset():
         "length of feature_names (={}) != length of feature_sizes (={})".format(
             len(self.feature_names), len(self.feature_sizes)))
     
-    feature_matrices = [None] * num_features
+    feature_matrices = [None] * (num_features-1)
     for feature_index in range(num_features-1):
+      print(feature)
       feature_matrix = self.get_video_matrix(
         features[self.feature_names[feature_index]], self.feature_sizes[feature_index],
         max_quantized_value, min_quantized_value
@@ -540,7 +541,7 @@ class InputDataset():
     class_features_list = features[self.feature_names[2]]
     print(class_features_list)
     print(context["segment_label"])
-    #class_features_list = tf.concat(context["segment_label"], class_features_list)
+    class_features_list = tf.concat([context["segment_label"], class_features_list],0)
     label = context["segment_score"]
     feature_dim = len(video_matrix.get_shape()) - 1
     video_matrix = tf.nn.l2_normalize(video_matrix, feature_dim)
