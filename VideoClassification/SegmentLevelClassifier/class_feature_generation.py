@@ -59,7 +59,7 @@ def compute_and_save(data_dir, input_dir, num_classes=1000):
   #Need to take into account segment_weights
   #Store previous computations to speed up runtime
   num_segment = 0
-  for label in range(186, num_classes):
+  for label in range(187, num_classes):
     shard = []
     input_dataset_reader = readers.SegmentDataset(class_num=label)
     input_dataset = input_dataset_reader.get_dataset("/home/conorfvedova_google_com/data/segments/split_validation", batch_size=1, type="class")
@@ -70,7 +70,8 @@ def compute_and_save(data_dir, input_dir, num_classes=1000):
       video_id = tf.convert_to_tensor(context["id"])[0].numpy()
       total_positive = 0
       total_negative = 0
-
+      print(context)
+      print(features)
       comparison_data_reader = readers.SegmentDataset(class_num=label)
       comparison_dataset = comparison_data_reader.get_dataset("/home/conorfvedova_google_com/data/segments/split_comparison", batch_size=1, type="class")
       comparison_index = 0
