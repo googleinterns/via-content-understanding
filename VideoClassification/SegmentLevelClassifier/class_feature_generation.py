@@ -116,9 +116,3 @@ def compute_and_save(data_dir, input_dir, num_classes=1000):
 
 if __name__ == "__main__":
   compute_and_save("/home/conorfvedova_google_com/data/segments/input_train_data", "/home/conorfvedova_google_com/data/segments/split_validation")
-  for segment in input_dataset:
-    context = segment[0]
-    features = segment[1]
-
-    class_val = context["segment_label"][0].numpy()
-    print(class_val)
