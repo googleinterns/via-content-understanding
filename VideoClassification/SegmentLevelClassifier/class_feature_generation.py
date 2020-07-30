@@ -25,14 +25,11 @@ def calculate_cosine(segment1, segment2):
     segment1: Matrix of vectors to compare
     segment2: Matrix of vectors to compare
   """
-  ok_time = time.time()
   similarity = []
   for i in range(len(segment1)):
     similarity.append(np.dot(segment1[i], segment2[i]) / (np.linalg.norm(segment1[i])*np.linalg.norm(segment2[i])))
   similarity = np.array(similarity)
-  mean_val = np.mean(similarity)
-  print(f"Inner Calculation time {time.time() - ok_time}")
-  return mean_val
+  return np.mean(similarity)
 
 def compute_and_save(data_dir, input_dir, num_classes=1000):
   """Compute class specific features for input_dataset and save them to data_dir.
@@ -50,6 +47,7 @@ def compute_and_save(data_dir, input_dir, num_classes=1000):
     input_dataset_reader = readers.SegmentDataset(class_num=label)
     input_dataset = input_dataset_reader.get_dataset("/home/conorfvedova_google_com/data/segments/split_validation", batch_size=1, type="class")
     first_of_class = True
+    
     #Preload Data and convert to numpy for calculations
     video_holder = []
     storing_holder = []
@@ -64,6 +62,7 @@ def compute_and_save(data_dir, input_dir, num_classes=1000):
       context["id"] = tf.convert_to_tensor(context["id"])[0].numpy()
       context["segment_score"] = context["segment_score"][0].numpy()
       video_holder.append((context, features))
+
     for segment_index in range(len(video_holder)):
       print(f"Processing segment {num_segment}")
       segment = video_holder[segment_index]
