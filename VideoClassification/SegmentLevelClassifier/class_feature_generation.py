@@ -52,8 +52,8 @@ def compute_and_save(data_dir, input_dir, num_classes=1000):
     video_holder = []
     storing_holder = []
     for segment in input_dataset:
-      context = context.copy()
-      features = features.copy()
+      context = segment[0]
+      features = segment[1]
       features["rgb"] = features["rgb"][0].numpy()
       features["audio"] = features["audio"][0].numpy()
       context["id"] = tf.convert_to_tensor(context["id"])[0].numpy()
