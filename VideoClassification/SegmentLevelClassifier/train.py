@@ -67,7 +67,6 @@ def train(data_dir, epochs=6, lr=0.0002, num_clusters=10, batch_size=10, fc_unit
 
   #Implement callbacks
   #tensor_board = tf.keras.callbacks.TensorBoard(log_dir="logs2", update_freq=100)
-  print("Fitting")
   model.fit(train_dataset, epochs=epochs)#, callbacks=[tensor_board])
 
   model.save_weights("model_weights_segment_level.h5")
