@@ -310,7 +310,7 @@ class SegmentClassifier:
     self.first_cg = ContextGating(input_shape=(batch_size, fc_units), name="first_cg")
 
     self.fc2 = tf.keras.layers.Dense(
-      units=1,
+      units=2,
       activation=tf.keras.activations.sigmoid,
       kernel_regularizer=tf.keras.regularizers.l2(1e-5),
       name="main_fc2"
