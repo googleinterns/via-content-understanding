@@ -521,7 +521,7 @@ class InputDataset():
     }
     sequence_features[self.feature_names[-1]] = tf.io.FixedLenSequenceFeature([2], dtype=tf.float32)
     context, features = tf.io.parse_single_sequence_example(serialized_example, context_features=context_features, sequence_features=sequence_features)
-    num_features = len(self.feature_names) - 1
+    num_features = len(self.feature_names)
 
     assert num_features > 0, "No feature selected: feature_names is empty!"
     assert len(self.feature_names) == len(self.feature_sizes), (
