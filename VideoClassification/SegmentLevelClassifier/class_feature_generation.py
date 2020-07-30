@@ -129,4 +129,10 @@ def compute_and_save(data_dir, input_dataset):
 if __name__ == "__main__":
   reader = readers.SegmentDataset()
   input_dataset = reader.get_dataset("/home/conorfvedova_google_com/data/segments/split_validation", batch_size=1, type="class")
-  compute_and_save("/home/conorfvedova_google_com/data/segments/input_train_data", input_dataset)
+  #compute_and_save("/home/conorfvedova_google_com/data/segments/input_train_data", input_dataset)
+  for segment in input_dataset:
+    context = segment[0]
+    features = segment[1]
+
+    class_val = context["segment_label"][0].numpy()
+    print(class_val)
