@@ -72,8 +72,8 @@ def compute_and_save(data_dir, input_dir, num_classes=1000):
       video_id = tf.convert_to_tensor(context["id"])[0].numpy()
       total_positive = 0
       total_negative = 0
-      print(context)
-      print(features)
+      #print(context)
+      #print(features)
       if first_of_class:
         comparison_data_reader = readers.SegmentDataset(class_num=label)
         comparison_dataset = comparison_data_reader.get_dataset("/home/conorfvedova_google_com/data/segments/split_comparison", batch_size=1, type="class")
