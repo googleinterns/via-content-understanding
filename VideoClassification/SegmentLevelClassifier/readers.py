@@ -520,6 +520,7 @@ class InputDataset():
         for feature_name in self.feature_names[:2]
     }
     sequence_features[self.feature_names[-1]] = tf.io.FixedLenSequenceFeature([], dtype=tf.float32)
+    print(sequence_features)
     context, features = tf.io.parse_single_sequence_example(serialized_example, context_features=context_features, sequence_features=sequence_features)
     num_features = len(self.feature_names) - 1
 
