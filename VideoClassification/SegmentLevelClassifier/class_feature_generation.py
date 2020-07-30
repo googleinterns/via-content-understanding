@@ -83,7 +83,7 @@ def compute_and_save(data_dir, input_dir, num_classes=1000):
         comparison_features = comparison_segment[1]
         comparison_video_id = tf.convert_to_tensor(comparison_context["id"])[0].numpy()
         if comparison_index == 188:
-          print(computation_holder[current_index][comparison_index])
+          print(computation_holder[current_index][comparison_index-1])
         if comparison_index < len(computation_holder) - 1:
           previous_values = computation_holder[comparison_index][current_index]
           computation_holder[current_index].append(previous_values)
