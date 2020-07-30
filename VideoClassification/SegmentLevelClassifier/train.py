@@ -69,7 +69,7 @@ def train(data_dir, epochs=6, lr=0.0002, num_clusters=10, batch_size=20, fc_unit
   new_model_generator = model_lib.SegmentClassifier(num_clusters, video_input_shape, audio_input_shape, fc_units=fc_units, num_classes=data_reader.num_classes)
   new_model = new_model_generator.build_model(input_shape, second_input_shape, batch_size)
   new_model.load_weights("model_weights_segment_level.h5")
-
+  new_model.summary()
   for i in train_dataset:
     print(i)
     print(i[0])
