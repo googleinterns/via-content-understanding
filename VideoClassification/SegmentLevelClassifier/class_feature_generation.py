@@ -77,10 +77,8 @@ def compute_and_save(data_dir, input_dir, num_classes=1000):
       if first_of_class:
         comparison_data_reader = readers.SegmentDataset(class_num=label)
         comparison_dataset = comparison_data_reader.get_dataset("/home/conorfvedova_google_com/data/segments/split_comparison", batch_size=1, type="class")
-        comparison_temp = 0
         for comparison_segment in comparison_dataset:
           #Check if segment to compare with has already been calculated.
-          comparison_temp += 1
           comparison_context = comparison_segment[0]
           comparison_features = comparison_segment[1]
           video_holder.append((comparison_context, comparison_features))
@@ -101,9 +99,6 @@ def compute_and_save(data_dir, input_dir, num_classes=1000):
         first_of_class = False
         
       else:
-        print(len(video_holder))
-        print(comparison_temp)
-        assert False
         for comparison_segment in video_holder:
           #Check if segment to compare with has already been calculated.
           comparison_context = comparison_segment[0]
