@@ -111,6 +111,8 @@ def compute_and_save(data_dir, input_dir, num_classes=1000):
       shard.append(writer.serialize_data(context, features, "segment"))
       current_index += 1
       num_segment += 1
+      print(total_positive)
+      print(total_negative)
     writer.save_shard(data_dir, shard, "class", label)
 
 
