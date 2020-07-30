@@ -331,7 +331,8 @@ class SegmentClassifier:
     audio_input = model_input[:,:,self.video_feature_dim:]
     video_vlad_out = self.video_vlad(video_input)
     audio_vlad_out = self.audio_vlad(audio_input)
-    vlad_out = tf.concat([video_vlad_out, audio_vlad_out, model_input2], axis=1)
+    vlad_out = tf.concat([video_vlad_out, audio_vlad_out], axis=1)
+    vlad_out = tf.concat([vlad_out, model_input2], axis=1)
     fc_out = self.fc(vlad_out)
     cg_out = self.first_cg(fc_out)
     final_out = self.fc2(cg_out)
