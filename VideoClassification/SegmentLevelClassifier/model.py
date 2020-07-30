@@ -266,3 +266,74 @@ class VideoClassifier:
     final_model = tf.keras.models.Model(inputs=model_input, outputs=final_out)
 
     return final_model
+
+class SegmentClassifier:
+  """The Segment Classifier model, implemented according to the winning model from the Youtube-8M Challenge.
+  The model can be found here: https://arxiv.org/abs/1911.08548
+  
+  Arguments:
+    num_clusters: the number of clusters to be used for NetVLAD. The audio clusters will be num_clusters/2.
+    video_input_shape: shape of the input video features. Shape of [batch_size, num_samples, video_feature_dim].
+    audio_input_shape: shape fo the input audio features. Shape of [batch_size, num_samples, audio_feature_dim].
+  
+  Raises:
+    ValueError: If num_clusters is not divisible by 2.
+    ValueError: If the batch sizes of the audio_input_shape and video_input_shape do not match.
+    ValueError: If the number of samples of the audio_input_shape and video_input_shape do not match.
+  """
+  def __init__(self, num_clusters, video_input_shape, audio_input_shape, num_classes, fc_units, **kwargs):
+    super(VideoClassifier, self).__init__(**kwargs)
+    if num_clusters % 2 != 0:
+      raise ValueError("num_clusters must be divisible by 2.")
+    batch_size = video_input_shape[0]
+    if audio_input_shape[0] != batch_size:
+      raise ValueError("audio_input_shape[0] must equal video_input_shape[0]. Batch sizes must equal.")
+    if audio_input_shape[1] != video_input_shape[1]:
+      raise ValueError("audio_input_shape[1] must equal video_input_shape[1]. Number of samples must equal.")
+
+    self.num_frames = video_input_shape[1]
+    self.num_classes = num_classes
+
+    self.video_feature_dim = video_input_shape[2]
+
+    self.video_vlad = NetVLAD(num_clusters, input_shape=video_input_shape, name="video_vlad")
+    self.audio_vlad = NetVLAD(num_clusters//2, input_shape=audio_input_shape, name="audio_vlad")
+
+    #Relu6 is used as it is employed in the paper.
+    self.fc = tf.keras.layers.Dense(
+      units=fc_units,
+      activation=tf.nn.relu6,
+      kernel_regularizer=tf.keras.regularizers.l2(1e-5),
+      name="main_fc"
+    )
+
+    self.first_cg = ContextGating(input_shape=(batch_size, fc_units), name="first_cg")
+
+    self.fc2 = tf.keras.layers.Dense(
+      units=1,
+      activation=tf.keras.activations.sigmoid,
+      kernel_regularizer=tf.keras.regularizers.l2(1e-5),
+      name="main_fc"
+    )
+
+  def build_model(self, input_shape, second_input_shape, batch_size):
+    """Perform one forward pass of the model.
+
+    Args:
+      input_shape: input shape for video features. Shape is of the form: [max_frames, video_feature_dim + audio_feature_dim].
+      second_input_shape: input shape of new class specific features. Shape is of the form [num_new_features]
+    Returns:
+      A tensor with shape [batch_size, num_classes].
+    """
+    model_input = tf.keras.layers.Input(shape=input_shape, batch_size=batch_size)
+    model_input2 = tf.keras.layers.Input(shape=second_input_shape, batch_size=batch_size)
+    video_input = model_input[:,:,:self.video_feature_dim]
+    audio_input = model_input[:,:,self.video_feature_dim:]
+    video_vlad_out = self.video_vlad(video_input)
+    audio_vlad_out = self.audio_vlad(audio_input)
+    vlad_out = tf.concat([video_vlad_out, audio_vlad_out, model_input2], axis=1)
+    fc_out = self.fc(vlad_out)
+    cg_out = self.first_cg(fc_out)
+    final_out = self.fc2(cg_out)
+    final_model = tf.keras.models.Model(inputs=[model_input, model_input2], outputs=final_out)
+    return final_model

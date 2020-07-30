@@ -53,25 +53,6 @@ def resize_axis(tensor, axis, new_size, fill_value=0):
   resized.set_shape(new_shape)
   return resized
 
-def _get_list_of_feature_names_and_sizes(feature_names, feature_sizes):
-  """Extract the list of feature names and the dimensionality of each feature from string of comma separated values.
-
-  Args:
-    feature_names: string containing comma separated list of feature names
-    feature_sizes: string containing comma separated list of feature sizes
-
-  Returns:
-    List of the feature names and list of the dimensionality of each feature.
-    Elements in the first/second list are strings/integers.
-  """
-  list_of_feature_names = [feature_names.strip() for feature_names in feature_names.split(",")]
-  list_of_feature_sizes = [int(feature_sizes) for feature_sizes in feature_sizes.split(",")]
-
-  if len(list_of_feature_names) != len(list_of_feature_sizes):
-    logging.error("length of the feature names (=" + str(len(list_of_feature_names)) + ") != length of feature sizes (=" + str(len(list_of_feature_sizes)) + ")")
-
-  return list_of_feature_names, list_of_feature_sizes
-
 def dequantize(feat_vector, max_quantized_value=2, min_quantized_value=-2):
   """Dequantize the feature from the byte format to the float format.
 
@@ -88,3 +69,15 @@ def dequantize(feat_vector, max_quantized_value=2, min_quantized_value=-2):
   scalar = quantized_range / 255.0
   bias = (quantized_range / 512.0) + min_quantized_value
   return feat_vector * scalar + bias
+
+def get_reader(class_features):
+  """Get the Dataset generator.
+
+  Args:
+    class_features: boolean denoting whether to get VideoDataset or InputDataset. True for InputDataset
+    """
+  if class_features:
+    reader = readers.InputDataset()
+  else:
+    reader = readers.VideoDataset()
+  return reader
