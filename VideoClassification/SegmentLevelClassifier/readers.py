@@ -534,6 +534,8 @@ class InputDataset():
         max_quantized_value, min_quantized_value
         )
       feature_matrices[feature_index] = feature_matrix
+    print(context)
+    print(features)
     video_matrix = tf.concat(feature_matrices, 1)
     class_features_list = features[self.feature_names[2]]
     print(class_features_list)
