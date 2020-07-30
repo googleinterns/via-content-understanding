@@ -88,6 +88,7 @@ def compute_and_save(data_dir, input_dir, num_classes=1000):
           computation_holder[current_index].append(previous_values)
           total_positive += previous_values[0]
           total_negative += previous_values[1]
+          print("OH")
         else:
           if video_id == comparison_video_id:
             positive, negative = 0,0
