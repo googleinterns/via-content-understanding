@@ -100,7 +100,7 @@ def compute_and_save(data_dir, input_dir, num_classes=1000):
       #       total_positive += positive
       #       total_negative += negative
       features["class_features"] = tf.convert_to_tensor([total_positive, total_negative])
-      shard.append(writer.serialize_data(context, features, "csf"))
+      shard.append(writer.serialize_data(context.copy(), features.copy(), "csf"))
       num_segment += 1
 
       if total_negative == 0 or total_positive == 0:
