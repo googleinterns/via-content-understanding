@@ -16,7 +16,6 @@ import numpy as np
 import readers
 import tensorflow as tf
 import writer
-import time
 
 def calculate_cosine(segment1, segment2):
   """Calculate the cosine of the angle between segment1 and segment2. Modified to work with matrices by applying mean of cosine similarities.
@@ -38,15 +37,12 @@ def compute_and_save(data_dir, input_dir, num_classes=1000):
     data_dir: directory to save data to
     input_dir: directory where input data is stored.
   """
-  #Need to take into account segment_weights
   #Store previous computations to speed up runtime
   num_segment = 0
   for label in range(num_classes):
-    start_time = time.time()
     shard = []
     input_dataset_reader = readers.SegmentDataset(class_num=label)
     input_dataset = input_dataset_reader.get_dataset("/home/conorfvedova_google_com/data/segments/split_validation", batch_size=1, type="class")
-    first_of_class = True
     
     #Preload Data and convert to numpy for calculations
     video_holder = []
@@ -67,11 +63,9 @@ def compute_and_save(data_dir, input_dir, num_classes=1000):
       video_id = context["id"]
       total_positive = 0
       total_negative = 0
-      #if first_of_class:
       for comparison_segment in video_holder:
         comparison_context = comparison_segment[0]
         comparison_features = comparison_segment[1]
-        #video_holder.append((comparison_context, comparison_features))
         comparison_video_id = comparison_context["id"]
         if video_id == comparison_video_id:
           positive, negative = 0,0
@@ -86,19 +80,13 @@ def compute_and_save(data_dir, input_dir, num_classes=1000):
             positive += calculate_cosine(features["audio"], comparison_features["audio"])
           total_positive += positive
           total_negative += negative
-      first_of_class = False
-      serialization_time = time.time()
       features["class_features"] = np.array([total_positive, total_negative])
       shard.append(writer.serialize_data(context.copy(), features.copy(), "csf"))
       num_segment += 1
-      print(f"Serialization time {time.time() - serialization_time}")
-
       if total_negative == 0 or total_positive == 0:
         print(f"Invalid calculation for segment {num_segment-1}")
         assert False
     writer.save_shard(data_dir, shard, "train", label)
-    print(time.time() - start_time)
-    assert False
 
 if __name__ == "__main__":
   compute_and_save("/home/conorfvedova_google_com/data/segments/input_train_data", "/home/conorfvedova_google_com/data/segments/split_validation")
