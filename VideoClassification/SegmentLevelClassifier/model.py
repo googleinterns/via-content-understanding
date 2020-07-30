@@ -282,7 +282,7 @@ class SegmentClassifier:
     ValueError: If the number of samples of the audio_input_shape and video_input_shape do not match.
   """
   def __init__(self, num_clusters, video_input_shape, audio_input_shape, num_classes, fc_units, **kwargs):
-    super(VideoClassifier, self).__init__(**kwargs)
+    super(SegmentClassifier, self).__init__(**kwargs)
     if num_clusters % 2 != 0:
       raise ValueError("num_clusters must be divisible by 2.")
     batch_size = video_input_shape[0]
