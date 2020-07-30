@@ -47,8 +47,13 @@ def compute_and_save(data_dir, input_dir, num_classes=1000):
     input_dataset_reader = readers.SegmentDataset(class_num=label)
     input_dataset = input_dataset_reader.get_dataset("/home/conorfvedova_google_com/data/segments/split_validation", batch_size=1, type="class")
     first_of_class = True
+    #Preload Data
     video_holder = []
     for segment in input_dataset:
+      context = segment[0]
+      features = segment[1]
+      video_holder.append((context, features))
+    for segment in video_holder:
       print(f"Processing segment {num_segment}")
       context = segment[0]
       features = segment[1]
