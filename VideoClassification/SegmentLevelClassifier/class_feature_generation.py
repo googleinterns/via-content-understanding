@@ -111,7 +111,7 @@ def compute_and_save(data_dir, input_dir, num_classes=1000):
       shard.append(writer.serialize_data(context, features, "segment"))
       current_index += 1
       num_segment += 1
-    writer.save_shard(data_dir, shard, "class", class_num)
+    writer.save_shard(data_dir, shard, "class", label)
 
 
 if __name__ == "__main__":
