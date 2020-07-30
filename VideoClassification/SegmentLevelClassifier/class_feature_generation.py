@@ -61,9 +61,7 @@ def compute_and_save(data_dir, input_dir, num_classes=1000):
       total_positive = 0
       total_negative = 0
       #if first_of_class:
-      comparison_data_reader = readers.SegmentDataset(class_num=label)
-      comparison_dataset = comparison_data_reader.get_dataset("/home/conorfvedova_google_com/data/segments/split_comparison", batch_size=1, type="class")
-      for comparison_segment in comparison_dataset:
+      for comparison_segment in video_holder:
         comparison_context = comparison_segment[0]
         comparison_features = comparison_segment[1]
         #video_holder.append((comparison_context, comparison_features))
