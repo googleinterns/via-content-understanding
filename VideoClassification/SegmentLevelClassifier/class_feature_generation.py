@@ -25,11 +25,14 @@ def calculate_cosine(segment1, segment2):
     segment1: Matrix of vectors to compare
     segment2: Matrix of vectors to compare
   """
+  ok_time = time.time()
   similarity = []
   for i in range(len(segment1)):
     similarity.append(np.dot(segment1[i], segment2[i]) / (np.linalg.norm(segment1[i])*np.linalg.norm(segment2[i])))
   similarity = np.array(similarity)
-  return np.mean(similarity)
+  mean_val = np.mean(similarity)
+  print(f"Inner Calculation time {time.time() - ok_time}")
+  return mean_val
 
 def compute_and_save(data_dir, input_dir, num_classes=1000):
   """Compute class specific features for input_dataset and save them to data_dir.
