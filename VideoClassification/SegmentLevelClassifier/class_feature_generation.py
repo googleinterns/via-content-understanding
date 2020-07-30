@@ -16,6 +16,7 @@ import numpy as np
 import readers
 import tensorflow as tf
 import writer
+import time
 
 def calculate_cosine(segment1, segment2):
   """Calculate the cosine of the angle between segment1 and segment2. Modified to work with matrices by applying mean of cosine similarities.
@@ -41,6 +42,7 @@ def compute_and_save(data_dir, input_dir, num_classes=1000):
   #Store previous computations to speed up runtime
   num_segment = 0
   for label in range(num_classes):
+    start_time = time.time()
     shard = []
     input_dataset_reader = readers.SegmentDataset(class_num=label)
     input_dataset = input_dataset_reader.get_dataset("/home/conorfvedova_google_com/data/segments/split_validation", batch_size=1, type="class")
@@ -102,7 +104,8 @@ def compute_and_save(data_dir, input_dir, num_classes=1000):
         print(f"Invalid calculation for segment {num_segment-1}")
         assert False
     writer.save_shard(data_dir, shard, "train", label)
-
+    print(time.time() - start_time)
+    assert False
 
 if __name__ == "__main__":
   compute_and_save("/home/conorfvedova_google_com/data/segments/input_train_data", "/home/conorfvedova_google_com/data/segments/split_validation")
