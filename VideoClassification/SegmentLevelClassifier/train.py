@@ -61,7 +61,7 @@ def train(data_dir, epochs=6, lr=0.0002, num_clusters=10, batch_size=20, fc_unit
   
   model = model_generator.build_model(input_shape, second_input_shape, batch_size)
 
-  model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=lr), loss=crossentropy, metrics=[tf.keras.metrics.Accuracy()])
+  model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=lr), loss="binary_crossentropy", metrics=[tf.keras.metrics.Accuracy()])
 
   model.summary()
 
