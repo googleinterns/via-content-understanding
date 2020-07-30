@@ -66,13 +66,10 @@ def train(data_dir, epochs=6, lr=0.0002, num_clusters=10, batch_size=20, fc_unit
   model.summary()
 
   #Implement callbacks
-  #tensor_board = tf.keras.callbacks.TensorBoard(log_dir="logs2", update_freq=100)
-  model.fit(train_dataset, epochs=epochs)#, callbacks=[tensor_board])
+  tensor_board = tf.keras.callbacks.TensorBoard(log_dir="logs2", update_freq=100)
+  model.fit(train_dataset, epochs=epochs, callbacks=[tensor_board])
 
   model.save_weights("model_weights_segment_level.h5")
-
-  for i in train_dataset:
-    print(model.predict(i[0]))
 
   #Evaluate model
   eval_dict = evaluate.evaluate_model(model, data_reader, test_dir, batch_size)
