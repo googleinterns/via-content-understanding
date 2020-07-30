@@ -80,6 +80,7 @@ def compute_and_save(data_dir, input_dir, num_classes=1000):
         comparison_temp = 0
         for comparison_segment in comparison_dataset:
           #Check if segment to compare with has already been calculated.
+          comparison_temp += 1
           comparison_context = comparison_segment[0]
           comparison_features = comparison_segment[1]
           video_holder.append((comparison_context, comparison_features))
@@ -97,7 +98,6 @@ def compute_and_save(data_dir, input_dir, num_classes=1000):
               positive += calculate_cosine(features["audio"][0].numpy(), comparison_features["audio"][0].numpy())
             total_positive += positive
             total_negative += negative
-            comparison_temp += 1
         first_of_class = False
         
       else:
