@@ -41,29 +41,42 @@ def compute_and_save(data_dir, input_dir, num_classes=1000):
   num_segment = 0
   for label in range(num_classes):
     shard = []
-    input_dataset_reader = readers.SegmentDataset(class_num=label)
-    input_dataset = input_dataset_reader.get_dataset("/home/conorfvedova_google_com/data/segments/split_validation", batch_size=1, type="class")
+    comparison_dataset_reader = readers.SegmentDataset(class_num=label)
+    comparison_dataset = comparison_dataset_reader.get_dataset("/home/conorfvedova_google_com/data/segments/split_validation", batch_size=1, type="class")
     
     #Preload Data and convert to numpy for calculations
-    video_holder = []
-    storing_holder = []
-    for segment in input_dataset:
-      context = segment[0]
-      features = segment[1]
-      features["rgb"] = features["rgb"][0].numpy()
-      features["audio"] = features["audio"][0].numpy()
-      context["id"] = tf.convert_to_tensor(context["id"])[0].numpy()
-      context["segment_score"] = context["segment_score"][0].numpy()
-      video_holder.append((context, features))
+    video_holder_input = []
+    video_holder_comparison = []
+    for segment in comparison_dataset:
+        context = segment[0]
+        features = segment[1]
+        features["rgb"] = features["rgb"][0].numpy()
+        features["audio"] = features["audio"][0].numpy()
+        context["id"] = tf.convert_to_tensor(context["id"])[0].numpy()
+        context["segment_score"] = context["segment_score"][0].numpy()
+        video_holder_comparison.append((context, features))
+    if type_comparison == "test":
+      input_dataset_reader = readers.SegmentDataset(class_num=label)
+      input_dataset = input_dataset_reader.get_dataset(input_dir, batch_size=1, type="class")
+      for segment in input_dataset:
+        context = segment[0]
+        features = segment[1]
+        features["rgb"] = features["rgb"][0].numpy()
+        features["audio"] = features["audio"][0].numpy()
+        context["id"] = tf.convert_to_tensor(context["id"])[0].numpy()
+        context["segment_score"] = context["segment_score"][0].numpy()
+        video_holder_input.append((context, features))
+    else:
+      video_holder_input = video_holder_comparison
 
-    for segment in video_holder:
+    for segment in video_holder_input:
       print(f"Processing segment {num_segment}")
       context = segment[0]
       features = segment[1]
       video_id = context["id"]
       total_positive = 0
       total_negative = 0
-      for comparison_segment in video_holder:
+      for comparison_segment in video_holder_comparison:
         comparison_context = comparison_segment[0]
         comparison_features = comparison_segment[1]
         comparison_video_id = comparison_context["id"]
