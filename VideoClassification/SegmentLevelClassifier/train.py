@@ -71,6 +71,8 @@ def train(data_dir, epochs=6, lr=0.0002, num_clusters=10, batch_size=20, fc_unit
   new_model.load_weights("model_weights_segment_level.h5")
 
   for i in train_dataset:
+    print(i)
+    print(i[0])
     print(new_model.predict(i[0]))
     assert False
 
