@@ -309,7 +309,6 @@ class SplitDataset():
       "segment_labels": tf.io.VarLenFeature(tf.int64),
       "segment_start_times": tf.io.VarLenFeature(tf.int64),
       "segment_scores": tf.io.VarLenFeature(tf.float32),
-      "candidate_labels": tf.io.VarLenFeature(tf.int64)
     }
     sequence_features = {
         feature_name: tf.io.FixedLenSequenceFeature([], dtype=tf.string)
