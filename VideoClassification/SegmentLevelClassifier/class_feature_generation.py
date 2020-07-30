@@ -82,29 +82,23 @@ def compute_and_save(data_dir, input_dir, num_classes=1000):
         comparison_context = comparison_segment[0]
         comparison_features = comparison_segment[1]
         comparison_video_id = tf.convert_to_tensor(comparison_context["id"])[0].numpy()
+        if comparison_index == 188:
+          print(computation_holder[current_index][comparison_index])
         if comparison_index < len(computation_holder) - 1:
           previous_values = computation_holder[comparison_index][current_index]
           computation_holder[current_index].append(previous_values)
           total_positive += previous_values[0]
           total_negative += previous_values[1]
-          if num_segment == 187:
-            print("OH")
         else:
           if video_id == comparison_video_id:
             positive, negative = 0,0
-            if num_segment == 187:
-              print("WHAT?")
           else:
             segment_score = comparison_context["segment_score"][0].numpy()
             positive, negative = 0,0
             if segment_score == 0:
-              if num_segment == 187:
-                print("NO")
               negative = calculate_cosine(features["rgb"][0].numpy(), comparison_features["rgb"][0].numpy())
               negative += calculate_cosine(features["audio"][0].numpy(), comparison_features["audio"][0].numpy())
             else:
-              if num_segment == 187:
-                print("YES")
               positive = calculate_cosine(features["rgb"][0].numpy(), comparison_features["rgb"][0].numpy())
               positive += calculate_cosine(features["audio"][0].numpy(), comparison_features["audio"][0].numpy())
           computation_holder[current_index].append((positive, negative))
