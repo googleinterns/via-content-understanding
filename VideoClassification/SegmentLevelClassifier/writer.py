@@ -152,7 +152,6 @@ def serialize_class_segment_context(context):
   """
   segment_label = context["segment_label"]
   segment_start_time = context["segment_start_time"]
-  segment_label = convert_labels(segment_label)
 
   context["id"] = convert_to_feature([context["id"]], "byte")
   context["segment_label"] = convert_to_feature(segment_label.numpy(), "int")
