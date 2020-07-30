@@ -232,7 +232,7 @@ def split_data(data_dir, input_dataset, shard_size=85, num_classes=1000, file_ty
     context = video[0]
     features = video[1]
     print(tf.convert_to_tensor(context["id"])[0].numpy())
-    if tf.convert_to_tensor(context["id"])[0].numpy() == "nKut":
+    if tf.convert_to_tensor(context["id"])[0].numpy() == b'nKut':
       print(context)
       print(features)
       assert False
