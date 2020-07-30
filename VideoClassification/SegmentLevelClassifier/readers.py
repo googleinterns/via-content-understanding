@@ -429,3 +429,96 @@ class SegmentDataset():
     features["rgb"] = feature_matrices[0]
     features["audio"] = feature_matrices[1]
     return (context, features)
+
+class InputDataset():
+  """Reads TFRecords of SequenceExamples for Segment level data. Used for the input pipeline where class specific features are generated.
+
+  The TFRecords must contain SequenceExamples with the sparse in64 'labels'
+  context feature and a fixed length byte-quantized feature vector, obtained
+  from the features in 'feature_names'. The quantized features will be mapped
+  back into a range between min_quantized_value and max_quantized_value.
+  """
+
+  def __init__(
+      self,
+      num_classes=1000,
+      feature_sizes=[1024, 128, 2],
+      feature_names=["rgb", "audio", "class_features"],
+      max_frames=300,
+      segment_size=5,
+      shuffle=True,
+      class_num=-1):
+    """Construct a SegmentDataset.
+
+    Args:
+      num_classes: a positive integer for the number of classes.
+      feature_sizes: positive integer(s) for the feature dimensions as a list. Must be same size as feature_names
+      feature_names: the feature name(s) in the tensorflow record as a list. Must be same size as feature_sizes
+      max_frames: the maximum number of frames to process.
+      segment_size: number of frames per segment.
+      shuffle: set to True to shuffle the data per epoch.
+      class_num: determines which class file to read. To read all files, do not modify class_num.
+    """
+
+    assert len(feature_names) == len(feature_sizes), (
+        "length of feature_names (={}) != length of feature_sizes (={})".format(
+            len(feature_names), len(feature_sizes)))
+    self.num_classes = num_classes
+    self.feature_sizes = feature_sizes
+    self.feature_names = feature_names
+    self.max_frames = max_frames
+    self.segment_size = segment_size
+    self.class_num = class_num
+
+  def get_dataset(self, data_dir, batch_size, type="train"):
+    """Returns TFRecordDataset after it has been parsed.
+
+    Args:
+      data_dir: directory of the TFRecords
+    Returns:
+      dataset: TFRecordDataset of the input training data
+    """
+    if self.class_num == -1:
+      files = tf.io.matching_files(os.path.join(data_dir, '%s*.tfrecord' % type))
+    else:
+      files = tf.io.matching_files(os.path.join(data_dir, '%s.tfrecord' % (type+str(self.class_num))))
+    
+    files_dataset = tf.data.Dataset.from_tensor_slices(files)
+    files_dataset = files_dataset.batch(tf.cast(tf.shape(files)[0], tf.int64))
+
+    dataset = files_dataset.interleave(lambda files: tf.data.TFRecordDataset(files, num_parallel_reads=tf.data.experimental.AUTOTUNE))
+
+    parser = partial(self._parse_fn)
+    dataset = dataset.map(parser, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+
+    dataset = dataset.batch(1).prefetch(tf.data.experimental.AUTOTUNE)
+
+    return dataset
+
+  def _parse_fn(self, serialized_example):
+    """Parse single Serialized Example from the TFRecords."""
+    # Read/parse frame/segment-level labels.
+    context_features = {
+      "id": tf.io.FixedLenFeature([], tf.string),
+      "segment_label": tf.io.FixedLenFeature([], tf.int64),
+      "segment_start_time": tf.io.FixedLenFeature([], tf.int64),
+      "segment_score": tf.io.FixedLenFeature([], tf.float32)  
+    }
+    sequence_features = {
+        feature_name: tf.io.FixedLenSequenceFeature([], dtype=tf.string)
+        for feature_name in self.feature_names
+    }
+    context, features = tf.io.parse_single_sequence_example(serialized_example, context_features=context_features, sequence_features=sequence_features)
+
+    num_features = len(self.feature_names)
+    assert num_features > 0, "No feature selected: feature_names is empty!"
+
+    assert len(self.feature_names) == len(self.feature_sizes), (
+        "length of feature_names (={}) != length of feature_sizes (={})".format(
+            len(self.feature_names), len(self.feature_sizes)))
+
+
+
+    features["rgb"] = feature_matrices[0]
+    features["audio"] = feature_matrices[1]
+    return (context, features)
