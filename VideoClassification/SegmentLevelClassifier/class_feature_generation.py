@@ -85,7 +85,7 @@ def compute_and_save(data_dir, input_dir, num_classes=1000):
             print(f"Positive Calculation time {time.time() - post_time}")
           total_positive += positive
           total_negative += negative
-        #print(f"Real time {time.time() - real_calc_time}")
+        print(f"Real time {time.time() - real_calc_time}")
       first_of_class = False
       print(f"Calculation time {time.time() - calculation_time}")
       assert False
