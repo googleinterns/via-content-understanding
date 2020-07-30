@@ -82,10 +82,6 @@ def compute_and_save(data_dir, input_dir, num_classes=1000):
         comparison_context = comparison_segment[0]
         comparison_features = comparison_segment[1]
         comparison_video_id = tf.convert_to_tensor(comparison_context["id"])[0].numpy()
-        if comparison_context["segment_label"][0].numpy() != label:
-          print(comparison_context["segment_label"][0].numpy())
-          print(label)
-          assert False
         if comparison_index < len(computation_holder) - 1:
           previous_values = computation_holder[comparison_index][current_index]
           computation_holder[current_index].append(previous_values)
@@ -94,6 +90,8 @@ def compute_and_save(data_dir, input_dir, num_classes=1000):
         else:
           if video_id == comparison_video_id:
             positive, negative = 0,0
+            if num_segment == 187:
+              print("WHAT?")
           else:
             segment_score = comparison_context["segment_score"][0].numpy()
             positive, negative = 0,0
