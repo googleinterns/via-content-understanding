@@ -103,7 +103,6 @@ def compute_and_save(data_dir, input_dir, num_classes=1000):
           comparison_segment = video_holder[comparison_segment_index]
           comparison_context = comparison_segment[0]
           comparison_features = comparison_segment[1]
-          video_holder.append((comparison_context, comparison_features))
           comparison_video_id = tf.convert_to_tensor(comparison_context["id"])[0].numpy()
           if video_id == comparison_video_id:
             positive, negative = 0,0
