@@ -235,7 +235,6 @@ def split_data(data_dir, input_dataset, shard_size=85, num_classes=1000, file_ty
     if tf.convert_to_tensor(context["id"])[0].numpy() == b'nKut':
       print(context)
       print(features)
-      assert False
     segment_start_times = context["segment_start_times"].values.numpy()
     for segment_index in range(len(segment_start_times)):
       if segment_start_times[segment_index] < tf.shape(features["rgb"])[1]:
@@ -256,6 +255,7 @@ def split_data(data_dir, input_dataset, shard_size=85, num_classes=1000, file_ty
         video_size = tf.shape(features["rgb"])[1]
         segment_time = segment_start_times[segment_index]
         print(f"Error, video not long enough {video_size} for segment start time {segment_time}")
+        assert False
     video_number += 1
   for shard_number in range(len(video_holder)):
     if len(video_holder[shard_number]) != 0:
