@@ -99,7 +99,10 @@ def compute_and_save(data_dir, input_dir, num_classes=1000):
         first_of_class = False
         
       else:
+        num_temperoo = 0
         for comparison_segment in video_holder:
+          print(num_temperoo)
+          num_temperoo += 1
           #Check if segment to compare with has already been calculated.
           comparison_context = comparison_segment[0]
           comparison_features = comparison_segment[1]
