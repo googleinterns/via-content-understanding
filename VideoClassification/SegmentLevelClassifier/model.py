@@ -313,7 +313,7 @@ class SegmentClassifier:
       units=1,
       activation=tf.keras.activations.sigmoid,
       kernel_regularizer=tf.keras.regularizers.l2(1e-5),
-      name="main_fc"
+      name="main_fc2"
     )
 
   def build_model(self, input_shape, second_input_shape, batch_size):
