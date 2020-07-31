@@ -58,8 +58,6 @@ expert_to_features = {
 	experts.senet: senet_path,
 	experts.speech_expert: speech_path,
 	experts.r2p1d: r2p1d_path,
-	experts.ocr_expert: ocr_path,
-	experts.densenet: densenet_path,
-	experts.audio_expert: audio_path,
-	experts.face_expert: face_path
+	experts.ocr: ocr_path,
+	experts.densenet: densenet_path
 }

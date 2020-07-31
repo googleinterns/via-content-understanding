@@ -13,6 +13,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
+
 """
 
 import tensorflow as tf
@@ -36,49 +37,24 @@ class GatedEmbeddingModule(tf.keras.layers.Layer):
         linear_layer_one: a Dense layer that performs W_1 * Z_0 + B_1.
         linear_layer_two: a Dense layer that performs W_2 * Z_1 + B_2 and
             applies a sigmoid.
-        batch_norm: a Batch Normalization layer for the activiations.
-    """
-    def __init__(self, output_dimension, kernel_initializer, bias_initializer):
-        """Initializes a Gated Embedding Module.
 
-        Parameters:
-            output_dimension: the dimensionality of the output.
-            kernel_initializer: the way to initialize the dense layer's kernels.
-            bias_initializer: the way to initialize the dense layer's biases.
-        """ 
+    """
+    def __init__(self, input_dimension, output_dimension):
         super(GatedEmbeddingModule, self).__init__()
 
         self.linear_layer_one = tf.keras.layers.Dense(
-            output_dimension,
-            kernel_initializer=kernel_initializer,
-            bias_initializer=bias_initializer)
-
+            output_dimension, input_shape=(input_dimension,))
         self.linear_layer_two = tf.keras.layers.Dense(
-            output_dimension,
-            kernel_initializer=kernel_initializer,
-            bias_initializer=bias_initializer)
-
-        self.batch_norm = tf.keras.layers.BatchNormalization(momentum=0.1)
+            output_dimension, input_shape=(output_dimension,), 
+            activation="sigmoid")
 
     def call(self, inputs):
-        """Executes forward pass on the gated embedding module.
-
-        Parameters:
-            inputs: the input tensor of shape batch size x feature size.
-
-        Returns: A l2 tensor normalized on the last axis of shape batch size x
-            output dimension size.
-        """
-
         layer_one_activations = self.linear_layer_one(inputs)
         layer_two_activations = self.linear_layer_two(layer_one_activations)
 
-        layer_two_activations = self.batch_norm(layer_two_activations)
-        layer_two_activations = tf.nn.sigmoid(layer_two_activations)
-
         unscaled_activations = layer_one_activations * layer_two_activations
 
-        scaled_activations = tf.math.l2_normalize(unscaled_activations, axis=-1)
+        scaled_activations = tf.keras.backend.l2_normalize(unscaled_activations)
 
         return scaled_activations
 

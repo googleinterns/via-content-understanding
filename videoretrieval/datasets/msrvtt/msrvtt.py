@@ -21,7 +21,7 @@ from . import metadata
 from helper import precomputed_features
 from . import constants
 
-import cache
+import os
 
 class MSRVTTDataset(BaseVideoDataset):
     """An implementation of BaseVideoDataset for the MSR-VTT dataset."""
@@ -33,10 +33,6 @@ class MSRVTTDataset(BaseVideoDataset):
     @property
     def dataset_downloaded(self):
         return False
-
-    @property
-    def captions_per_video(self):
-        return 20
 
     def download_dataset(self):
         """Downloads the dataset and stores it to disk."""
