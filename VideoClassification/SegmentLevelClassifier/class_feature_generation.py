@@ -68,7 +68,6 @@ def compute_and_save(data_dir, input_dir, type_comparison="train", num_classes=1
         video_holder_input.append((context, features))
     else:
       video_holder_input = video_holder_comparison
-
     for segment in video_holder_input:
       print(f"Processing segment {num_segment}")
       context = segment[0]

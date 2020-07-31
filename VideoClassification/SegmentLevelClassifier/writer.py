@@ -241,17 +241,12 @@ def split_data(data_dir, input_dataset, shard_size=85, num_classes=1000, file_ty
   #Features: rgb, audio for 1 segment
   #Convert input_dataset from video level data to multiple segments.
   video_holder = [[] for i in range(num_classes)]
-  print(len(video_holder))
   video_number = 0
   number_faulty_examples = 0
   for video in input_dataset:
     print(f"Processing video number {video_number}")
     context = video[0]
     features = video[1]
-    print(tf.convert_to_tensor(context["id"])[0].numpy())
-    if tf.convert_to_tensor(context["id"])[0].numpy() == b'nKut':
-      print(context)
-      print(features)
     segment_start_times = context["segment_start_times"].values.numpy()
     for segment_index in range(len(segment_start_times)):
       if segment_start_times[segment_index] < tf.shape(features["rgb"])[1]:
@@ -263,7 +258,6 @@ def split_data(data_dir, input_dataset, shard_size=85, num_classes=1000, file_ty
         new_features = {}
         new_features["rgb"] = features["rgb"][:,segment_start_times[segment_index]:segment_start_times[segment_index]+5,:]
         new_features["audio"] = features["audio"][:,segment_start_times[segment_index]:segment_start_times[segment_index]+5,:]
-
         label = new_context["segment_label"]
         label = convert_labels(label).numpy()[0]
         serialized_video = serialize_data(new_context, new_features, "segment")
@@ -271,12 +265,6 @@ def split_data(data_dir, input_dataset, shard_size=85, num_classes=1000, file_ty
       else:
         video_size = tf.shape(features["rgb"])[1]
         segment_time = segment_start_times[segment_index]
-        print(context["segment_start_times"].values)
-        print(context["labels"].values)
-        print(context["segment_labels"].values)
-        print(context["segment_scores"].values)
-        print(context)
-        print(features)
         print(f"Error, video not long enough {video_size} for segment start time {segment_time}")
         number_faulty_examples += 1
     video_number += 1

@@ -43,12 +43,6 @@ def train(data_dir, epochs=50, lr=0.0002, num_clusters=150, batch_size=20, fc_un
   tensor_board = tf.keras.callbacks.TensorBoard(log_dir="logs150", update_freq=100)
   model.fit(train_dataset, epochs=epochs, callbacks=[tensor_board])
   model.save_weights("model_weights_segment_level_50.h5")
-
-  #Evaluate model
-  eval_dict = evaluate.evaluate_model(model, data_reader, test_dir, batch_size)
-
-  print(eval_dict)
-
   return model
 
 if __name__ == "__main__":

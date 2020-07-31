@@ -163,31 +163,25 @@ class VideoDataset():
     return (contexts["id"], batch_video_matrix, batch_labels)
 
 class BasicDataset():
-  """Reads TFRecords of SequenceExamples for Segment level data.
+  """Reads TFRecords of SequenceExamples for Segment level data. Used in candidate_generation.py
 
-  The TFRecords must contain SequenceExamples with the sparse in64 'labels'
-  context feature and a fixed length byte-quantized feature vector, obtained
-  from the features in 'feature_names'. The quantized features will be mapped
-  back into a range between min_quantized_value and max_quantized_value.
+  The TFRecords must contain SequenceExamples with the sparse int64 'labels', string 'id', int64 'segment_labels',
+  int64 segment_start_times', and float32 'segment_scores' context features and a fixed length byte-quantized
+  feature vector, obtained from the features in 'feature_names'.
   """
 
   def __init__(
       self,
       num_classes=1000,
       feature_sizes=[1024, 128],
-      feature_names=["rgb", "audio"],
-      max_frames=300,
-      segment_size=5,
-      shuffle=True):
+      feature_names=["rgb", "audio"]
+      ):
     """Construct a BasicDataset.
 
     Args:
       num_classes: a positive integer for the number of classes.
       feature_sizes: positive integer(s) for the feature dimensions as a list. Must be same size as feature_names
       feature_names: the feature name(s) in the tensorflow record as a list. Must be same size as feature_sizes
-      max_frames: the maximum number of frames to process.
-      segment_size: number of frames per segment.
-      shuffle: set to True to shuffle the data per epoch.
     """
 
     assert len(feature_names) == len(feature_sizes), (
@@ -196,8 +190,6 @@ class BasicDataset():
     self.num_classes = num_classes
     self.feature_sizes = feature_sizes
     self.feature_names = feature_names
-    self.max_frames = max_frames
-    self.segment_size = segment_size
 
   def get_dataset(self, data_dir, batch_size, type="train"):
     """Returns TFRecordDataset after it has been parsed.
@@ -244,29 +236,23 @@ class BasicDataset():
 class SplitDataset():
   """Reads TFRecords of SequenceExamples for Segment level data. Used for the input pipeline where data is split.
 
-  The TFRecords must contain SequenceExamples with the sparse in64 'labels'
-  context feature and a fixed length byte-quantized feature vector, obtained
-  from the features in 'feature_names'. The quantized features will be mapped
-  back into a range between min_quantized_value and max_quantized_value.
+  The TFRecords must contain SequenceExamples with the sparse int64 'labels', string 'id', int64 'segment_labels',
+  int64 segment_start_times', and float32 'segment_scores' context features and a fixed length byte-quantized
+  feature vector, obtained from the features in 'feature_names'.
   """
 
   def __init__(
       self,
       num_classes=1000,
       feature_sizes=[1024, 128],
-      feature_names=["rgb", "audio"],
-      max_frames=300,
-      segment_size=5,
-      shuffle=True):
+      feature_names=["rgb", "audio"]
+      ):
     """Construct a SplitDataset.
 
     Args:
       num_classes: a positive integer for the number of classes.
       feature_sizes: positive integer(s) for the feature dimensions as a list. Must be same size as feature_names
       feature_names: the feature name(s) in the tensorflow record as a list. Must be same size as feature_sizes
-      max_frames: the maximum number of frames to process.
-      segment_size: number of frames per segment.
-      shuffle: set to True to shuffle the data per epoch.
     """
 
     assert len(feature_names) == len(feature_sizes), (
@@ -275,8 +261,6 @@ class SplitDataset():
     self.num_classes = num_classes
     self.feature_sizes = feature_sizes
     self.feature_names = feature_names
-    self.max_frames = max_frames
-    self.segment_size = segment_size
 
   def get_dataset(self, data_dir, batch_size, type="train"):
     """Returns TFRecordDataset after it has been parsed.
@@ -336,10 +320,9 @@ class SplitDataset():
 class SegmentDataset():
   """Reads TFRecords of SequenceExamples for Segment level data. Used for the input pipeline where class specific features are generated.
 
-  The TFRecords must contain SequenceExamples with the sparse in64 'labels'
-  context feature and a fixed length byte-quantized feature vector, obtained
-  from the features in 'feature_names'. The quantized features will be mapped
-  back into a range between min_quantized_value and max_quantized_value.
+  The TFRecords must contain SequenceExamples with the string 'id', int64 'segment_label',
+  int64 segment_start_time', and float32 'segment_score' context features and a fixed length byte-quantized
+  feature vector, obtained from the features in 'feature_names'.
   """
 
   def __init__(
@@ -347,9 +330,6 @@ class SegmentDataset():
       num_classes=1000,
       feature_sizes=[1024, 128],
       feature_names=["rgb", "audio"],
-      max_frames=300,
-      segment_size=5,
-      shuffle=True,
       class_num=-1):
     """Construct a SegmentDataset.
 
@@ -357,9 +337,6 @@ class SegmentDataset():
       num_classes: a positive integer for the number of classes.
       feature_sizes: positive integer(s) for the feature dimensions as a list. Must be same size as feature_names
       feature_names: the feature name(s) in the tensorflow record as a list. Must be same size as feature_sizes
-      max_frames: the maximum number of frames to process.
-      segment_size: number of frames per segment.
-      shuffle: set to True to shuffle the data per epoch.
       class_num: determines which class file to read. To read all files, do not modify class_num.
     """
 
@@ -369,8 +346,6 @@ class SegmentDataset():
     self.num_classes = num_classes
     self.feature_sizes = feature_sizes
     self.feature_names = feature_names
-    self.max_frames = max_frames
-    self.segment_size = segment_size
     self.class_num = class_num
 
   def get_dataset(self, data_dir, batch_size, type="train"):
@@ -433,9 +408,9 @@ class SegmentDataset():
 class InputDataset():
   """Reads TFRecords of SequenceExamples for Segment level data. Used for input to the model
 
-  The TFRecords must contain SequenceExamples with the sparse in64 'labels'
-  context feature and a fixed length byte-quantized feature vector, obtained
-  from the features in 'feature_names'. The quantized features will be mapped
+  The TFRecords must contain SequenceExamples with the string 'id', int64 'segment_label',
+  int64 segment_start_time', and float32 'segment_score' context features and a fixed length byte-quantized
+  feature vector, obtained from the features in 'feature_names'. The quantized features will be mapped
   back into a range between min_quantized_value and max_quantized_value.
   """
 
@@ -444,9 +419,6 @@ class InputDataset():
       num_classes=1000,
       feature_sizes=[1024, 128, 2],
       feature_names=["rgb", "audio", "class_features"],
-      max_frames=300,
-      segment_size=5,
-      shuffle=True,
       class_num=-1):
     """Construct a SegmentDataset.
 
@@ -454,9 +426,6 @@ class InputDataset():
       num_classes: a positive integer for the number of classes.
       feature_sizes: positive integer(s) for the feature dimensions as a list. Must be same size as feature_names
       feature_names: the feature name(s) in the tensorflow record as a list. Must be same size as feature_sizes
-      max_frames: the maximum number of frames to process.
-      segment_size: number of frames per segment.
-      shuffle: set to True to shuffle the data per epoch.
       class_num: determines which class file to read. To read all files, do not modify class_num.
     """
 
@@ -466,8 +435,6 @@ class InputDataset():
     self.num_classes = num_classes
     self.feature_sizes = feature_sizes
     self.feature_names = feature_names
-    self.max_frames = max_frames
-    self.segment_size = segment_size
     self.class_num = class_num
 
   def get_video_matrix(self, features, feature_size, max_quantized_value, min_quantized_value):
@@ -541,7 +508,6 @@ class InputDataset():
     segment_label = tf.reshape(tf.cast(context["segment_label"], tf.float32), [1,])
     class_features_list = tf.concat([segment_label, class_features_list],0)
     label = context["segment_score"]
-    print(label)
     feature_dim = len(video_matrix.get_shape()) - 1
     video_matrix = tf.nn.l2_normalize(video_matrix, feature_dim)
     return ((video_matrix, class_features_list), label)
