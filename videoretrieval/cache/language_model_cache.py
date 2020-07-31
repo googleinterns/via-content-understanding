@@ -227,24 +227,17 @@ def unserialize_embeddings_wrapper(text_max_length):
     return unserialize_data
 
 def unserialize_encodings_wrapper(text_max_length):
-    """Wrapper for unserialize function.
+    """Wrapper for unserialize cached encodings.
 
     Parameters:
         text_max_length: the length to zero-pad the contextual embeddings to.
-        contextual_embeddings_dim: the last dimension of the contextual
-            embeddings.
 
     Returns: a function that maps from a serialized protobuf string to a tuple
-        with two elements: the first being the video id, the second being a
-        tensor of size text_max_length x contextual_embeddings_dim.
+        with three elements: the first being the video id, the second the
+        encoded captions, and third being the attention mask.
     """ 
 
     def unserialize_data(serialized_item):
-        """Unserializes a serialized protobuf feature.
-
-        Returns: a tuple of 2 items, the first being the video id as a string
-            tensor, the second being the contextual embeddings.
-        """
         example = tf.io.parse_single_example(serialized_item, encodings_schema)
         video_id = example["video_id"]
 
@@ -257,7 +250,7 @@ def unserialize_encodings_wrapper(text_max_length):
 
         padding_start_index = padding_token_indexes[0][0]
         attention_mask = tf.repeat([
-            1, 0], [padding_start_index, 37 - padding_start_index])
+            1, 0], [padding_start_index, text_max_length - padding_start_index])
 
         return (video_id, encodings, attention_mask)
 

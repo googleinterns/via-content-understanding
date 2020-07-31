@@ -19,6 +19,25 @@ Wrappers for datasets for encoders.
 import cache
 import tensorflow as tf
 import numpy as np
+import enum
+
+class TrainingDatasetType(enum.Enum):
+    EmbeddingsDataset = 0
+    EncodingsDataset = 1
+
+class MapFunctionWrapper:
+    def __init__(self, embeddings_function, encodings_function):
+        self.embeddings_function = embeddings_function
+        self.encodings_function = encodings_function
+
+def get_map_function(map_function_wrapper, training_dataset_type):
+    if training_dataset_type == TrainingDatasetType.EmbeddingsDataset:
+        return map_function_wrapper.embeddings_function
+    elif training_dataset_type == TrainingDatasetType.EncodingsDataset:
+        return map_function_wrapper.encodings_function
+    else:
+        raise ValueError()
+
 
 def replace_video_id_with_expert_features_wrapper(precomputed_features):
     """Returns a function that adds precomputed features to an example.
@@ -50,7 +69,7 @@ def replace_video_id_with_expert_features_wrapper(precomputed_features):
 
         return [np.array(missing_modalities)] + expert_features
 
-    def wrapper(video_id, ids):  
+    def embeddings_wrapper(video_id, ids):  
         expert_data = tf.numpy_function(
             get_expert_features, [video_id], output_shape)
 
@@ -73,7 +92,9 @@ def replace_video_id_with_expert_features_wrapper(precomputed_features):
             attention_mask,
             missing_modalities)
 
-    return wrapper, encodings_wrapper
+    return MapFunctionWrapper(
+        embeddings_function=wrapper,
+        encodings_function=encodings_wrapper)
 
 def update_dataset_shape_wrapper(experts, language_model):
     """Updates the shapes of expert features and text embedding a given dataset.
@@ -93,7 +114,7 @@ def update_dataset_shape_wrapper(experts, language_model):
     expert_shapes = [expert.embedding_shape for expert in experts]
     contextual_embeddings_shape = language_model.contextual_embeddings_shape
 
-    def map_fn(
+    def embeddings_map_fn(
         video_id, expert_features, contextual_embeddings, missing_modalities):
         for expert_feature, shape in zip(expert_features, expert_shapes):
             expert_feature.set_shape(shape)
@@ -107,14 +128,17 @@ def update_dataset_shape_wrapper(experts, language_model):
             contextual_embeddings,
             missing_modalities)
 
-    def map_fn_encodings(
-        video_id, expert_features, encodings, attention_mask, missing_modalities):
+    def encodings_map_fn(
+        video_id, expert_features, encodings, attention_mask,
+        missing_modalities):
         for expert_feature, shape in zip(expert_features, expert_shapes):
             expert_feature.set_shape(shape)
 
-        encodings.set_shape((37,))
+        encodings.set_shape(
+            (language_model.contextual_embeddings_shape[0],))
         missing_modalities.set_shape(num_experts)
-        attention_mask.set_shape((37,))
+        attention_mask.set_shape(
+            (language_model.contextual_embeddings_shape[0],))
 
         return (
             video_id,
@@ -123,11 +147,14 @@ def update_dataset_shape_wrapper(experts, language_model):
             attention_mask,
             missing_modalities)
 
-    return map_fn, map_fn_encodings
+    return MapFunctionWrapper(
+        embeddings_fn=embeddings_map_fn,
+        encodings_fn=encodings_map_fn)
 
 
 def match_cached_embeddings_with_experts(
-    language_model, experts, precomputed_features, datasets, map_fn_idx=0):
+    language_model, experts, precomputed_features, datasets,
+    training_dataset_type):
     """Matches items in a dataset with the precomputed features
 
     Parameters:
@@ -143,12 +170,18 @@ def match_cached_embeddings_with_experts(
 
     """
 
-    map_fn = replace_video_id_with_expert_features_wrapper(precomputed_features)[map_fn_idx]
-    set_shape_fn = update_dataset_shape_wrapper(experts, language_model)[map_fn_idx]
+    match_features_fn = get_map_function(
+        replace_video_id_with_expert_features_wrapper(precomputed_features),
+        training_dataset_type)
+    set_shape_fn = get_map_function(
+        update_dataset_shape_wrapper(experts, language_model),
+        training_dataset_type) 
 
     return [(dataset
-        .map(map_fn, num_parallel_calls=tf.data.experimental.AUTOTUNE)
-        .map(set_shape_fn, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+        .map(
+            match_features_fn, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+        .map(
+            set_shape_fn, num_parallel_calls=tf.data.experimental.AUTOTUNE)
         ) for dataset in datasets]
 
 def is_expert_value_missing(expert_value):
@@ -220,31 +253,29 @@ def get_precomputed_features(source_dataset, experts):
 
     return precomputed_features
 
-def sample_captions(ds, captions_per_video):
+def sample_captions(ds, captions_per_video, dataset_type):
     """Given a dataset, samples one caption per video."""
     def random_index(sample):
         return np.random.randint(0, sample.shape[0]) 
 
-    def sample_caption_wrapper(video_ids_batch, contextual_embeddings_batch):
+    def sample_captions_embeddings(video_ids_batch, contextual_embeddings_batch):
         index = tf.numpy_function(
             random_index,
             [contextual_embeddings_batch],
             tf.int64)
 
         return video_ids_batch[index], contextual_embeddings_batch[index]
-    
-    return ds.batch(captions_per_video).map(sample_caption_wrapper,
-        num_parallel_calls=tf.data.experimental.AUTOTUNE)
 
-def sample_captions_for_encodings(ds, captions_per_video):
-    def random_index(sample):
-        return np.random.randint(0, sample.shape[0])
-
-    def sample_captions_wrapper(video_ids_batch, encodings, token_lengths):
+    def sample_captions_encodings(video_ids_batch, encodings, attention_masks):
         index = tf.numpy_function(random_index, [encodings], tf.int64)
-        return video_ids_batch[index], encodings[index], token_lengths[index]
+        return video_ids_batch[index], encodings[index], attention_masks[index]
+    
+    map_fn = get_map_function(
+        MapFunctionWrapper(
+            sample_captions_embeddings, sample_captions_encodings),
+        dataset_type)
 
-    return ds.batch(captions_per_video).map(sample_captions_wrapper,
+    return ds.batch(captions_per_video).map(map_fn,
         num_parallel_calls=tf.data.experimental.AUTOTUNE)
 
 def generate_encoder_datasets(language_model, source_dataset, experts):
@@ -272,12 +303,14 @@ def generate_encoder_datasets(language_model, source_dataset, experts):
     test_ds = cache.get_cached_language_model_embeddings(
         source_dataset, language_model, "test")
 
-    train_ds = sample_captions(train_ds, source_dataset.captions_per_video)
+    return generate_dataset(
+        language_model=language_model,
+        experts=experts,
+        source_dataset=source_dataset,
+        dataset_type=TrainingDatasetType.EmbeddingsDataset,
+        dataset_splits=[train_ds, valid_ds, test_ds]
+        splits_to_sample=[0])
 
-    precomputed_features = get_precomputed_features(source_dataset, experts)
-
-    return match_cached_embeddings_with_experts(language_model, experts,
-        precomputed_features, [train_ds, valid_ds, test_ds])
 
 def generate_language_model_fine_tuning_datasets(
     language_model, source_dataset, experts):
@@ -291,9 +324,26 @@ def generate_language_model_fine_tuning_datasets(
     test_ds = cache.get_cached_language_model_encodings(
         source_dataset, language_model, "test").cache()
 
-    train_ds = sample_captions_for_encodings(
-        train_ds, source_dataset.captions_per_video)
+    return generate_dataset(
+        language_model=language_model,
+        experts=experts,
+        source_dataset=source_dataset,
+        dataset_type=TrainingDatasetType.EncodingsDataset,
+        dataset_splits=[train_ds, valid_ds, test_ds],
+        splits_to_sample=[0])
+
+def generate_dataset(
+    language_model, experts, source_dataset, dataset_type, dataset_splits,
+    splits_to_sample):
+
+    for split_index in splits_to_sample:
+        dataset_splits[split_index] = sample_captions(
+            ds=dataset_splits[split_index],
+            captions_per_video=source_dataset.captions_per_video,
+            dataset_type=dataset_type)
+
     precomputed_features = get_precomputed_features(source_dataset, experts)
 
-    return match_cached_embeddings_with_experts(language_model, experts,
-        precomputed_features, [train_ds, valid_ds, test_ds], map_fn_idx=1)
+    return match_cached_embeddings_with_experts(
+        language_model, experts, precomputed_features, dataset_splits,
+        dataset_type)

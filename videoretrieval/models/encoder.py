@@ -184,11 +184,12 @@ class EncoderFineTuning(tf.keras.Model):
 
         self.video_encoder = encoder.video_encoder
         self.text_encoder = encoder.text_encoder
-        self.language_model = language_model
+        self.language_model = language_model.model
+        self.language_model_batch_size = language_model.batch_size
         self.loss_hyperparameter_m = encoder.loss_hyperparameter_m
 
     def compile(
-            self, optimizer, loss_fn, recall_at_k_bounds, captions_per_video, lm_batch_size):
+            self, optimizer, loss_fn, recall_at_k_bounds, captions_per_video):
         """Complies the encoder.
 
         Arguments:
@@ -205,47 +206,39 @@ class EncoderFineTuning(tf.keras.Model):
 
         self.recall_at_k_labels = [f"R_{k}" for k in recall_at_k_bounds]
         self.captions_per_video = captions_per_video
-        self.lm_batch_size = lm_batch_size
 
-    def zero_padding_token_embeddings(self, embedding_batch, lengths):
-        def map_fn(embedding, num_tokens):
-            output = tf.zeros_like(embedding)
-            output = tf.concat(
-                (embedding[:num_tokens], embedding[num_tokens:]), axis=0)
-            return output, num_tokens
 
-        return tf.map_fn(map_fn, (embedding_batch, lengths),
-            num_parallel_iterations=self.lm_batch_size)[0]
-
-    def language_model_forward_pass(self, text_tokens, attention_mask):
+    def language_model_forward_pass(
+            self, text_tokens, attention_mask, training=False):
         embeddings = []
         num_tokens = text_tokens.shape[0]
 
-        batches = math.ceil(num_tokens / 64)
+        batches = math.ceil(num_tokens / self.language_model_batch_size)
 
         for index in range(batches):
-            text_tokens_shard = text_tokens[64*index:64*(index+1)]
-            attention_mask_shard = attention_mask[64*index:64*(index+1)]
-            embeddings_shard = self.language_model(
-                text_tokens_shard, attention_mask=attention_mask_shard)[0]
-
-            embeddings_shard = embeddings_shard * tf.cast(
-                attention_mask_shard, tf.float32)[:, :, None]
+            start_index = self.language_model_batch_size * index
+            end_index = start_index + self.language_model_batch_size
+            text_tokens_shard = text_tokens[start_index:end_index]
+            attention_mask_shard = attention_mask[start_index:end_index]
+            
+            embeddings.append(self.language_model(
+                text_tokens_shard,
+                attention_mask=attention_mask_shard,
+                training=training)[0])
             embeddings.append(embeddings_shard)
 
-        embeddings = tf.concat(embeddings, axis=0)
-        return embeddings
-        #return self.zero_padding_tokens_embeddings(
-        #    embedding, text_token_lengths)
+        return tf.concat(embeddings, axis=0)
 
     def forward_pass(
         self, video_ids, video_features, text_tokens, attention_masks,
-        missing_experts):
+        missing_experts, training=False):
+        
         video_embeddings = self.video_encoder([video_features, missing_experts])
         contextual_embeddings = self.language_model_forward_pass(
-            text_tokens, attention_masks)
+            text_tokens, attention_masks, training)
         text_embeddings, mixture_weights = self.text_encoder(
             contextual_embeddings)
+        
         return video_embeddings, text_embeddings, mixture_weights
 
     def train_step(self, video_text_pair_batch):
@@ -254,7 +247,7 @@ class EncoderFineTuning(tf.keras.Model):
 
         with tf.GradientTape() as gradient_tape:
             video_results, text_results, mixture_weights = self.forward_pass(
-                *video_text_pair_batch)
+                *video_text_pair_batch, training=True)
 
             loss = self.loss_fn(
                 video_results, text_results, mixture_weights, missing_experts,
@@ -295,17 +288,21 @@ class EncoderFineTuning(tf.keras.Model):
 
     def test_step(self, video_text_pair_batch):
         """Executes one test step."""
-        video_ids, video_features, text_tokens, text_token_lengths, missing_experts = video_text_pair_batch
+        (
+            video_ids,
+            video_features,
+            text_tokens,
+            attention_masks, 
+            missing_experts) = video_text_pair_batch
 
         video_ids = self.remove_repeated_video_data(video_ids)
         video_features = list(map(
             self.remove_repeated_video_data, video_features))
         missing_experts = self.remove_repeated_video_data(missing_experts)
 
-        video_results = self.video_encoder([video_features, missing_experts])
-
-
-        video_results, text_results, mixture_weights = self.forward_pass(video_ids, video_features, text_tokens, text_token_lengths, missing_experts)
+        video_results, text_results, mixture_weights = self.forward_pass(
+            video_ids,video_features, text_tokens, text_token_lengths,
+            missing_experts, training=False)
 
         valid_metrics = {}
         loss = []
