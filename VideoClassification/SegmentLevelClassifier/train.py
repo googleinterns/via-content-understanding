@@ -18,7 +18,7 @@ import readers
 import reader_utils
 import tensorflow as tf
 
-def train(data_dir, epochs=50, lr=0.0002, num_clusters=50, batch_size=20, fc_units=512):
+def train(data_dir, epochs=50, lr=0.0002, num_clusters=150, batch_size=20, fc_units=512):
   """Train the video classifier model.
 
   Args:
@@ -40,7 +40,7 @@ def train(data_dir, epochs=50, lr=0.0002, num_clusters=50, batch_size=20, fc_uni
   model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=lr), loss="binary_crossentropy", metrics=["binary_accuracy"])
   model.summary()
   #Implement callbacks
-  tensor_board = tf.keras.callbacks.TensorBoard(log_dir="logs", update_freq=100)
+  tensor_board = tf.keras.callbacks.TensorBoard(log_dir="logs150", update_freq=100)
   model.fit(train_dataset, epochs=epochs, callbacks=[tensor_board])
   model.save_weights("model_weights_segment_level_50.h5")
 
