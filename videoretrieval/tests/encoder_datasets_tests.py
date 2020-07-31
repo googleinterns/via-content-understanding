@@ -111,7 +111,7 @@ class TestEncoderDatasetsFunctions(unittest.TestCase):
         map_fn = encoder_datasets.replace_video_id_with_expert_features_wrapper(
             self.mock_precomputed_features)
 
-        output = list(iter(mock_dataset.map(map_fn)))
+        output = list(iter(self.mock_dataset.map(map_fn)))
 
         for video_id, expert_features, _, missing_modalities in output:
             video_id = video_id.numpy().decode("utf-8")
