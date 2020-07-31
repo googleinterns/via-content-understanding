@@ -39,6 +39,7 @@ def train(data_dir, epochs=50, lr=0.0002, num_clusters=150, batch_size=20, fc_un
   model = model_generator.build_model(input_shape, second_input_shape, batch_size)
   model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=lr), loss="binary_crossentropy", metrics=["binary_accuracy"])
   model.summary()
+  
   #Implement callbacks
   tensor_board = tf.keras.callbacks.TensorBoard(log_dir="logs150", update_freq=100)
   model.fit(train_dataset, epochs=epochs, callbacks=[tensor_board])
