@@ -510,4 +510,4 @@ class InputDataset():
     label = context["segment_score"]
     feature_dim = len(video_matrix.get_shape()) - 1
     video_matrix = tf.nn.l2_normalize(video_matrix, feature_dim)
-    return ((video_matrix, class_features_list), label)
+    return ((video_matrix, segment_label), label)

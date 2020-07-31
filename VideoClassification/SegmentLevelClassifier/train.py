@@ -32,7 +32,7 @@ def train(data_dir, epochs=50, lr=0.0002, num_clusters=150, batch_size=20, fc_un
   video_input_shape = (batch_size, 5, 1024)
   audio_input_shape = (batch_size, 5, 128)
   input_shape = (5, 1152)
-  second_input_shape = (3)
+  second_input_shape = (1)
 
   #Compile and train model
   model_generator = model_lib.SegmentClassifier(num_clusters, video_input_shape, audio_input_shape, fc_units=fc_units, num_classes=data_reader.num_classes)
