@@ -106,11 +106,11 @@ class BERTModel(BaseLanguageModel):
             encoded to.
         """
 
-        tokenized = self.tokenizer(text, padding="max_length")
+        tokenized = self.tokenizer(text, padding="max_length", truncation=True)
 
-        input_ids = tokenized["input_ids"][:37]
+        input_ids = tokenized["input_ids"]
 
-        return input_ids, tokenized["attention_mask"][:37]
+        return input_ids, tokenized["attention_mask"]
 
     def forward(self, ids, attention_mask):
         """A forward pass on the model.

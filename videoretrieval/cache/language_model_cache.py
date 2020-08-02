@@ -31,10 +31,10 @@ embeddings_schema = {
 encodings_schema = {
     "video_id": tf.io.FixedLenFeature([], tf.string),
     "serialized_encodings": tf.io.FixedLenFeature([], tf.string),
+    "serialized_attention_masks": tf.io.FixedLenFeature([], tf.string)
 }
 
 base_path = Path(f"/mnt/disks/fast_ssd/cached_data/")
-
 
 def get_bytes_feature(value):
     """Gets a tf.train.Feature from the parameter value."""
@@ -85,15 +85,19 @@ def serialize_to_protobuf_wrapper(*args):
     """Wraps the serialize_to_protobuf function with tf.py_function."""
     return tf.py_function(serialize_to_protobuf, args, tf.string)
 
-def serialize_encodings(video_id, encodings, tokens):
+def serialize_encodings(video_id, encodings, attention_mask):
+    serialized_video_ids = tf.io.serialize_tensor(video_id)
     serialized_encodings = tf.io.serialize_tensor(encodings)
+    serialized_attention_masks = tf.io.serialize_tensor(attention_mask)
 
-    video_id_feature = get_bytes_feature(video_id)
+    video_id_feature = get_bytes_feature(serialized_video_ids)
     encodings_feature = get_bytes_feature(serialized_encodings)
+    attention_masks_feature = get_bytes_feature(serialized_attention_masks)
 
     feature = {
         "video_id": video_id_feature,
         "serialized_encodings": encodings_feature,
+        "serialized_attention_masks": attention_masks_feature,
     }
 
     protobuf = tf.train.Example(features=tf.train.Features(feature=feature))
@@ -239,19 +243,12 @@ def unserialize_encodings_wrapper(text_max_length):
 
     def unserialize_data(serialized_item):
         example = tf.io.parse_single_example(serialized_item, encodings_schema)
-        video_id = example["video_id"]
+        video_id = tf.io.parse_tensor(example["video_id"], tf.string)
 
         encodings = tf.io.parse_tensor(
             example["serialized_encodings"], tf.int64)
-
-        padding_token_indexes = tf.where(encodings == 0)
-        padding_token_indexes = tf.concat(
-            [padding_token_indexes, [[0]]], axis=0)
-
-        padding_start_index = padding_token_indexes[0][0]
-        attention_mask = tf.repeat([
-            1, 0], [padding_start_index, text_max_length - padding_start_index])
-
+        attention_mask = tf.io.parse_tensor(
+            example["serialized_attention_masks"], tf.int64)
         return (video_id, encodings, attention_mask)
 
     return unserialize_data
@@ -264,7 +261,7 @@ def get_cached_language_model_encodings(
     return dataset.map(
         unserialize_encodings_wrapper(
             language_model.contextual_embeddings_shape[0]),
-        num_parallel_calls=tf.data.experimental.AUTOTUNE)
+        num_parallel_calls=tf.data.experimental.AUTOTUNE).unbatch()
 
 
 def get_cached_language_model_embeddings(

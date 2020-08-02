@@ -16,6 +16,7 @@ limitations under the License.
 """
 import tensorflow as tf
 from cache import cache_language_model_embeddings, cache_language_model_encodings
+import numpy as np
 
 
 def get_encode_function(language_model):
@@ -32,15 +33,17 @@ def get_encode_function(language_model):
     """
 
     def encode_text(text):
-        result, tokens = language_model.encode(text.decode("utf-8"))
-        return result, tokens
+        text = list(np.char.decode(text.astype(np.bytes0), encoding="utf-8"))
+        result, attention_mask = language_model.encode(text)
+        return result, attention_mask
 
     def wrapper(video_id, text):
-        result, tokens = tf.numpy_function(
+        result, attention_mask = tf.numpy_function(
             encode_text, [text], (tf.int64, tf.int64))
-        result.set_shape(language_model.encoded_shape)
+        result.set_shape((20, language_model.encoded_shape[0]))
+        attention_mask.set_shape((20, language_model.encoded_shape[0]))
 
-        return video_id, result, tokens
+        return video_id, result, attention_mask
 
     return wrapper
 
@@ -121,9 +124,11 @@ def generate_and_cache_encodings(language_model, source_dataset):
     for ds_split, split_name in source_dataset.id_caption_pair_datasets:
         generate_encodings = get_encode_function(language_model)
 
-        ds_split = ds_split.map(
-            generate_encodings,
-            num_parallel_calls=tf.data.experimental.AUTOTUNE)
+        ds_split = (ds_split
+            .batch(source_dataset.captions_per_video)
+            .map(
+                generate_encodings))
+                #num_parallel_calls=tf.data.experimental.AUTOTUNE))
 
         cache_language_model_encodings(
             ds_split, source_dataset, language_model, split=split_name)
