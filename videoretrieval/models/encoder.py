@@ -185,7 +185,7 @@ class EncoderFineTuning(tf.keras.Model):
         self.video_encoder = encoder.video_encoder
         self.text_encoder = encoder.text_encoder
         self.language_model = language_model.model
-        self.language_model_batch_size = language_model.batch_size
+        self.language_model_batch_size = 64
         self.loss_hyperparameter_m = encoder.loss_hyperparameter_m
 
     def compile(
@@ -224,8 +224,7 @@ class EncoderFineTuning(tf.keras.Model):
             embeddings.append(self.language_model(
                 text_tokens_shard,
                 attention_mask=attention_mask_shard,
-                training=training)[0])
-            embeddings.append(embeddings_shard)
+                training=training)[0] * attention_mask_shard[:, :, None])
 
         return tf.concat(embeddings, axis=0)
 
@@ -301,7 +300,7 @@ class EncoderFineTuning(tf.keras.Model):
         missing_experts = self.remove_repeated_video_data(missing_experts)
 
         video_results, text_results, mixture_weights = self.forward_pass(
-            video_ids,video_features, text_tokens, text_token_lengths,
+            video_ids,video_features, text_tokens, attention_masks,
             missing_experts, training=False)
 
         valid_metrics = {}

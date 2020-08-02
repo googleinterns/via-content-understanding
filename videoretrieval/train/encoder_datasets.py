@@ -93,7 +93,7 @@ def replace_video_id_with_expert_features_wrapper(precomputed_features):
             missing_modalities)
 
     return MapFunctionWrapper(
-        embeddings_function=wrapper,
+        embeddings_function=embeddings_wrapper,
         encodings_function=encodings_wrapper)
 
 def update_dataset_shape_wrapper(experts, language_model):
@@ -148,8 +148,8 @@ def update_dataset_shape_wrapper(experts, language_model):
             missing_modalities)
 
     return MapFunctionWrapper(
-        embeddings_fn=embeddings_map_fn,
-        encodings_fn=encodings_map_fn)
+        embeddings_function=embeddings_map_fn,
+        encodings_function=encodings_map_fn)
 
 
 def match_cached_embeddings_with_experts(
@@ -308,7 +308,7 @@ def generate_encoder_datasets(language_model, source_dataset, experts):
         experts=experts,
         source_dataset=source_dataset,
         dataset_type=TrainingDatasetType.EmbeddingsDataset,
-        dataset_splits=[train_ds, valid_ds, test_ds]
+        dataset_splits=[train_ds, valid_ds, test_ds],
         splits_to_sample=[0])
 
 
