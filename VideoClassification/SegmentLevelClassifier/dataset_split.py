@@ -19,3 +19,7 @@ if __name__ == "__main__":
   segment_reader = readers.SplitDataset()
   input_dataset = segment_reader.get_dataset("/home/conorfvedova_google_com/data/segments/candidate_test", batch_size=1, type="test")
   writer.split_data("/home/conorfvedova_google_com/data/segments/split_test", input_dataset)
+
+#Cand gen and get labels. Split data into segments but save them however. Not necessarily by segment_label. Only save segments we have an output for.
+#Load segments and simply predict for every candidate generation example. Will most likely simply pass in cand_gen list and CSF lists as well and test on that.
+#Need to modify CSF so that it runs for multiple classes.
