@@ -259,35 +259,25 @@ def split_data(data_dir, input_dataset, shard_size=85, num_classes=1000, file_ty
     features = video[1]
     print(context)
     print(features)
-    if pipeline_type == "train":
-      segment_start_times = context["segment_start_times"].values.numpy()
-    elif pipeline_type == "test":
-      segment_start_times = context["segment_start_times"].numpy()
+    segment_start_times = context["segment_start_times"].values.numpy()
     for segment_index in range(len(segment_start_times)):
       if segment_start_times[segment_index] < tf.shape(features["rgb"])[1]:
         new_context, new_features = {}, {}
+        segment_score = context["segment_scores"].values.numpy()[segment_index]
+        new_context["id"] = context["id"]
+        new_context["segment_label"] = tf.convert_to_tensor([context["segment_labels"].values.numpy()[segment_index]])
+        new_context["segment_start_time"] = tf.convert_to_tensor([segment_start_times[segment_index]])
+        new_context["segment_score"] = tf.convert_to_tensor([context["segment_scores"].values.numpy()[segment_index]])
+        new_features["rgb"] = features["rgb"][:,segment_start_times[segment_index]:segment_start_times[segment_index]+5,:]
+        new_features["audio"] = features["audio"][:,segment_start_times[segment_index]:segment_start_times[segment_index]+5,:]
         if pipeline_type == "train":
-          segment_score = context["segment_scores"].values.numpy()[segment_index]
-          new_context["id"] = context["id"]
-          new_context["segment_label"] = tf.convert_to_tensor([context["segment_labels"].values.numpy()[segment_index]])
-          new_context["segment_start_time"] = tf.convert_to_tensor([segment_start_times[segment_index]])
-          new_context["segment_score"] = tf.convert_to_tensor([context["segment_scores"].values.numpy()[segment_index]])
-          new_features["rgb"] = features["rgb"][:,segment_start_times[segment_index]:segment_start_times[segment_index]+5,:]
-          new_features["audio"] = features["audio"][:,segment_start_times[segment_index]:segment_start_times[segment_index]+5,:]
           label = new_context["segment_label"]
           label = convert_labels(label).numpy()[0]
           serialized_video = serialize_data(new_context, new_features, "segment", pipeline_type=pipeline_type)
           video_holder[label].append(serialized_video)
         elif pipeline_type == "test":
-          segment_score = context["segment_scores"].numpy()[segment_index]
           if segment_score == 1:
-            new_context["id"] = context["id"]
-            new_context["segment_label"] = tf.convert_to_tensor([context["segment_labels"].numpy()[segment_index]])
-            new_context["segment_start_time"] = tf.convert_to_tensor([segment_start_times[segment_index]])
-            new_context["segment_score"] = tf.convert_to_tensor([context["segment_scores"].numpy()[segment_index]])
             new_context["segment_id"] = np.array(segment_index)
-            new_features["rgb"] = features["rgb"][:,segment_start_times[segment_index]:segment_start_times[segment_index]+5,:]
-            new_features["audio"] = features["audio"][:,segment_start_times[segment_index]:segment_start_times[segment_index]+5,:]
             candidate_classes = context["candidate_labels"].numpy()
             for candidate_class in candidate_classes:
               new_context_copy = new_context.copy()
