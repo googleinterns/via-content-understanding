@@ -288,6 +288,7 @@ def split_data(data_dir, input_dataset, shard_size=85, num_classes=1000, file_ty
         number_faulty_examples += 1
     video_number += 1
   for shard_number in range(len(video_holder)):
+    print(f"Class number {shard_number} has {len(video_holder[shard_number])} segments")
     if len(video_holder[shard_number]) != 0:
       save_shard(data_dir, video_holder[shard_number], file_type, shard_number)
   print(f"Number of faulty examples {number_faulty_examples}")
