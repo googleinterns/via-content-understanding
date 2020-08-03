@@ -274,6 +274,7 @@ def split_data(data_dir, input_dataset, shard_size=85, num_classes=1000, file_ty
           serialized_video = serialize_data(new_context, new_features, "segment", pipeline_type=pipeline_type)
           video_holder[label].append(serialized_video)
         elif pipeline_type == "test":
+          print(segment_index)
           if segment_score == 1:
             new_context["segment_id"] = np.array(segment_index)
             candidate_classes = context["candidate_labels"].values.numpy()
