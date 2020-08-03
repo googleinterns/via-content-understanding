@@ -85,7 +85,7 @@ def serialize_features(features):
   features = tf.train.FeatureLists(feature_list=features)
   return features
 
-def serialize_class_features(features, pipeline_type):
+def serialize_class_features(features):
   """Serialize features.
 
   Args:
@@ -165,6 +165,11 @@ def serialize_class_segment_context(context, pipeline_type):
   context["segment_label"] = convert_to_feature(segment_label.numpy(), "int")
   context["segment_start_time"] = convert_to_feature(segment_start_time.numpy(), "int")
   context["segment_score"] = convert_to_feature([context["segment_score"]], "float")
+  if pipeline_type == "test":
+    segment_id = context["segment_id"].numpy()
+    candidate_label = context["candidate_label"].numpy()
+    context["segment_id"] = convert_to_feature(segment_id,"int")
+    context["candidate_label"] = convert_to_feature(candidate_label, "int")
   context = tf.train.Features(feature=context)
   return context
 
@@ -185,7 +190,7 @@ def serialize_data(context, features, type, pipeline_type="train"):
     features = serialize_features(features)
   elif type == "csf":
     context = serialize_class_segment_context(context, pipeline_type)
-    features = serialize_class_features(features, pipeline_type)
+    features = serialize_class_features(features)
   else:
     print("Incorrect type chosen for serialization.")
   example = tf.train.SequenceExample(feature_lists=features, context=context)
