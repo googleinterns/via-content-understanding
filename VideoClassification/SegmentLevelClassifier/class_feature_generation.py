@@ -30,7 +30,7 @@ def calculate_cosine(segment1, segment2):
   similarity = np.array(similarity)
   return np.mean(similarity)
 
-def compute_and_save(data_dir, input_dir, type_comparison="train", num_classes=1000):
+def compute_and_save(data_dir, input_dir, comparison_directory="/home/conorfvedova_google_com/data/segments/split_validation", comparison_type="train", num_classes=1000):
   """Compute class specific features for input_dataset and save them to data_dir.
 
   Args:
@@ -42,7 +42,7 @@ def compute_and_save(data_dir, input_dir, type_comparison="train", num_classes=1
   for label in range(num_classes):
     shard = []
     comparison_dataset_reader = readers.SegmentDataset(class_num=label)
-    comparison_dataset = comparison_dataset_reader.get_dataset("/home/conorfvedova_google_com/data/segments/split_validation", batch_size=1, type="class")
+    comparison_dataset = comparison_dataset_reader.get_dataset(comparison_directory, batch_size=1, type="class")
     
     #Preload Data and convert to numpy for calculations
     video_holder_input = []
@@ -55,7 +55,7 @@ def compute_and_save(data_dir, input_dir, type_comparison="train", num_classes=1
         context["id"] = tf.convert_to_tensor(context["id"])[0].numpy()
         context["segment_score"] = context["segment_score"][0].numpy()
         video_holder_comparison.append((context, features))
-    if type_comparison == "test":
+    if comparison_type == "test":
       input_dataset_reader = readers.SegmentDataset(class_num=label)
       input_dataset = input_dataset_reader.get_dataset(input_dir, batch_size=1, type="class")
       for segment in input_dataset:
