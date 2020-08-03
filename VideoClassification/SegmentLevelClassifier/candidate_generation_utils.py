@@ -12,14 +12,15 @@ limitations under the License.
 
 Utils used to store data for candidate generation
 """
+import bisect
 import pandas as pd
 
-class PROBABILITY_HOLDER:
+class ProbabilityHolder:
   """Keeps track of the topk examples per class. Used for efficient candidate generation.
   """
 
   def __init__(self, class_csv, k):
-    """Initialize an instance of PROBABILITY_HOLDER.
+    """Initialize an instance of ProbabilityHolder.
 
     Args:
       class_csv: path to csv file containing the indices of the classes used, out of the 3.8k output classes from the video-level classifier.
@@ -35,27 +36,6 @@ class PROBABILITY_HOLDER:
     self.candidates = [[] for i in range(num_classes)]
     self.candidate_probs = [[] for i in range(num_classes)]
     self.num_videos = 0
-  
-  def binary_search(self, sorted_list, input):
-    """Binary search for the index in candidate_probs with the closest value to probability that is less than or equal to probability.
-
-    Args:
-      sorted_list: list of values to be searched. Sorted in increasing order
-      input: value to search for
-    """
-    low = 0
-    high = len(sorted_list)-1
-    while low <= high:
-      mid = (low + high) // 2
-      if sorted_list[mid] == input:
-        return mid
-      elif sorted_list[mid] < input:
-        low = mid + 1
-      else:
-        high = mid - 1
-    mid = (low + high) // 2
-    return mid
-
 
   def sorted_append(self, class_index, probability, video_id):
     """Add video_index to the sorted list.
@@ -67,11 +47,9 @@ class PROBABILITY_HOLDER:
     """
     candidate_probs = self.candidate_probs[class_index]
     candidates = self.candidates[class_index]
-
-    i = self.binary_search(candidate_probs, probability)
-
-    self.candidate_probs[class_index] = candidate_probs[:i+1] + [probability] + candidate_probs[i+1:]
-    self.candidates[class_index] = candidates[:i+1] + [video_id] + candidates[i+1:]
+    i = bisect.bisect(candidate_probs, probability)
+    self.candidate_probs[class_index].insert(i, probability)
+    self.candidates[class_index].insert(i, video_id)
 
   def sorted_insert(self, class_index, probability, video_id):
     """Add video_index to the sorted list, while removing the min.
@@ -84,11 +62,11 @@ class PROBABILITY_HOLDER:
     #Remove min
     candidate_probs = self.candidate_probs[class_index][1:]
     candidates = self.candidates[class_index][1:]
-
-    i = self.binary_search(candidate_probs, probability)
-    
-    self.candidate_probs[class_index] = candidate_probs[:i+1] + [probability] + candidate_probs[i+1:]
-    self.candidates[class_index] = candidates[:i+1] + [video_id] + candidates[i+1:]
+    i = bisect.bisect(candidate_probs, probability)
+    candidate_probs.insert(i, probability)
+    candidates.insert(i, video_id)
+    self.candidate_probs[class_index] = candidate_probs
+    self.candidates[class_index] = candidates
 
   def add_data(self, video_id, output_probs):
     """Add a datapoint to be sorted for the candidate generation.
