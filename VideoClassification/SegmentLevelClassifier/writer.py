@@ -120,7 +120,7 @@ def serialize_video_context(context):
   context["labels"] = convert_to_feature(labels.numpy(), "int")
   context["segment_labels"] = convert_to_feature(segment_labels.numpy(), "int")
   context["segment_start_times"] = convert_to_feature(segment_start_times.numpy(), "int")
-  context["segment_score"] = convert_to_feature(segment_scores.numpy(), "float")
+  context["segment_scores"] = convert_to_feature(segment_scores.numpy(), "float")
   context["candidate_labels"] = convert_to_feature(candidate_labels, "int")
   print(context)
   context = tf.train.Features(feature=context)
