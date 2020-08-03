@@ -278,7 +278,7 @@ def split_data(data_dir, input_dataset, shard_size=85, num_classes=1000, file_ty
         elif pipeline_type == "test":
           if segment_score == 1:
             new_context["segment_id"] = np.array(segment_index)
-            candidate_classes = context["candidate_labels"].numpy()
+            candidate_classes = context["candidate_labels"].values.numpy()
             for candidate_class in candidate_classes:
               new_context_copy = new_context.copy()
               new_features_copy = new_features.copy()
