@@ -19,12 +19,12 @@ import tensorflow as tf
 import tensorflow_datasets as tfds
 import writer
 
-def load_model(model_path, num_clusters=256, batch_size=80, random_frames=True, num_mixtures=2, fc_units=1024, iterations=300, num_classes=3862):
-  """Load Video Classifier model."""
-  video_input_shape = (batch_size, iterations, 1024)
-  audio_input_shape = (batch_size, iterations, 128)
-  input_shape = (iterations, 1152)
-  model_generator = model_lib.VideoClassifier(num_clusters, video_input_shape, audio_input_shape, fc_units=fc_units, num_classes=num_classes, num_mixtures=num_mixtures, iterations=iterations)
+def load_model(model_path, num_clusters=256, batch_size=80, random_frames=True, num_mixtures=2, fc_units=1024, num_input_frames=300, num_classes=3862):
+  """Load video classifier model."""
+  video_input_shape = (batch_size, num_input_frames, 1024)
+  audio_input_shape = (batch_size, num_input_frames, 128)
+  input_shape = (num_input_frames, 1152)
+  model_generator = model_lib.VideoClassifier(num_clusters, video_input_shape, audio_input_shape, fc_units=fc_units, num_classes=num_classes, num_mixtures=num_mixtures, iterations=num_input_frames)
   model = model_generator.build_model(input_shape, batch_size)
   model.load_weights(model_path)
   return model
@@ -33,14 +33,15 @@ def generate_candidates(input_dataset, model, k, class_csv):
   """Generate top k candidates per class.
 
   Args:
-    input_dataset: dataset to be chosen from
+    input_dataset: tf.dataset to be chosen from. Dataset must be attained from VideoClassifier from readers.py
     model: model used to rank data
     k: number of candidates per class
     class_csv: path to csv file containing the indices of the classes used, out of the 3.8k output classes from the video-level classifier.
+    The integers denoting chosen classes should be in the first column.
   Returns:
     candidates: list of lists where each inner list contains the class indices that the corresponding input data is a candidate for. len(candidates) == len(input_dataset)
   """
-  probability_holder = utils.PROBABILITY_HOLDER(class_csv, k)
+  probability_holder = utils.ProbabilityHolder(class_csv, k)
   video_num = 0
   input_dataset = tfds.as_numpy(input_dataset)
   for video in input_dataset:
