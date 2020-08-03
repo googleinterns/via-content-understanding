@@ -243,7 +243,7 @@ class SplitDataset():
 
   def __init__(
       self,
-      pipeline_type="train"
+      pipeline_type="train",
       num_classes=1000,
       feature_sizes=[1024, 128],
       feature_names=["rgb", "audio"]
@@ -298,7 +298,7 @@ class SplitDataset():
     }
     if self.pipeline_type == "test":
       context_features["candidate_labels"] = tf.io.VarLenFeature(tf.int64)
-    
+
     sequence_features = {
         feature_name: tf.io.FixedLenSequenceFeature([], dtype=tf.string)
         for feature_name in self.feature_names
