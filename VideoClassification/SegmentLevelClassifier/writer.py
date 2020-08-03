@@ -133,8 +133,6 @@ def serialize_segment_context(context, pipeline_type):
     context: context of the video
     pipeline_type: type of pipeline. Can be train or test
   """
-  segment_id
-  candidate_label
   video_id = tf.convert_to_tensor(context["id"])[0]
   segment_label = context["segment_label"]
   segment_start_time = context["segment_start_time"]
