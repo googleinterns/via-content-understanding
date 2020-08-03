@@ -277,6 +277,7 @@ def split_data(data_dir, input_dataset, shard_size=85, num_classes=1000, file_ty
           if segment_score == 1:
             new_context["segment_id"] = np.array(segment_index)
             candidate_classes = context["candidate_labels"].values.numpy()
+            print(candidate_classes)
             for candidate_class in candidate_classes:
               new_context_copy = new_context.copy()
               new_features_copy = new_features.copy()
@@ -289,6 +290,8 @@ def split_data(data_dir, input_dataset, shard_size=85, num_classes=1000, file_ty
         print(f"Error, video not long enough {video_size} for segment start time {segment_time}")
         number_faulty_examples += 1
     video_number += 1
+    print(video_holder)
+    assert False
   for shard_number in range(len(video_holder)):
     if len(video_holder[shard_number]) != 0:
       save_shard(data_dir, video_holder[shard_number], file_type, shard_number)
