@@ -257,6 +257,8 @@ def split_data(data_dir, input_dataset, shard_size=85, num_classes=1000, file_ty
     print(f"Processing video number {video_number}")
     context = video[0]
     features = video[1]
+    print(context)
+    print(features)
     if pipeline_type == "train":
       segment_start_times = context["segment_start_times"].values.numpy()
     elif pipeline_type == "test":
