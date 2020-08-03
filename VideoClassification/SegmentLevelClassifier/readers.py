@@ -243,6 +243,7 @@ class SplitDataset():
 
   def __init__(
       self,
+      pipeline_type="train"
       num_classes=1000,
       feature_sizes=[1024, 128],
       feature_names=["rgb", "audio"]
@@ -261,6 +262,7 @@ class SplitDataset():
     self.num_classes = num_classes
     self.feature_sizes = feature_sizes
     self.feature_names = feature_names
+    self.pipeline_type = pipeline_type
 
   def get_dataset(self, data_dir, batch_size, type="train"):
     """Returns TFRecordDataset after it has been parsed.
@@ -292,8 +294,11 @@ class SplitDataset():
       "labels": tf.io.VarLenFeature(tf.int64),
       "segment_labels": tf.io.VarLenFeature(tf.int64),
       "segment_start_times": tf.io.VarLenFeature(tf.int64),
-      "segment_scores": tf.io.VarLenFeature(tf.float32),
+      "segment_scores": tf.io.VarLenFeature(tf.float32)
     }
+    if self.pipeline_type == "test":
+      context_features["candidate_labels"] = tf.io.VarLenFeature(tf.int64)
+    
     sequence_features = {
         feature_name: tf.io.FixedLenSequenceFeature([], dtype=tf.string)
         for feature_name in self.feature_names

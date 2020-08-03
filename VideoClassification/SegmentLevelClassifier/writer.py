@@ -85,11 +85,12 @@ def serialize_features(features):
   features = tf.train.FeatureLists(feature_list=features)
   return features
 
-def serialize_class_features(features):
+def serialize_class_features(features, pipeline_type):
   """Serialize features.
 
   Args:
     features: features of the video
+    pipeline_type: type of pipeline. Can be train or test
   """
   audio = features["audio"].tostring()
   rgb = features["rgb"].tostring()
@@ -122,16 +123,18 @@ def serialize_video_context(context):
   context["segment_start_times"] = convert_to_feature(segment_start_times.numpy(), "int")
   context["segment_scores"] = convert_to_feature(segment_scores.numpy(), "float")
   context["candidate_labels"] = convert_to_feature(candidate_labels, "int")
-  print(context["candidate_labels"])
   context = tf.train.Features(feature=context)
   return context
 
-def serialize_segment_context(context):
+def serialize_segment_context(context, pipeline_type):
   """Serialize context for a segment.
 
   Args:
     context: context of the video
+    pipeline_type: type of pipeline. Can be train or test
   """
+  segment_id
+  candidate_label
   video_id = tf.convert_to_tensor(context["id"])[0]
   segment_label = context["segment_label"]
   segment_start_time = context["segment_start_time"]
@@ -142,14 +145,20 @@ def serialize_segment_context(context):
   context["segment_label"] = convert_to_feature(segment_label.numpy(), "int")
   context["segment_start_time"] = convert_to_feature(segment_start_time.numpy(), "int")
   context["segment_score"] = convert_to_feature(segment_score.numpy(), "float")
+  if pipeline_type == "test":
+    segment_id = context["segment_id"]
+    candidate_label = context["candidate_label"]
+    context["segment_id"] = convert_to_feature([segment_id],"int")
+    context["candidate_label"] = convert_to_feature([candidate_label], "int")
   context = tf.train.Features(feature=context)
   return context
 
-def serialize_class_segment_context(context):
+def serialize_class_segment_context(context, pipeline_type):
   """Serialize context for a segment from class feature generation.
 
   Args:
     context: context of the video
+    pipeline_type: type of pipeline. Can be train or test
   """
   segment_label = context["segment_label"]
   segment_start_time = context["segment_start_time"]
@@ -161,23 +170,24 @@ def serialize_class_segment_context(context):
   context = tf.train.Features(feature=context)
   return context
 
-def serialize_data(context, features, type):
+def serialize_data(context, features, type, pipeline_type="train"):
   """Serialize video or segment from context and features.
 
   Args:
     context: context of the video
     features: features of the video
     type: type of data to store. Can either be video, segment, or csf.
+    pipeline_type: type of pipeline. Can be train or test
   """
   if type == "video":
     context = serialize_video_context(context)
     features = serialize_features(features)
   elif type == "segment":
-    context = serialize_segment_context(context)
+    context = serialize_segment_context(context, pipeline_type)
     features = serialize_features(features)
   elif type == "csf":
-    context = serialize_class_segment_context(context)
-    features = serialize_class_features(features)
+    context = serialize_class_segment_context(context, pipeline_type)
+    features = serialize_class_features(features, pipeline_type)
   else:
     print("Incorrect type chosen for serialization.")
   example = tf.train.SequenceExample(feature_lists=features, context=context)
@@ -230,7 +240,7 @@ def save_data(new_data_dir, input_dataset, candidates, file_type="test", shard_s
     shard_number += 1
     shard = []
 
-def split_data(data_dir, input_dataset, shard_size=85, num_classes=1000, file_type="class"):
+def split_data(data_dir, input_dataset, shard_size=85, num_classes=1000, file_type="class", pipeline_type="train"):
   """Save data as TFRecords Datasets in new_data_dir.
 
   Args:
@@ -247,21 +257,42 @@ def split_data(data_dir, input_dataset, shard_size=85, num_classes=1000, file_ty
     print(f"Processing video number {video_number}")
     context = video[0]
     features = video[1]
-    segment_start_times = context["segment_start_times"].values.numpy()
+    if pipeline_type == "train":
+      segment_start_times = context["segment_start_times"].values.numpy()
+    elif pipeline_type == "test":
+      segment_start_times = context["segment_start_times"].numpy()
     for segment_index in range(len(segment_start_times)):
       if segment_start_times[segment_index] < tf.shape(features["rgb"])[1]:
-        new_context = {}
-        new_context["id"] = context["id"]
-        new_context["segment_label"] = tf.convert_to_tensor([context["segment_labels"].values.numpy()[segment_index]])
-        new_context["segment_start_time"] = tf.convert_to_tensor([segment_start_times[segment_index]])
-        new_context["segment_score"] = tf.convert_to_tensor([context["segment_scores"].values.numpy()[segment_index]])
-        new_features = {}
-        new_features["rgb"] = features["rgb"][:,segment_start_times[segment_index]:segment_start_times[segment_index]+5,:]
-        new_features["audio"] = features["audio"][:,segment_start_times[segment_index]:segment_start_times[segment_index]+5,:]
-        label = new_context["segment_label"]
-        label = convert_labels(label).numpy()[0]
-        serialized_video = serialize_data(new_context, new_features, "segment")
-        video_holder[label].append(serialized_video)
+        new_context, new_features = {}, {}
+        if pipeline_type == "train":
+          segment_score = context["segment_scores"].values.numpy()[segment_index]
+          new_context["id"] = context["id"]
+          new_context["segment_label"] = tf.convert_to_tensor([context["segment_labels"].values.numpy()[segment_index]])
+          new_context["segment_start_time"] = tf.convert_to_tensor([segment_start_times[segment_index]])
+          new_context["segment_score"] = tf.convert_to_tensor([context["segment_scores"].values.numpy()[segment_index]])
+          new_features["rgb"] = features["rgb"][:,segment_start_times[segment_index]:segment_start_times[segment_index]+5,:]
+          new_features["audio"] = features["audio"][:,segment_start_times[segment_index]:segment_start_times[segment_index]+5,:]
+          label = new_context["segment_label"]
+          label = convert_labels(label).numpy()[0]
+          serialized_video = serialize_data(new_context, new_features, "segment", pipeline_type=pipeline_type)
+          video_holder[label].append(serialized_video)
+        elif pipeline_type == "test":
+          segment_score = context["segment_scores"].numpy()[segment_index]
+          if segment_score == 1:
+            new_context["id"] = context["id"]
+            new_context["segment_label"] = tf.convert_to_tensor([context["segment_labels"].numpy()[segment_index]])
+            new_context["segment_start_time"] = tf.convert_to_tensor([segment_start_times[segment_index]])
+            new_context["segment_score"] = tf.convert_to_tensor([context["segment_scores"].numpy()[segment_index]])
+            new_context["segment_id"] = np.array(segment_index)
+            new_features["rgb"] = features["rgb"][:,segment_start_times[segment_index]:segment_start_times[segment_index]+5,:]
+            new_features["audio"] = features["audio"][:,segment_start_times[segment_index]:segment_start_times[segment_index]+5,:]
+            candidate_classes = context["candidate_labels"].numpy()
+            for candidate_class in candidate_classes:
+              new_context_copy = new_context.copy()
+              new_features_copy = new_features.copy()
+              new_context_copy["candidate_label"] = candidate_class
+              serialized_video = serialize_data(new_context_copy, new_features_copy, "segment", pipeline_type=pipeline_type)
+              video_holder[candidate_class].append(serialized_video)
       else:
         video_size = tf.shape(features["rgb"])[1]
         segment_time = segment_start_times[segment_index]
