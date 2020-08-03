@@ -420,7 +420,114 @@ class InputDataset():
       feature_sizes=[1024, 128, 2],
       feature_names=["rgb", "audio", "class_features"],
       class_num=-1):
-    """Construct a SegmentDataset.
+    """Construct a InputDataset.
+
+    Args:
+      num_classes: a positive integer for the number of classes.
+      feature_sizes: positive integer(s) for the feature dimensions as a list. Must be same size as feature_names
+      feature_names: the feature name(s) in the tensorflow record as a list. Must be same size as feature_sizes
+      class_num: determines which class file to read. To read all files, do not modify class_num.
+    """
+
+    assert len(feature_names) == len(feature_sizes), (
+        "length of feature_names (={}) != length of feature_sizes (={})".format(
+            len(feature_names), len(feature_sizes)))
+    self.num_classes = num_classes
+    self.feature_sizes = feature_sizes
+    self.feature_names = feature_names
+    self.class_num = class_num
+
+  def get_video_matrix(self, features, feature_size, max_quantized_value, min_quantized_value):
+    """Decodes features from an input string and quantizes it.
+
+    Args:
+      features: raw feature values
+      feature_size: length of each frame feature vector
+      max_quantized_value: the maximum of the quantized value.
+      min_quantized_value: the minimum of the quantized value.
+
+    Returns:
+      feature_matrix: matrix of all frame-features
+    """
+    decoded_features = tf.reshape(
+        tf.cast(tf.io.decode_raw(features, tf.uint8), tf.float32),
+        [-1, feature_size])
+
+    feature_matrix = utils.dequantize(decoded_features, max_quantized_value,
+                                      min_quantized_value)
+    return feature_matrix
+
+  def get_dataset(self, data_dir, batch_size, type="train", max_quantized_value=2, min_quantized_value=-2):
+    """Returns TFRecordDataset after it has been parsed.
+
+    Args:
+      data_dir: directory of the TFRecords
+    Returns:
+      dataset: TFRecordDataset of the input training data
+    """
+    files = tf.io.matching_files(os.path.join(data_dir, '%s*.tfrecord' % type))
+    files_dataset = tf.data.Dataset.from_tensor_slices(files)
+    files_dataset = files_dataset.batch(tf.cast(tf.shape(files)[0], tf.int64))
+    dataset = files_dataset.interleave(lambda files: tf.data.TFRecordDataset(files, num_parallel_reads=tf.data.experimental.AUTOTUNE))
+    parser = partial(self._parse_fn, max_quantized_value=max_quantized_value, min_quantized_value=min_quantized_value)
+    dataset = dataset.map(parser, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+    dataset = dataset.batch(batch_size, drop_remainder=True).prefetch(tf.data.experimental.AUTOTUNE)
+    return dataset
+
+  def _parse_fn(self, serialized_example, max_quantized_value=2, min_quantized_value=-2):
+    """Parse single Serialized Example from the TFRecords."""
+    context_features = {
+      "id": tf.io.FixedLenFeature([], tf.string),
+      "segment_label": tf.io.FixedLenFeature([], tf.int64),
+      "segment_start_time": tf.io.FixedLenFeature([], tf.int64),
+      "segment_score": tf.io.FixedLenFeature([], tf.float32)  
+    }
+    sequence_features = {
+        feature_name: tf.io.FixedLenSequenceFeature([], dtype=tf.string)
+        for feature_name in self.feature_names[:2]
+    }
+    sequence_features[self.feature_names[-1]] = tf.io.FixedLenSequenceFeature([2], dtype=tf.float32)
+    context, features = tf.io.parse_single_sequence_example(serialized_example, context_features=context_features, sequence_features=sequence_features)
+    num_features = len(self.feature_names)
+
+    assert num_features > 0, "No feature selected: feature_names is empty!"
+    assert len(self.feature_names) == len(self.feature_sizes), (
+        "length of feature_names (={}) != length of feature_sizes (={})".format(
+            len(self.feature_names), len(self.feature_sizes)))
+    
+    feature_matrices = [None] * (num_features-1)
+    for feature_index in range(num_features-1):
+      feature_matrix = self.get_video_matrix(
+        features[self.feature_names[feature_index]], self.feature_sizes[feature_index],
+        max_quantized_value, min_quantized_value
+        )
+      feature_matrices[feature_index] = feature_matrix
+    video_matrix = tf.concat(feature_matrices, 1)
+    class_features_list = features[self.feature_names[2]]
+    class_features_list = tf.reshape(class_features_list, [2,])
+    segment_label = tf.reshape(tf.cast(context["segment_label"], tf.float32), [1,])
+    class_features_list = tf.concat([segment_label, class_features_list],0)
+    label = context["segment_score"]
+    feature_dim = len(video_matrix.get_shape()) - 1
+    video_matrix = tf.nn.l2_normalize(video_matrix, feature_dim)
+    return ((video_matrix, class_features_list), label)
+
+class EvaluationDataset():
+  """Reads TFRecords of SequenceExamples for Segment level data. Used for input to the model
+
+  The TFRecords must contain SequenceExamples with the string 'id', int64 'segment_label',
+  int64 segment_start_time', and float32 'segment_score' context features and a fixed length byte-quantized
+  feature vector, obtained from the features in 'feature_names'. The quantized features will be mapped
+  back into a range between min_quantized_value and max_quantized_value.
+  """
+
+  def __init__(
+      self,
+      num_classes=1000,
+      feature_sizes=[1024, 128, 2],
+      feature_names=["rgb", "audio", "class_features"],
+      class_num=-1):
+    """Construct a EvaluationDataset.
 
     Args:
       num_classes: a positive integer for the number of classes.
