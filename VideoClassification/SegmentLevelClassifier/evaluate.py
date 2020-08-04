@@ -52,6 +52,7 @@ def evaluate_model(model, dataset):
   for input_data, label in dataset:
     prediction = evaluate_example(model, input_data)
     class_value = np.where(label == 1)
+    print(label)
     print(class_value)
     print(prediction[class_value])
     print(prediction)
