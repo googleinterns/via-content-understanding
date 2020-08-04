@@ -17,7 +17,7 @@ import os
 import readers
 import tensorflow as tf
 import tensorflow.keras.metrics as metrics
-import time
+import numpy as np
 
 def evaluate_example(model, example, num_classes=1000):
   """Evaluate one example using model.
