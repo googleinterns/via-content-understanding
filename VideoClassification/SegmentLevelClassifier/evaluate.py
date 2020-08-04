@@ -54,7 +54,7 @@ def evaluate_model(model, dataset):
     class_value = np.where(label[0] == 1)[0][0]
     print(label)
     print(class_value)
-    print(prediction[class_value])
+    print(prediction[0,class_value])
     print(prediction)
     #Update Metrics
     aucroc_calculator.update_state(label, prediction)
