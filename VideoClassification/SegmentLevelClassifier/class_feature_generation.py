@@ -61,6 +61,7 @@ def compute_and_save(data_dir, input_dir, comparison_directory="/home/conorfvedo
       for segment in input_dataset:
         context = segment[0]
         features = segment[1]
+        print(context)
         features["rgb"] = features["rgb"][0].numpy()
         features["audio"] = features["audio"][0].numpy()
         context["id"] = tf.convert_to_tensor(context["id"])[0].numpy()
@@ -68,6 +69,7 @@ def compute_and_save(data_dir, input_dir, comparison_directory="/home/conorfvedo
         video_holder_input.append((context, features))
     else:
       video_holder_input = video_holder_comparison
+    assert False
     for segment in video_holder_input:
       print(f"Processing segment {num_segment}")
       context = segment[0]
