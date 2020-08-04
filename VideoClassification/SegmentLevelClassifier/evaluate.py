@@ -51,8 +51,9 @@ def evaluate_model(model, dataset):
   rp_calculator = metrics.RecallAtPrecision(0.7)
   for input_data, label in dataset:
     prediction = evaluate_example(model, input_data)
-    print(prediction)
-    print(label)
+    class_value = np.where(label == 1)
+    print(class_value)
+    print(prediction[class_value])
     #Update Metrics
     aucroc_calculator.update_state(label, prediction)
     aucpr_calculator.update_state(label, prediction)
