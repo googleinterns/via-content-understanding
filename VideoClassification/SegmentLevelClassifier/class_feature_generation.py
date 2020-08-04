@@ -39,7 +39,7 @@ def compute_and_save(data_dir, input_dir, comparison_directory="/home/conorfvedo
   """
   #Store previous computations to speed up runtime
   num_segment = 0
-  for label in range(1):
+  for label in range(num_classes):
     shard = []
     comparison_dataset_reader = readers.SegmentDataset(class_num=label)
     comparison_dataset = comparison_dataset_reader.get_dataset(comparison_directory, batch_size=1, type="class")
