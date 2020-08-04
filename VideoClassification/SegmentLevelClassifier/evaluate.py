@@ -31,7 +31,7 @@ def evaluate_example(model, example, num_classes=1000):
   video_matrix = tf.convert_to_tensor(example[0])
   class_features_lists = tf.reshape(example[1].values, [-1, 1, 3])
   for class_features_list in class_features_lists:
-    prediction = model.predict((video_matrix, tf.convert_to_tensor([class_features_list[0][0]])))
+    prediction = model.predict((video_matrix, class_features_list))
     class_num = tf.cast(class_features_list[0][0], tf.int64).numpy()
     if class_num <= 500:
       predictions[class_num] = prediction[0][0]
@@ -82,7 +82,7 @@ def load_and_evaluate(data_dir, model_path, num_clusters=10, batch_size=20, fc_u
   video_input_shape = (batch_size, 5, 1024)
   audio_input_shape = (batch_size, 5, 128)
   input_shape = (5, 1152)
-  second_input_shape = (1)
+  second_input_shape = (3)
 
   model_generator = model_lib.SegmentClassifier(num_clusters, video_input_shape, audio_input_shape, fc_units=fc_units, num_classes=data_reader.num_classes)
   model = model_generator.build_model(input_shape, second_input_shape, batch_size)
@@ -91,4 +91,4 @@ def load_and_evaluate(data_dir, model_path, num_clusters=10, batch_size=20, fc_u
   print(eval_dict)
 
 if __name__ == "__main__":
-  load_and_evaluate("/home/conorfvedova_google_com/data/segments/finalized_test_data", "model_weights_segment_level_baseline.h5")
+  load_and_evaluate("/home/conorfvedova_google_com/data/segments/finalized_test_data", "model_weights_segment_level.h5")
