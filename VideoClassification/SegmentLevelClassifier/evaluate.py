@@ -51,6 +51,8 @@ def evaluate_model(model, dataset):
   rp_calculator = metrics.RecallAtPrecision(0.7)
   for input_data, label in dataset:
     prediction = evaluate_example(model, input_data)
+    print(prediction)
+    print(label)
     #Update Metrics
     aucroc_calculator.update_state(label, prediction)
     aucpr_calculator.update_state(label, prediction)
@@ -88,4 +90,4 @@ def load_and_evaluate(data_dir, model_path, num_clusters=10, batch_size=20, fc_u
   print(eval_dict)
 
 if __name__ == "__main__":
-  load_and_evaluate("/home/conorfvedova_google_com/data/segments/finalized_test_data", "model_weights_segment_level_baseline.h5")
+  load_and_evaluate("/home/conorfvedova_google_com/data/segments/finalized_test_data", "model_weights_segment_level.h5")
