@@ -36,7 +36,7 @@ def combine_data(data_dir, input_dir, shard_size=85, file_type="test"):
     class_features = features["class_features"][0][0].numpy()
     print(candidate_label)
     print(class_features)
-    class_features = tf.convert_to_tensor(candidate_label.tolist() + class_features.tolist())
+    class_features = np.array(candidate_label.tolist() + class_features.tolist())
     #Since the number of candidate classes is unknown, we must extend the storage list as we go.
     if video_id in feature_storage.keys():
       current_list = feature_storage[video_id]
