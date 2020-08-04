@@ -32,7 +32,7 @@ def combine_data(data_dir, input_dir, shard_size=85, file_type="test"):
     features = segment[1]
     video_id = tf.convert_to_tensor(context["id"])[0].numpy()
     segment_id = context["segment_id"][0].numpy()
-    candidate_label = context["candidate_label"][0].numpy()
+    candidate_label = context["candidate_label"].numpy()
     class_features = features["class_features"].numpy()
     class_features = tf.convert_to_tensor(candidate_label.tolist() + class_features.tolist())
     #Since the number of candidate classes is unknown, we must extend the storage list as we go.
