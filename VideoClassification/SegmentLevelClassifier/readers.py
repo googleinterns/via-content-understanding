@@ -713,6 +713,7 @@ class EvaluationDataset():
     video_matrix = tf.concat(feature_matrices, 1)
     feature_dim = len(video_matrix.get_shape()) - 1
     video_matrix = tf.nn.l2_normalize(video_matrix, feature_dim)
-    label = tf.one_hot(context["segment_label"][0], self.num_classes)
+    print(context["segment_label"])
+    label = tf.one_hot(context["segment_label"], self.num_classes)
     class_features_list = context["class_features"]
     return ((video_matrix, class_features_list), label)
