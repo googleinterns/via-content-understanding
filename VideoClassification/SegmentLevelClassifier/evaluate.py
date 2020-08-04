@@ -42,6 +42,7 @@ def evaluate_model(model, dataset):
    model: A keras model with input (video_matrix, class_feature_list) and 1 output denoting class relevance
    dataset: tf.dataset attained from a Dataset class from readers.py  
   """
+  segment_num = 0
   #Create evaluation metrics
   aucroc_calculator = metrics.AUC()
   aucpr_calculator = metrics.AUC(curve='PR')
@@ -54,6 +55,8 @@ def evaluate_model(model, dataset):
     aucpr_calculator.update_state(label, prediction)
     pr_calculator.update_state(label, prediction)
     rp_calculator.update_state(label, prediction)
+    print(f"Processing segment number {segment_num}")
+    segment_num += 1
   #Get results
   auc_roc = aucroc_calculator.result()
   auc_pr = aucpr_calculator.result()
