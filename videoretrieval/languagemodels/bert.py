@@ -1,7 +1,8 @@
 from base import BaseLanguageModel
 from transformers import BertTokenizerFast, TFBertModel
+from transformers import RobertaTokenizerFast, TFRobertaModel
 
-class BERTLageModel(BaseLanguageModel):
+class BERTLargeModel(BaseLanguageModel):
     """An implementation of BaseLanguageModel for the openai-gpt1 model."""
 
     max_input_length = 37
@@ -123,7 +124,7 @@ class BERTModel(BaseLanguageModel):
         """
         return [self.model(ids, attention_mask=attention_mask)[0]]
 
-class RorbertaModel(BaseLanguageModel):
+class RobertaModel(BaseLanguageModel):
     max_input_length = 37
     _batch_size = 10
 

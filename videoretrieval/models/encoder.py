@@ -221,10 +221,14 @@ class EncoderFineTuning(tf.keras.Model):
             text_tokens_shard = text_tokens[start_index:end_index]
             attention_mask_shard = attention_mask[start_index:end_index]
             
-            embeddings.append(self.language_model(
+            language_model_output = self.language_model(
                 text_tokens_shard,
                 attention_mask=attention_mask_shard,
-                training=training)[0] * attention_mask_shard[:, :, None])
+                training=training)[0]
+
+            embeddings.append(
+                language_model_output * tf.cast(
+                    attention_mask_shard[:, :, None], tf.float32))
 
         return tf.concat(embeddings, axis=0)
 
