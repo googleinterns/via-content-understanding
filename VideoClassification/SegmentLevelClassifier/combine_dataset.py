@@ -10,12 +10,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-Split dataset into segments used for Class Feature Generation.
+Combine segment records back together so that they may be easily evaluated. At this point, segments have been split according to their
+candidate labels, but they need to be put back together.
 """
 import readers
-import writer
-
-if __name__ == "__main__":
-  segment_reader = readers.SplitDataset(pipeline_type="test")
-  input_dataset = segment_reader.get_dataset("/home/conorfvedova_google_com/data/segments/candidate_test", batch_size=1, type="test")
-  writer.split_data("/home/conorfvedova_google_com/data/segments/split_test", input_dataset, pipeline_type="test")
+import writers
