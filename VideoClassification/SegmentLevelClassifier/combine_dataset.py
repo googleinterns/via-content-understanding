@@ -82,10 +82,8 @@ def combine_data(data_dir, input_dir, shard_size=85, file_type="test"):
       new_features = {}
       new_features["rgb"] = features["rgb"]
       new_features["audio"] = features["audio"]
-      new_features["class_features"] = np.array(feature_storage[video_id][segment_id]*2)
-      print(new_features["class_features"])
+      new_features["class_features"] = np.array(feature_storage[video_id][segment_id])
       shard.append(writer.serialize_data(new_context, new_features, "combine_data", pipeline_type="test"))
-      assert False
       segment_num += 1
     if segment_num == shard_size:
       segment_num = 0

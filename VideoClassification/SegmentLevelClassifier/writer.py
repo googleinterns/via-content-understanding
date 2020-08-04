@@ -117,7 +117,6 @@ def serialize_combined_features(features):
   class_features = tf.train.FeatureList(feature=feature_list)
   features = {"audio": tf.train.FeatureList(feature=[audio]), "rgb": tf.train.FeatureList(feature=[rgb]), "class_features": class_features}
   features = tf.train.FeatureLists(feature_list=features)
-  print(features)
   return features
 
 def serialize_video_context(context):
