@@ -33,8 +33,6 @@ def evaluate_example(model, example, num_classes=1000):
     prediction = model.predict((video_matrix, class_features_list))
     class_num = tf.cast(class_features_list[0][0], tf.int64).numpy()
     predictions[class_num] = prediction[0][0]
-  print(predictions)
-  assert False
   return predictions
 
 def evaluate_model(model, dataset):
