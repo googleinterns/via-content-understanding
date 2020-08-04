@@ -74,7 +74,7 @@ def combine_data(data_dir, input_dir, shard_size=85, file_type="test"):
         class_features_temp = feature_storage[video_id][segment_id]
         class_features_temp_add = []
         for i in class_features_temp:
-          if i != []:
+          if len(i) != 0:
             class_features_temp_add.append(i)
         new_features["class_features"] = np.array(class_features_temp_add)
         shard.append(writer.serialize_data(new_context, new_features, "combine_data", pipeline_type="test"))
@@ -90,7 +90,7 @@ def combine_data(data_dir, input_dir, shard_size=85, file_type="test"):
       class_features_temp = feature_storage[video_id][segment_id]
       class_features_temp_add = []
       for i in class_features_temp:
-        if i != []:
+        if len(i) != 0:
           class_features_temp_add.append(i)
       new_features["class_features"] = np.array(class_features_temp_add)
       shard.append(writer.serialize_data(new_context, new_features, "combine_data", pipeline_type="test"))
