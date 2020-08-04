@@ -34,6 +34,7 @@ def combine_data(data_dir, input_dir, shard_size=85, file_type="test"):
     features = segment[1]
     video_id = tf.convert_to_tensor(context["id"])[0].numpy()
     segment_id = context["segment_id"][0].numpy()
+    print(context["candidate_label"])
     candidate_label = tf.cast(context["candidate_label"], tf.float32).numpy()
     class_features = features["class_features"][0][0].numpy()
     class_features = np.array(candidate_label.tolist() + class_features.tolist())
