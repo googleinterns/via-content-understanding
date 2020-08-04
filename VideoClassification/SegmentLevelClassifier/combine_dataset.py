@@ -28,6 +28,7 @@ def combine_data(data_dir, input_dir, shard_size=85, file_type="test"):
   feature_storage = {}
   input_dataset_reader = readers.CombineSegmentDataset()
   input_dataset = input_dataset_reader.get_dataset(input_dir, batch_size=1)
+  segment_num = 0
   for segment in input_dataset:
     context = segment[0]
     features = segment[1]
@@ -50,7 +51,8 @@ def combine_data(data_dir, input_dir, shard_size=85, file_type="test"):
       extension_list = [[] for i in range(segment_id+1)]
       extension_list[-1].append(class_features)
       feature_storage[video_id] = extension_list
-  
+    print(f"Processing segment number {segment_num}")
+    segment_num += 1
   #Store data
   save_dataset_reader = readers.CombineSegmentDataset()
   save_dataset = save_dataset_reader.get_dataset(input_dir, batch_size=1)
