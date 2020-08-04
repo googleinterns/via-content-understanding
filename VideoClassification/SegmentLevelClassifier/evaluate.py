@@ -12,9 +12,11 @@ limitations under the License.
 
 Evaluate different performance metrics of given model.
 """
+import model as model_lib
+import os
 import readers
-
-#Reader has ((video_matrix, class_features_list), label). Batch it? Nah lets just go 1 at a time. Less efficient but easier to write.
+import tensorflow as tf
+import tensorflow.keras.metrics as metrics
 
 def evaluate_example(model, example, num_classes=1000):
   """Evaluate one example using model.

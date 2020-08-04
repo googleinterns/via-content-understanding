@@ -96,6 +96,5 @@ def combine_data(data_dir, input_dir, shard_size=85, file_type="test"):
       shard_number += 1
       shard = []
 
-
 if __name__ == "__main__":
   combine_data("/home/conorfvedova_google_com/data/segments/finalized_test_data", "/home/conorfvedova_google_com/data/segments/input_test_data")
