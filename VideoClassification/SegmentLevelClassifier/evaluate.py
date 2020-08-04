@@ -29,11 +29,9 @@ def evaluate_example(model, example, num_classes=1000):
   predictions = [0] * num_classes
   video_matrix = tf.convert_to_tensor(example[0])
   class_features_lists = tf.reshape(example[1].values, [-1, 1, 3])
-  print(class_features_lists)
   for class_features_list in class_features_lists:
     prediction = model.predict((video_matrix, class_features_list))
     class_num = tf.cast(class_features_list[0][0], tf.int64).numpy()
-    print(class_num)
     predictions[class_num] = prediction
   return predictions
 
@@ -57,10 +55,10 @@ def evaluate_model(model, dataset):
     print(label)
     prediction = evaluate_example(model, input_data)
     #Update Metrics
-    aucroc_calculator.update_state(test_labels, predictions)
-    aucpr_calculator.update_state(test_labels, predictions)
-    pr_calculator.update_state(test_labels, predictions)
-    rp_calculator.update_state(test_labels, predictions)
+    aucroc_calculator.update_state(label, predictions)
+    aucpr_calculator.update_state(label, predictions)
+    pr_calculator.update_state(label, predictions)
+    rp_calculator.update_state(label, predictions)
   #Get results
   auc_roc = aucroc_calculator.result()
   auc_pr = aucpr_calculator.result()
