@@ -28,7 +28,9 @@ def evaluate_example(model, example, num_classes=1000):
   """
   predictions = [0] * num_classes
   video_matrix = tf.convert_to_tensor(example[0])
-  class_features_lists = tf.convert_to_tensor(example[1])
+  class_features_lists = example[1].values
+  print(class_features_list)
+  assert False
   for class_features_list in class_features_lists:
     prediction = model.predict((video_matrix, class_features_list))
     class_num = class_features_list[0].numpy()
