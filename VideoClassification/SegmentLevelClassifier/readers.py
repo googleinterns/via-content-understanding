@@ -335,7 +335,8 @@ class SegmentDataset():
       num_classes=1000,
       feature_sizes=[1024, 128],
       feature_names=["rgb", "audio"],
-      class_num=-1):
+      class_num=-1,
+      pipeline_type="train"):
     """Construct a SegmentDataset.
 
     Args:
@@ -352,6 +353,7 @@ class SegmentDataset():
     self.feature_sizes = feature_sizes
     self.feature_names = feature_names
     self.class_num = class_num
+    self.pipeline_type = pipeline_type
 
   def get_dataset(self, data_dir, batch_size, type="train"):
     """Returns TFRecordDataset after it has been parsed.
@@ -387,6 +389,9 @@ class SegmentDataset():
       "segment_start_time": tf.io.FixedLenFeature([], tf.int64),
       "segment_score": tf.io.FixedLenFeature([], tf.float32)  
     }
+    if self.pipeline_type == "test":
+      context_features["candidate_label"] = tf.io.FixedLenFeature([], tf.int64)
+      context_features["segment_id"] = tf.io.FixedLenFeature([], tf.int64)
     sequence_features = {
         feature_name: tf.io.FixedLenSequenceFeature([], dtype=tf.string)
         for feature_name in self.feature_names

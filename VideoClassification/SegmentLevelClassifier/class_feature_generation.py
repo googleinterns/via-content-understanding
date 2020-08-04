@@ -56,7 +56,7 @@ def compute_and_save(data_dir, input_dir, comparison_directory="/home/conorfvedo
         context["segment_score"] = context["segment_score"][0].numpy()
         video_holder_comparison.append((context, features))
     if pipeline_type == "test":
-      input_dataset_reader = readers.SegmentDataset(class_num=label)
+      input_dataset_reader = readers.SegmentDataset(class_num=label, pipeline_type=pipeline_type)
       input_dataset = input_dataset_reader.get_dataset(input_dir, batch_size=1, type="class")
       for segment in input_dataset:
         context = segment[0]
