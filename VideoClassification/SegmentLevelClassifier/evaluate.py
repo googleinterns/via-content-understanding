@@ -32,7 +32,7 @@ def evaluate_example(model, example, num_classes=1000):
   class_features_lists = tf.reshape(example[1].values, [-1, 1, 3])
   for class_features_list in class_features_lists:
     print(class_features_list)
-    prediction = model.predict((video_matrix, class_features_list[0][0]))
+    prediction = model.predict((video_matrix, tf.convert_to_tensor([class_features_list[0][0]])))
     class_num = tf.cast(class_features_list[0][0], tf.int64).numpy()
     predictions[class_num] = prediction[0][0]
   return tf.reshape(tf.convert_to_tensor(predictions), [1,-1])
