@@ -71,13 +71,7 @@ def combine_data(data_dir, input_dir, shard_size=85, file_type="test"):
         new_features = {}
         new_features["rgb"] = features["rgb"]
         new_features["audio"] = features["audio"]
-        class_features_temp = feature_storage[video_id][segment_id]
-        class_features_temp_add = []
-        for i in class_features_temp:
-          if len(i) != 0:
-            class_features_temp_add.append(i)
-        print(class_features_temp_add)
-        new_features["class_features"] = np.array(class_features_temp_add)
+        new_features["class_features"] = np.array(feature_storage[video_id][segment_id])
         shard.append(writer.serialize_data(new_context, new_features, "combine_data", pipeline_type="test"))
         segment_num += 1
     else:  
@@ -89,12 +83,7 @@ def combine_data(data_dir, input_dir, shard_size=85, file_type="test"):
       new_features["rgb"] = features["rgb"]
       new_features["audio"] = features["audio"]
       class_features_temp = feature_storage[video_id][segment_id]
-      class_features_temp_add = []
-      for i in class_features_temp:
-        if len(i) != 0:
-          class_features_temp_add.append(i)
-      print(class_features_temp_add)
-      new_features["class_features"] = np.array(class_features_temp_add)
+      new_features["class_features"] = np.array(feature_storage[video_id][segment_id])
       shard.append(writer.serialize_data(new_context, new_features, "combine_data", pipeline_type="test"))
       segment_num += 1
     if segment_num == shard_size:
