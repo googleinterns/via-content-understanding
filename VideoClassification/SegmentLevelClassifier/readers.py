@@ -625,8 +625,8 @@ class EvaluationDataset():
   def __init__(
       self,
       num_classes=1000,
-      feature_sizes=[1024, 128, 2],
-      feature_names=["rgb", "audio", "class_features"],
+      feature_sizes=[1024, 128],
+      feature_names=["rgb", "audio"],
       class_num=-1):
     """Construct a EvaluationDataset.
 
@@ -692,7 +692,7 @@ class EvaluationDataset():
     }
     sequence_features = {
         feature_name: tf.io.FixedLenSequenceFeature([], dtype=tf.string)
-        for feature_name in self.feature_names[:2]
+        for feature_name in self.feature_names
     }
     sequence_features["class_features"] = tf.io.VarLenFeature([])
     context, features = tf.io.parse_single_sequence_example(serialized_example, context_features=context_features, sequence_features=sequence_features)
@@ -703,8 +703,8 @@ class EvaluationDataset():
         "length of feature_names (={}) != length of feature_sizes (={})".format(
             len(self.feature_names), len(self.feature_sizes)))
     
-    feature_matrices = [None] * (num_features-1)
-    for feature_index in range(num_features-1):
+    feature_matrices = [None] * num_features
+    for feature_index in range(num_features):
       feature_matrix = self.get_video_matrix(
         features[self.feature_names[feature_index]], self.feature_sizes[feature_index],
         max_quantized_value, min_quantized_value
