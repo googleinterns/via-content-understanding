@@ -262,7 +262,7 @@ def split_data(data_dir, input_dataset, shard_size=85, num_classes=1000, file_ty
     features = video[1]
     segment_start_times = context["segment_start_times"].values.numpy()
     for segment_index in range(len(segment_start_times)):
-      if segment_start_times[segment_index] < tf.shape(features["rgb"])[1]:
+      if segment_start_times[segment_index]+5 <= tf.shape(features["rgb"])[1]:
         new_context, new_features = {}, {}
         segment_score = context["segment_scores"].values.numpy()[segment_index]
         new_context["id"] = context["id"]
