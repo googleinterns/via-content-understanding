@@ -91,4 +91,4 @@ def combine_data(data_dir, input_dir, shard_size=85, file_type="test"):
 
 
 if __name__ == "__main__":
-  store_data("/home/conorfvedova_google_com/data/segments/finalized_test_data", "/home/conorfvedova_google_com/data/segments/input_test_data")
+  combine_data("/home/conorfvedova_google_com/data/segments/finalized_test_data", "/home/conorfvedova_google_com/data/segments/input_test_data")
