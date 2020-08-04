@@ -40,16 +40,16 @@ def combine_data(data_dir, input_dir, shard_size=85, file_type="test"):
     #Since the number of candidate classes is unknown, we must extend the storage list as we go.
     if video_id in feature_storage.keys():
       current_list = feature_storage[video_id]
-      if segment_id > len(current_list):
-        extension_size = segment_id - len(current_list)
+      if segment_id >= len(current_list):
+        extension_size = segment_id+1 - len(current_list)
         extension_list = [[] for i in range(extension_size)]
         extension_list[-1].append(class_features)
         feature_storage[video_id] = current_list + extension_list
       else:
-        current_list[segment_id-1].append(class_features)
+        current_list[segment_id].append(class_features)
     else:
       print(segment_id)
-      extension_list = [[] for i in range(segment_id)]
+      extension_list = [[] for i in range(segment_id+1)]
       extension_list[-1].append(class_features)
       feature_storage[video_id] = extension_list
   print(feature_storage)
