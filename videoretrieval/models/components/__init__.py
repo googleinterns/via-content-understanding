@@ -1,4 +1,4 @@
-"""__init__.py for the layers package.
+"""__init__.py for components package.
 
 Copyright 2020 Google LLC
 
@@ -15,8 +15,5 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from .expertprojectionmodulation import ExpertProjectionModulationLayer
-from .gatedembeddingmodule import \
-	GatedEmbeddingModule, GatedEmbeddingUnitReasoning
-from .temporalaggregation import TemporalAggregationLayer
-from .netvlad import NetVLAD
+from .textencoder import TextEncoder
+from .videoencoder import VideoEncoder
