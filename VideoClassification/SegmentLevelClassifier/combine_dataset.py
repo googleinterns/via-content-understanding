@@ -87,9 +87,14 @@ def combine_data(data_dir, input_dir, shard_size=85, file_type="test"):
       segment_num += 1
     if segment_num == shard_size:
       segment_num = 0
-      shard = []
       shard_number += 1
       writer.save_shard(data_dir, shard, file_type, shard_number)
+      shard = []
+  if segment_num != 0:
+      segment_num = 0
+      shard_number += 1
+      writer.save_shard(data_dir, shard, file_type, shard_number)
+      shard = []
 
 
 if __name__ == "__main__":
