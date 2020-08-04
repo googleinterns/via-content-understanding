@@ -33,7 +33,7 @@ def evaluate_example(model, example, num_classes=1000):
   for class_features_list in class_features_lists:
     prediction = model.predict((video_matrix, class_features_list))
     class_num = tf.cast(class_features_list[0][0], tf.int64).numpy()
-    if class_num <= 500:
+    if class_num <= 100:
       predictions[class_num] = prediction[0][0]
   return tf.reshape(tf.convert_to_tensor(predictions), [1,-1])
 
@@ -51,7 +51,7 @@ def evaluate_model(model, dataset):
   pr_calculator = metrics.PrecisionAtRecall(0.7)
   rp_calculator = metrics.RecallAtPrecision(0.7)
   for input_data, label in dataset:
-    if np.where(label == 1)[1][0] <= 500:
+    if np.where(label == 1)[1][0] <= 100:
       prediction = evaluate_example(model, input_data)
       #Update Metrics
       aucroc_calculator.update_state(label, prediction)
