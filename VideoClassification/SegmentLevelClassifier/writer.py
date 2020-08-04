@@ -137,7 +137,8 @@ def serialize_segment_context(context, pipeline_type):
   segment_label = context["segment_label"]
   segment_start_time = context["segment_start_time"]
   segment_score = context["segment_score"]
-  segment_label = convert_labels(segment_label)
+  if pipeline_type == "train":
+    segment_label = convert_labels(segment_label)
 
   context["id"] = convert_to_feature([video_id.numpy()], "byte")
   context["segment_label"] = convert_to_feature(segment_label.numpy(), "int")
