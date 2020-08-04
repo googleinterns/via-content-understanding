@@ -48,7 +48,6 @@ def combine_data(data_dir, input_dir, shard_size=85, file_type="test"):
       else:
         current_list[segment_id].append(class_features)
     else:
-      print(segment_id)
       extension_list = [[] for i in range(segment_id+1)]
       extension_list[-1].append(class_features)
       feature_storage[video_id] = extension_list
