@@ -51,15 +51,15 @@ def evaluate_model(model, dataset):
   pr_calculator = metrics.PrecisionAtRecall(0.7)
   rp_calculator = metrics.RecallAtPrecision(0.7)
   for input_data, label in dataset:
-    prediction = evaluate_example(model, input_data)
-    #Update Metrics
     if np.where(label == 1)[1][0] <= 500:
+      prediction = evaluate_example(model, input_data)
+      #Update Metrics
       aucroc_calculator.update_state(label, prediction)
       aucpr_calculator.update_state(label, prediction)
       pr_calculator.update_state(label, prediction)
       rp_calculator.update_state(label, prediction)
-    print(f"Processing segment number {segment_num}")
-    segment_num += 1
+      print(f"Processing segment number {segment_num}")
+      segment_num += 1
   #Get results
   auc_roc = aucroc_calculator.result()
   auc_pr = aucpr_calculator.result()
