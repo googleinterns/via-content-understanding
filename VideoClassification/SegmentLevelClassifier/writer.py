@@ -107,8 +107,8 @@ def serialize_combined_features(features):
   Args:
     features: features of the video
   """
-  audio = features["audio"].tostring()
-  rgb = features["rgb"].tostring()
+  audio = features["audio"][0].numpy().tostring()
+  rgb = features["rgb"][0].numpy().tostring()
   print(features["class_features"])
   class_features = features["class_features"].tostring()
   audio = convert_to_feature([audio], "byte")
