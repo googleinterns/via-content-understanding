@@ -679,7 +679,7 @@ class EvaluationDataset():
     dataset = files_dataset.interleave(lambda files: tf.data.TFRecordDataset(files, num_parallel_reads=tf.data.experimental.AUTOTUNE))
     parser = partial(self._parse_fn, max_quantized_value=max_quantized_value, min_quantized_value=min_quantized_value)
     dataset = dataset.map(parser, num_parallel_calls=tf.data.experimental.AUTOTUNE)
-    dataset = dataset.batch(batch_size, drop_remainder=True).prefetch(tf.data.experimental.AUTOTUNE)
+    dataset = dataset.batch(1).prefetch(tf.data.experimental.AUTOTUNE)
     return dataset
 
   def _parse_fn(self, serialized_example, max_quantized_value=2, min_quantized_value=-2):
@@ -694,7 +694,7 @@ class EvaluationDataset():
         feature_name: tf.io.FixedLenSequenceFeature([], dtype=tf.string)
         for feature_name in self.feature_names[:2]
     }
-    sequence_features[self.feature_names[-1]] = tf.io.FixedLenSequenceFeature([2], dtype=tf.float32)
+    sequence_features["class_features"] = tf.io.VarLenSequenceFeature([], dtype=tf.float32)
     context, features = tf.io.parse_single_sequence_example(serialized_example, context_features=context_features, sequence_features=sequence_features)
     num_features = len(self.feature_names)
 
@@ -711,11 +711,8 @@ class EvaluationDataset():
         )
       feature_matrices[feature_index] = feature_matrix
     video_matrix = tf.concat(feature_matrices, 1)
-    class_features_list = features[self.feature_names[2]]
-    class_features_list = tf.reshape(class_features_list, [2,])
-    segment_label = tf.reshape(tf.cast(context["segment_label"], tf.float32), [1,])
-    class_features_list = tf.concat([segment_label, class_features_list],0)
-    label = context["segment_score"]
     feature_dim = len(video_matrix.get_shape()) - 1
     video_matrix = tf.nn.l2_normalize(video_matrix, feature_dim)
+    label = tf.one_hot(context["segment_label"][0], self.num_classes)
+    class_features_list = context["class_features"]
     return ((video_matrix, class_features_list), label)
