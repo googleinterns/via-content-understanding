@@ -686,9 +686,7 @@ class EvaluationDataset():
     """Parse single Serialized Example from the TFRecords."""
     context_features = {
       "id": tf.io.FixedLenFeature([], tf.string),
-      "segment_label": tf.io.FixedLenFeature([], tf.int64),
-      "segment_start_time": tf.io.FixedLenFeature([], tf.int64),
-      "segment_score": tf.io.FixedLenFeature([], tf.float32)  
+      "segment_label": tf.io.FixedLenFeature([], tf.int64)
     }
     sequence_features = {
         feature_name: tf.io.FixedLenSequenceFeature([], dtype=tf.string)
