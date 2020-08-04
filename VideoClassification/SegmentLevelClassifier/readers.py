@@ -455,7 +455,7 @@ class CombineSegmentDataset():
       dataset: TFRecordDataset of the input training data
     """
     if self.class_num == -1:
-      files = tf.io.matching_files(os.path.join(data_dir, '%s0.tfrecord' % type))
+      files = tf.io.matching_files(os.path.join(data_dir, '%s*.tfrecord' % type))
     else:
       files = tf.io.matching_files(os.path.join(data_dir, '%s.tfrecord' % (type+str(self.class_num))))
     
