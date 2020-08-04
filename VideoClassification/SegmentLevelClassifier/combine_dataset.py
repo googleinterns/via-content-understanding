@@ -67,7 +67,7 @@ def combine_data(data_dir, input_dir, shard_size=85, file_type="test"):
       if segment_id not in stored_video_ids[video_id]:
         stored_video_ids[video_id].append(segment_id)
         new_context = {}
-        new_context["id"] = context["id"]
+        new_context["id"] = tf.convert_to_tensor(context["id"])[0].numpy()
         new_context["segment_label"] = context["segment_label"]
         new_features = {}
         new_features["rgb"] = features["rgb"]
@@ -78,7 +78,7 @@ def combine_data(data_dir, input_dir, shard_size=85, file_type="test"):
     else:  
       stored_video_ids[video_id] = [segment_id]
       new_context = {}
-      new_context["id"] = context["id"]
+      new_context["id"] = tf.convert_to_tensor(context["id"])[0].numpy()
       new_context["segment_label"] = context["segment_label"]
       new_features = {}
       new_features["rgb"] = features["rgb"]
