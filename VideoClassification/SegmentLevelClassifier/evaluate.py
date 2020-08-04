@@ -51,7 +51,7 @@ def evaluate_model(model, dataset):
   rp_calculator = metrics.RecallAtPrecision(0.7)
   for input_data, label in dataset:
     prediction = evaluate_example(model, input_data)
-    class_value = np.where(label == 1)
+    class_value = np.where(label[0] == 1)
     print(label)
     print(class_value)
     print(prediction[class_value])
