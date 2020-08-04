@@ -76,6 +76,7 @@ def combine_data(data_dir, input_dir, shard_size=85, file_type="test"):
         for i in class_features_temp:
           if len(i) != 0:
             class_features_temp_add.append(i)
+        print(class_features_temp_add)
         new_features["class_features"] = np.array(class_features_temp_add)
         shard.append(writer.serialize_data(new_context, new_features, "combine_data", pipeline_type="test"))
         segment_num += 1
@@ -92,6 +93,7 @@ def combine_data(data_dir, input_dir, shard_size=85, file_type="test"):
       for i in class_features_temp:
         if len(i) != 0:
           class_features_temp_add.append(i)
+      print(class_features_temp_add)
       new_features["class_features"] = np.array(class_features_temp_add)
       shard.append(writer.serialize_data(new_context, new_features, "combine_data", pipeline_type="test"))
       segment_num += 1
