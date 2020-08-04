@@ -694,7 +694,7 @@ class EvaluationDataset():
         feature_name: tf.io.FixedLenSequenceFeature([], dtype=tf.string)
         for feature_name in self.feature_names
     }
-    sequence_features["class_features"] = tf.io.VarLenFeature([])
+    sequence_features["class_features"] = tf.io.VarLenFeature([], dtype=tf.float32)
     context, features = tf.io.parse_single_sequence_example(serialized_example, context_features=context_features, sequence_features=sequence_features)
     num_features = len(self.feature_names)
 
