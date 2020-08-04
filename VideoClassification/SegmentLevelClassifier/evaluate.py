@@ -17,6 +17,7 @@ import os
 import readers
 import tensorflow as tf
 import tensorflow.keras.metrics as metrics
+import time
 
 def evaluate_example(model, example, num_classes=1000):
   """Evaluate one example using model.
@@ -30,9 +31,11 @@ def evaluate_example(model, example, num_classes=1000):
   video_matrix = tf.convert_to_tensor(example[0])
   class_features_lists = tf.reshape(example[1].values, [-1, 1, 3])
   for class_features_list in class_features_lists:
+    inner_time = time.time()
     prediction = model.predict((video_matrix, class_features_list))
     class_num = tf.cast(class_features_list[0][0], tf.int64).numpy()
     predictions[class_num] = prediction[0][0]
+    print(f"Calculation time {time.time() - inner_time}")
   return tf.reshape(tf.convert_to_tensor(predictions), [1,-1])
 
 def evaluate_model(model, dataset):
@@ -49,7 +52,9 @@ def evaluate_model(model, dataset):
   pr_calculator = metrics.PrecisionAtRecall(0.7)
   rp_calculator = metrics.RecallAtPrecision(0.7)
   for input_data, label in dataset:
+    start_time = time.time()
     prediction = evaluate_example(model, input_data)
+    print(f"Prediction time {time.time() - start_time}")
     #Update Metrics
     aucroc_calculator.update_state(label, prediction)
     aucpr_calculator.update_state(label, prediction)
@@ -57,6 +62,7 @@ def evaluate_model(model, dataset):
     rp_calculator.update_state(label, prediction)
     print(f"Processing segment number {segment_num}")
     segment_num += 1
+    print(f"Segment time {time.time() - start_time}")
   #Get results
   auc_roc = aucroc_calculator.result()
   auc_pr = aucpr_calculator.result()
