@@ -35,8 +35,6 @@ def combine_data(data_dir, input_dir, shard_size=85, file_type="test"):
     segment_id = context["segment_id"][0].numpy()
     candidate_label = tf.cast(context["candidate_label"], tf.float32).numpy()
     class_features = features["class_features"][0][0].numpy()
-    print(candidate_label)
-    print(class_features)
     class_features = np.array(candidate_label.tolist() + class_features.tolist())
     #Since the number of candidate classes is unknown, we must extend the storage list as we go.
     if video_id in feature_storage.keys():
@@ -52,7 +50,7 @@ def combine_data(data_dir, input_dir, shard_size=85, file_type="test"):
       extension_list = [[] for i in range(segment_id+1)]
       extension_list[-1].append(class_features)
       feature_storage[video_id] = extension_list
-  print(feature_storage)
+  
   #Store data
   save_dataset_reader = readers.CombineSegmentDataset()
   save_dataset = save_dataset_reader.get_dataset(input_dir, batch_size=1)
@@ -85,6 +83,7 @@ def combine_data(data_dir, input_dir, shard_size=85, file_type="test"):
       new_features["rgb"] = features["rgb"]
       new_features["audio"] = features["audio"]
       new_features["class_features"] = np.array(feature_storage[video_id][segment_id])
+      print(new_features["class_features"])
       shard.append(writer.serialize_data(new_context, new_features, "combine_data", pipeline_type="test"))
       assert False
       segment_num += 1
