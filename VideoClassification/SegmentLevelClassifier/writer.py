@@ -112,8 +112,7 @@ def serialize_combined_features(features):
   audio = convert_to_feature([audio], "byte")
   rgb = convert_to_feature([rgb], "byte")
   feature_list = []
-  class_features = features["class_features"]
-  for class_feature in class_features:
+  for class_feature in features["class_features"]:
     feature_list.append(convert_to_feature(class_feature, "float"))
   class_features = tf.train.FeatureList(feature=feature_list)
   print(class_features)
