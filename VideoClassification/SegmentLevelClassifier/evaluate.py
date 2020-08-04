@@ -54,8 +54,8 @@ def evaluate_model(model, dataset):
     prediction = evaluate_example(model, input_data)
     #Update Metrics
     print(label)
-    print(np.where(label == 1))
-    if np.where(label == 1)[0] <= 500:
+    print(np.where(label == 1)[1][0])
+    if np.where(label == 1)[1][0] <= 500:
       aucroc_calculator.update_state(label, prediction)
       aucpr_calculator.update_state(label, prediction)
       pr_calculator.update_state(label, prediction)
