@@ -31,7 +31,7 @@ def evaluate_example(model, example, num_classes=1000):
   video_matrix = tf.convert_to_tensor(example[0])
   class_features_lists = tf.reshape(example[1].values, [-1, 1, 3])
   for class_features_list in class_features_lists:
-    prediction = model.predict((video_matrix, class_features_list))
+    prediction = model.predict((video_matrix, class_features_list[0][0]))
     class_num = tf.cast(class_features_list[0][0], tf.int64).numpy()
     predictions[class_num] = prediction[0][0]
   return tf.reshape(tf.convert_to_tensor(predictions), [1,-1])
@@ -51,11 +51,6 @@ def evaluate_model(model, dataset):
   rp_calculator = metrics.RecallAtPrecision(0.7)
   for input_data, label in dataset:
     prediction = evaluate_example(model, input_data)
-    class_value = np.where(label[0] == 1)[0][0]
-    print(label)
-    print(class_value)
-    print(prediction[0,class_value])
-    print(prediction)
     #Update Metrics
     aucroc_calculator.update_state(label, prediction)
     aucpr_calculator.update_state(label, prediction)
@@ -84,7 +79,7 @@ def load_and_evaluate(data_dir, model_path, num_clusters=10, batch_size=20, fc_u
   video_input_shape = (batch_size, 5, 1024)
   audio_input_shape = (batch_size, 5, 128)
   input_shape = (5, 1152)
-  second_input_shape = (3)
+  second_input_shape = (1)
 
   model_generator = model_lib.SegmentClassifier(num_clusters, video_input_shape, audio_input_shape, fc_units=fc_units, num_classes=data_reader.num_classes)
   model = model_generator.build_model(input_shape, second_input_shape, batch_size)
@@ -93,4 +88,4 @@ def load_and_evaluate(data_dir, model_path, num_clusters=10, batch_size=20, fc_u
   print(eval_dict)
 
 if __name__ == "__main__":
-  load_and_evaluate("/home/conorfvedova_google_com/data/segments/finalized_test_data", "model_weights_segment_level.h5")
+  load_and_evaluate("/home/conorfvedova_google_com/data/segments/finalized_test_data", "model_weights_segment_level_baseline.h5")
