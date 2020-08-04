@@ -32,7 +32,7 @@ def evaluate_example(model, example, num_classes=1000):
   print(class_features_lists)
   for class_features_list in class_features_lists:
     prediction = model.predict((video_matrix, class_features_list))
-    class_num = class_features_list[0].numpy()
+    class_num = class_features_list[0][0].numpy()
     predictions[class_num] = prediction
   return predictions
 
