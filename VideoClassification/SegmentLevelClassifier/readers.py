@@ -694,7 +694,7 @@ class EvaluationDataset():
         feature_name: tf.io.FixedLenSequenceFeature([], dtype=tf.string)
         for feature_name in self.feature_names
     }
-    sequence_features["class_features"] = tf.io.FixedLenSequenceFeature([], dtype=tf.float32)
+    sequence_features["class_features"] = tf.io.VarLenFeature(dtype=tf.float32)
     context, features = tf.io.parse_single_sequence_example(serialized_example, context_features=context_features, sequence_features=sequence_features)
     num_features = len(self.feature_names)
 
@@ -715,6 +715,6 @@ class EvaluationDataset():
     video_matrix = tf.nn.l2_normalize(video_matrix, feature_dim)
     print(context["segment_label"])
     label = tf.one_hot(context["segment_label"], self.num_classes)
-    class_features_list = tf.cast(sequence_features["class_features"], tf.float32)
+    class_features_list = tf.cast(features["class_features"], tf.float32)
     class_features_list = tf.reshape(class_features_list, [-1,3])
     return ((video_matrix, class_features_list), label)
