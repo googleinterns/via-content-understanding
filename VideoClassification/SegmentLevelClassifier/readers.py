@@ -712,5 +712,5 @@ class EvaluationDataset():
     feature_dim = len(video_matrix.get_shape()) - 1
     video_matrix = tf.nn.l2_normalize(video_matrix, feature_dim)
     label = tf.one_hot(context["segment_label"], self.num_classes)
-    class_features_list = features["class_features"]
+    class_features_list = tf.reshape(features["class_features"], [-1,3])
     return ((video_matrix, class_features_list), label)
