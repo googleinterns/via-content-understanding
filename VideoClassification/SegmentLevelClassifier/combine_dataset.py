@@ -14,6 +14,7 @@ Combine segment records back together so that they may be easily evaluated. At t
 candidate labels, but they need to be put back together.
 """
 import readers
+import tensorflow as tf
 import writer
 
 def combine_data(data_dir, input_dir, shard_size=85, file_type="test"):
