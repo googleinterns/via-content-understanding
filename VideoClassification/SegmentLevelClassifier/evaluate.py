@@ -33,7 +33,7 @@ def evaluate_example(model, example, num_classes=1000):
     prediction = model.predict((video_matrix, class_features_list))
     class_num = tf.cast(class_features_list[0][0], tf.int64).numpy()
     predictions[class_num] = prediction[0][0]
-  return predictions
+  return tf.convert_to_tensor(predictions)
 
 def evaluate_model(model, dataset):
   """Evaluate the model and dataset.
@@ -42,9 +42,6 @@ def evaluate_model(model, dataset):
    model: A keras model with input (video_matrix, class_feature_list) and 1 output denoting class relevance
    dataset: tf.dataset attained from a Dataset class from readers.py  
   """
-  #Batch size of 1
-  #input_data is list of inputs
-  #label is a one-hot
   #Create evaluation metrics
   aucroc_calculator = metrics.AUC(multi_label=True)
   aucpr_calculator = metrics.AUC(multi_label=True, curve='PR')
