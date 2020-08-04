@@ -90,7 +90,6 @@ def serialize_class_features(features):
 
   Args:
     features: features of the video
-    pipeline_type: type of pipeline. Can be train or test
   """
   audio = features["audio"].tostring()
   rgb = features["rgb"].tostring()
@@ -98,6 +97,24 @@ def serialize_class_features(features):
   audio = convert_to_feature([audio], "byte")
   rgb = convert_to_feature([rgb], "byte")
   class_features = convert_to_feature(class_features, "float")
+  features = {"audio": tf.train.FeatureList(feature=[audio]), "rgb": tf.train.FeatureList(feature=[rgb]), "class_features": tf.train.FeatureList(feature=[class_features])}
+  features = tf.train.FeatureLists(feature_list=features)
+  return features
+
+def serialize_combined_features(features):
+  """Serialize features.
+
+  Args:
+    features: features of the video
+  """
+  audio = features["audio"].tostring()
+  rgb = features["rgb"].tostring()
+  print(features["class_features"])
+  class_features = features["class_features"].tostring()
+  audio = convert_to_feature([audio], "byte")
+  rgb = convert_to_feature([rgb], "byte")
+  class_features = convert_to_feature([class_features], "byte")
+  print(tf.io.decode_raw(class_features, tf.float32))
   features = {"audio": tf.train.FeatureList(feature=[audio]), "rgb": tf.train.FeatureList(feature=[rgb]), "class_features": tf.train.FeatureList(feature=[class_features])}
   features = tf.train.FeatureLists(feature_list=features)
   return features
@@ -174,6 +191,17 @@ def serialize_class_segment_context(context, pipeline_type):
   context = tf.train.Features(feature=context)
   return context
 
+def serialize_combined_context(context):
+  """Serialize context for a segment from class feature generation.
+
+  Args:
+    context: context of the video
+  """
+  context["id"] = convert_to_feature([context["id"]], "byte")
+  context["segment_label"] = convert_to_feature(context["segment_label"].numpy(), "int")
+  context = tf.train.Features(feature=context)
+  return context
+
 def serialize_data(context, features, type, pipeline_type="train"):
   """Serialize video or segment from context and features.
 
@@ -192,6 +220,9 @@ def serialize_data(context, features, type, pipeline_type="train"):
   elif type == "csf":
     context = serialize_class_segment_context(context, pipeline_type)
     features = serialize_class_features(features)
+  elif type == "combine_data":
+    context = serialize_combined_context(context)
+    features = serialize_combined_features(features)
   else:
     print("Incorrect type chosen for serialization.")
   example = tf.train.SequenceExample(feature_lists=features, context=context)

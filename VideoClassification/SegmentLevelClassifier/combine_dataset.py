@@ -15,3 +15,80 @@ candidate labels, but they need to be put back together.
 """
 import readers
 import writers
+
+def combine_data(data_dir, input_dir, shard_size=85, file_type="test"):
+  """Read over all data and save the generated class specific features.
+  
+  Args:
+    data_dir: directory to save data to
+    input_dir: directory where input data is stored.
+  """
+  feature_storage = {}
+  input_dataset_reader = readers.CombineSegmentDataset(pipeline_type="test")
+  input_dataset = input_dataset_reader.get_dataset(input_dir, batch_size=1)
+  for segment in input_dataset:
+    context = segment[0]
+    features = segment[1]
+    video_id = tf.convert_to_tensor(context["id"])[0].numpy()
+    segment_id = context["segment_id"][0].numpy()
+    candidate_label = context["candidate_label"][0].numpy()
+    class_features = features["class_features"].numpy()
+    class_features = tf.convert_to_tensor(candidate_label.tolist() + class_features.tolist())
+    #Since the number of candidate classes is unknown, we must extend the storage list as we go.
+    if video_id in feature_storage.keys():
+      current_list = feature_storage[video_id]
+      if segment_id > len(current_list):
+        extension_size = segment_id - len(current_list)
+        extension_list = [[] for i in range(extension_size)]
+        extension_list[-1].append(class_features)
+        feature_storage[video_id] = current_list + extension_list
+      else:
+        current_list[segment_id-1].append(class_features)
+    else:
+      extension_list = [[] for i in range(segment_id)]
+      extension_list[-1].append(class_features)
+      feature_storage[video_id] = extension_list
+
+  #Store data
+  save_dataset_reader = readers.CombineSegmentDataset(pipeline_type="test")
+  save_dataset = save_dataset_reader.get_dataset(input_dir, batch_size=1)
+  stored_video_ids = {}
+  segment_num, shard_number = 0,0
+  shard = []
+  for segment in save_dataset:
+    context = segment[0]
+    features = segment[1]
+    video_id = tf.convert_to_tensor(context["id"])[0].numpy()
+    segment_id = context["segment_id"][0].numpy()
+    if video_id in stored_video_ids.keys():
+      if segment_id not in stored_video_ids[video_id]:
+        stored_video_ids[video_id].append(segment_id)
+        new_context = {}
+        new_context["id"] = context["id"]
+        new_context["segment_label"] = context["segment_label"]
+        new_features = {}
+        new_features["rgb"] = features["rgb"]
+        new_features["audio"] = features["audio"]
+        new_features["class_features"] = feature_storage[video_id][segment_id]
+        shard.append(writer.serialize_data(new_context, new_features, "combine_data", pipeline_type="test"))
+        segment_num += 1
+    else:  
+      stored_video_ids[video_id] = [segment_id]
+      new_context = {}
+      new_context["id"] = context["id"]
+      new_context["segment_label"] = context["segment_label"]
+      new_features = {}
+      new_features["rgb"] = features["rgb"]
+      new_features["audio"] = features["audio"]
+      new_features["class_features"] = feature_storage[video_id][segment_id]
+      shard.append(writer.serialize_data(new_context, new_features, "combine_data", pipeline_type="test"))
+      segment_num += 1
+    if segment_num == shard_size:
+      segment_num = 0
+      shard = []
+      shard_number += 1
+      save_shard(data_dir, shard, file_type, shard_number)
+
+
+if __name__ == "__main__":
+  store_data("/home/conorfvedova_google_com/data/segments/finalized_test_data", "/home/conorfvedova_google_com/data/segments/input_test_data")

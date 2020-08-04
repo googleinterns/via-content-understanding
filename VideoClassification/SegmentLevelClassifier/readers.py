@@ -415,6 +415,97 @@ class SegmentDataset():
     features["audio"] = feature_matrices[1]
     return (context, features)
 
+class CombineSegmentDataset():
+  """Reads TFRecords of SequenceExamples for Segment level data. Used for the input pipeline where class specific features are generated.
+
+  The TFRecords must contain SequenceExamples with the string 'id', int64 'segment_label',
+  int64 segment_start_time', and float32 'segment_score' context features and a fixed length byte-quantized
+  feature vector, obtained from the features in 'feature_names'.
+  """
+
+  def __init__(
+      self,
+      num_classes=1000,
+      feature_sizes=[1024, 128],
+      feature_names=["rgb", "audio"],
+      class_num=-1):
+    """Construct a CombineSegmentDataset.
+
+    Args:
+      num_classes: a positive integer for the number of classes.
+      feature_sizes: positive integer(s) for the feature dimensions as a list. Must be same size as feature_names
+      feature_names: the feature name(s) in the tensorflow record as a list. Must be same size as feature_sizes
+      class_num: determines which class file to read. To read all files, do not modify class_num.
+    """
+
+    assert len(feature_names) == len(feature_sizes), (
+        "length of feature_names (={}) != length of feature_sizes (={})".format(
+            len(feature_names), len(feature_sizes)))
+    self.num_classes = num_classes
+    self.feature_sizes = feature_sizes
+    self.feature_names = feature_names
+    self.class_num = class_num
+
+  def get_dataset(self, data_dir, batch_size, type="train"):
+    """Returns TFRecordDataset after it has been parsed.
+
+    Args:
+      data_dir: directory of the TFRecords
+    Returns:
+      dataset: TFRecordDataset of the input training data
+    """
+    if self.class_num == -1:
+      files = tf.io.matching_files(os.path.join(data_dir, '%s*.tfrecord' % type))
+    else:
+      files = tf.io.matching_files(os.path.join(data_dir, '%s.tfrecord' % (type+str(self.class_num))))
+    
+    files_dataset = tf.data.Dataset.from_tensor_slices(files)
+    files_dataset = files_dataset.batch(tf.cast(tf.shape(files)[0], tf.int64))
+
+    dataset = files_dataset.interleave(lambda files: tf.data.TFRecordDataset(files, num_parallel_reads=tf.data.experimental.AUTOTUNE))
+
+    parser = partial(self._parse_fn)
+    dataset = dataset.map(parser, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+
+    dataset = dataset.batch(1).prefetch(tf.data.experimental.AUTOTUNE)
+
+    return dataset
+
+  def _parse_fn(self, serialized_example):
+    """Parse single Serialized Example from the TFRecords."""
+    # Read/parse frame/segment-level labels.
+    context_features = {
+      "id": tf.io.FixedLenFeature([], tf.string),
+      "segment_label": tf.io.FixedLenFeature([], tf.int64),
+      "segment_start_time": tf.io.FixedLenFeature([], tf.int64),
+      "segment_score": tf.io.FixedLenFeature([], tf.float32)  
+    }
+    context_features["candidate_label"] = tf.io.FixedLenFeature([], tf.int64)
+    context_features["segment_id"] = tf.io.FixedLenFeature([], tf.int64)
+    sequence_features = {
+        feature_name: tf.io.FixedLenSequenceFeature([], dtype=tf.string)
+        for feature_name in self.feature_names
+    }
+    sequence_features["class_features"] = tf.io.FixedLenSequenceFeature([2], dtype=tf.float32)
+    context, features = tf.io.parse_single_sequence_example(serialized_example, context_features=context_features, sequence_features=sequence_features)
+
+    num_features = len(self.feature_names)
+    assert num_features > 0, "No feature selected: feature_names is empty!"
+
+    assert len(self.feature_names) == len(self.feature_sizes), (
+        "length of feature_names (={}) != length of feature_sizes (={})".format(
+            len(self.feature_names), len(self.feature_sizes)))
+
+    feature_matrices = [None] * num_features  # an array of different features
+    for feature_index in range(num_features):
+      feature_matrix = tf.reshape(tf.io.decode_raw(features[self.feature_names[feature_index]], tf.uint8), 
+                                    [-1, self.feature_sizes[feature_index]])
+      feature_matrices[feature_index] = feature_matrix
+
+    features["rgb"] = feature_matrices[0]
+    features["audio"] = feature_matrices[1]
+    return (context, features)
+
 class InputDataset():
   """Reads TFRecords of SequenceExamples for Segment level data. Used for input to the model
 

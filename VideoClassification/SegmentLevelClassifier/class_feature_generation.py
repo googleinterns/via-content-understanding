@@ -37,7 +37,6 @@ def compute_and_save(data_dir, input_dir, comparison_directory="/home/conorfvedo
     data_dir: directory to save data to
     input_dir: directory where input data is stored.
   """
-  #Store previous computations to speed up runtime
   num_segment = 0
   for label in range(num_classes):
     shard = []
