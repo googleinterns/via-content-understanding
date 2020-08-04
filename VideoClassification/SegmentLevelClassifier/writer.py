@@ -109,13 +109,14 @@ def serialize_combined_features(features):
   """
   audio = features["audio"][0].numpy().tostring()
   rgb = features["rgb"][0].numpy().tostring()
-  print(features["class_features"][0])
-  class_features = features["class_features"][0].tostring()
-  print(tf.io.decode_raw(class_features, tf.float32))
   audio = convert_to_feature([audio], "byte")
   rgb = convert_to_feature([rgb], "byte")
-  class_features = convert_to_feature([class_features], "byte")
-  features = {"audio": tf.train.FeatureList(feature=[audio]), "rgb": tf.train.FeatureList(feature=[rgb]), "class_features": tf.train.FeatureList(feature=[class_features])}
+  feature_list = []
+  for class_feature in class_features:
+    feature_list.append(convert_to_feature(class_feature, "float"))
+  class_features = tf.train.FeatureList(feature=feature_list)
+  print(class_features)
+  features = {"audio": tf.train.FeatureList(feature=[audio]), "rgb": tf.train.FeatureList(feature=[rgb]), "class_features": class_features}
   features = tf.train.FeatureLists(feature_list=features)
   return features
 
