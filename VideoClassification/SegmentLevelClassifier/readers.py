@@ -385,7 +385,7 @@ class SegmentDataset():
     # Read/parse frame/segment-level labels.
     context_features = {
       "id": tf.io.FixedLenFeature([], tf.string),
-      "segment_label": tf.io.FixedLenFeature([], tf.int64),
+      #"segment_label": tf.io.FixedLenFeature([], tf.int64),
       "segment_start_time": tf.io.FixedLenFeature([], tf.int64),
       "segment_score": tf.io.FixedLenFeature([], tf.float32)  
     }
