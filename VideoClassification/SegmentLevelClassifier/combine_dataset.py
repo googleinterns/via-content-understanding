@@ -13,6 +13,7 @@ limitations under the License.
 Combine segment records back together so that they may be easily evaluated. At this point, segments have been split according to their
 candidate labels, but they need to be put back together.
 """
+import numpy as np
 import readers
 import tensorflow as tf
 import writer
