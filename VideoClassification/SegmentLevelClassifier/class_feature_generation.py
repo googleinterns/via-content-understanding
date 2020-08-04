@@ -65,8 +65,6 @@ def compute_and_save(data_dir, input_dir, comparison_directory="/home/conorfvedo
         features["audio"] = features["audio"][0].numpy()
         context["id"] = tf.convert_to_tensor(context["id"])[0].numpy()
         context["segment_score"] = context["segment_score"][0].numpy()
-        print(context)
-        assert False
         video_holder_input.append((context, features))
     else:
       video_holder_input = video_holder_comparison
