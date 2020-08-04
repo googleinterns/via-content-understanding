@@ -28,7 +28,7 @@ def evaluate_example(model, example, num_classes=1000):
   """
   predictions = [0] * num_classes
   video_matrix = tf.convert_to_tensor(example[0])
-  class_features_lists = example[1].values
+  class_features_lists = tf.reshape(example[1].values, [-1,3])
   print(class_features_lists)
   assert False
   for class_features_list in class_features_lists:
