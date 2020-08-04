@@ -43,8 +43,8 @@ def evaluate_model(model, dataset):
    dataset: tf.dataset attained from a Dataset class from readers.py  
   """
   #Create evaluation metrics
-  aucroc_calculator = metrics.AUC(multi_label=True)
-  aucpr_calculator = metrics.AUC(multi_label=True, curve='PR')
+  aucroc_calculator = metrics.AUC()
+  aucpr_calculator = metrics.AUC(curve='PR')
   pr_calculator = metrics.PrecisionAtRecall(0.7)
   rp_calculator = metrics.RecallAtPrecision(0.7)
   for input_data, label in dataset:
