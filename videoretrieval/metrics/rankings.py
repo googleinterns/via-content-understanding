@@ -15,9 +15,7 @@ limitations under the License.
 """
 
 import tensorflow as tf
-from .loss import build_similaritiy_matrix
-
-parallel_iterations = 8
+from .loss import build_similarity_matrix
 
 @tf.function
 def compute_rank(input_):
@@ -54,10 +52,10 @@ def compute_ranks(
         the batch. 
     """
 
-    similarity_matrix = build_similaritiy_matrix(
+    similarity_matrix = build_similarity_matrix(
         video_embeddings, missing_experts, text_embeddings, mixture_weights)
 
-    ranks_tensor = tf.map_fn(
+    ranks_tensor = tf.vectorized_map(
         compute_rank,
         (similarity_matrix, tf.range(similarity_matrix.shape[0])), 
         dtype=tf.int32,
@@ -91,7 +89,6 @@ def get_median_rank(ranks_tensor):
         tf.math.top_k(
             ranks_tensor, ranks_tensor.shape[0] // 2, sorted=False)[0])
 
-@tf.function
 def get_recall_at_k(ranks_tensor, k):
     """Gets the recall at k given a tensor of ranks and a threshold k.
 
