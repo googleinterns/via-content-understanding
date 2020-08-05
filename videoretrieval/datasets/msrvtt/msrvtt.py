@@ -59,7 +59,6 @@ class MSRVTTDataset(BaseVideoDataset):
         video_metadata = metadata.load_metadata()
 
         id_caption_pairs = []
-        
         for split in video_metadata.values():
             for data in split:
                 for caption in data["captions"]:
@@ -78,24 +77,6 @@ class MSRVTTDataset(BaseVideoDataset):
 
         train_ids = {data["video_id"] for data in video_metadata["train"]}
         valid_ids = {data["video_id"] for data in video_metadata["validate"]}
-        test_ids = {data["video_id"] for data in video_metadata["test"]}
-
-        return train_ids, valid_ids, test_ids
-
-class MSRVTTDatasetJSFusionSplit(MSRVTTDataset):
-
-    @property
-    def train_valid_test_ids(self):
-        """Returns a tuple of sets providing ids for the dataset splits.
-
-        Returns: a tuple of sets, where the first set contains the ids for the 
-        train data, the second for the validation data, and the third for the
-        test data."""
-        video_metadata = metadata.load_metadata()
-
-        train_ids = {data["video_id"] for data in video_metadata["train"]}
-        valid_ids = {data["video_id"] for data in video_metadata["validate"]}
-
         test_ids = {data["video_id"] for data in video_metadata["test"]}
 
         return train_ids, valid_ids, test_ids

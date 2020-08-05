@@ -133,7 +133,7 @@ class BaseVideoDataset(AbstractClass):
     def num_of_examples_by_split(self, split_name):
         """Gets the number of examples in the given split in this dataset.
 
-        Parameters:
+        Args:
             split_name: the name of the dataset split, as a string (case
             insensitive). The split name can be "train", "valid", or "test".
 

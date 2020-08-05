@@ -16,9 +16,9 @@ limitations under the License.
 """
 
 import tensorflow as tf
-from models.layers import TemporalAggregationLayer, \
-    ExpertProjectionModulationLayer, GatedEmbeddingUnitReasoning
-
+from models.layers import TemporalAggregationLayer
+from models.layers import ExpertProjectionModulationLayer
+from models.layers import GatedEmbeddingUnitReasoning
 
 class VideoEncoder(tf.keras.Model):
     """Implementation of the video encoder.
@@ -26,7 +26,7 @@ class VideoEncoder(tf.keras.Model):
     This model takes in a list of features computed by pretrained expert models
     and produces a fixed length, sharded embeedding. This embedding corresponds
     to the embedding produced by a corresponding text encoder. This model should
-    be trained in concert with a video encoder.
+    be trained in concert with a text encoder.
 
     The expert features are first aggregated down to a fixed length vector.
     Then, a model is used to compute an attention mask for each expert feature.
@@ -43,7 +43,11 @@ class VideoEncoder(tf.keras.Model):
             per expert.
         g_mlp: A standard feedforward deep neural network, with g_mlp_layers.
             This model takes in two embeddings and produces an attention mask.
-        h_mlp: A standard feedforward deep neural network, with h_mlp_layers.
+            Corresponds to g_phi in the paper this architecture was introduced
+            in.
+        h_mlp: A standard feedforward deep neural network, with h_mlp_layers
+            Corresponds to h_phi in the paper this architecture was introduced
+            in.
         gems: A list of gated embedding modules, one per embedding.
         activation_layer: the type of activation to be used.
         use_batch_norm: a boolean indicating if batch normalization is used.
@@ -60,11 +64,10 @@ class VideoEncoder(tf.keras.Model):
             make_activation_layer=tf.keras.layers.ReLU,
             use_batch_norm=True,
             kernel_initializer="glorot_uniform",
-            bias_initializer="zeros"
-            ):
+            bias_initializer="zeros"):
         """Initialize video encoder.
 
-        Parameters:
+        Args:
             num_experts: the number of pretrained experts used, as an integer.
             expert_aggregated_size: the dimensionality experts are projected to.
             encoded_expert_dimensionality: the dimensionality experts embeddings
@@ -77,7 +80,7 @@ class VideoEncoder(tf.keras.Model):
             kernel_initializer: the strategy used to initialize the weights in
                 dense layer's kernel. Either a string naming the initializer or
                 an instance of tf.keras.initializers.Initializer.
-            bias_initial: the strategy used to initialize the weights in dense
+            bias_initializer: the strategy used to initialize the weights in dense
                 layers' biases. Either a string naming the initializer or
                 an instance of tf.keras.initializers.Initializer.
         """
@@ -126,7 +129,7 @@ class VideoEncoder(tf.keras.Model):
         specified) and a non-linearity. The network ends with a single dense
         layer with a linear activation function.
 
-        Parameters:
+        Args:
             num_layers: the number of dense layers in the sequential model.
 
         Returns: a sequential feed forward neural network.
@@ -167,7 +170,7 @@ class VideoEncoder(tf.keras.Model):
     def call(self, inputs):
         """Forward pass on the video encoder.
 
-        Parameters:
+        Args:
             inputs: inputs is a pair of two elements. First, a list of video
             experts. Second, a boolean tensor indicating missing
             video experts.
@@ -189,7 +192,7 @@ class VideoEncoder(tf.keras.Model):
     def temporal_aggregation(self, inputs):
         """Runs the temporal aggregation module.
 
-        Parameters:
+        Args:
             inputs: a list of tensors from video experts.
 
         Returns: a list of temporally aggregated tensors, each dimension
@@ -214,7 +217,7 @@ class VideoEncoder(tf.keras.Model):
         mask is fed into a gated embedding reasoning unit, which produces a
         normalized shard of the final embedding. 
 
-        Parameters:
+        Args:
             aggregated_embeddings: a list of n aggregated video embeddings,
                 where n is the number of video experts used. Each element of the
                 list should be a tensor of shape batch_size x

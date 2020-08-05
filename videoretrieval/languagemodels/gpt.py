@@ -90,7 +90,6 @@ class OpenAIGPTModel(BaseLanguageModel):
 
         return self.model(ids)
 
-
 class GPT2Model(BaseLanguageModel):
     """An implementation of BaseLanguageModel for the openai-gpt1 model."""
 

@@ -130,9 +130,7 @@ class GatedEmbeddingUnitReasoning(tf.keras.layers.Layer):
 
         embedding, mask = inputs
 
-        activations = self.fully_connected(embedding)
-
-        activations = self.batch_norm_one(activations)
+        activations = self.batch_norm_one(self.fully_connected(embedding))
         mask = self.batch_norm_two(mask)
 
         output = embedding * tf.nn.sigmoid(activations + mask)

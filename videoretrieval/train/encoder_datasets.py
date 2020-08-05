@@ -44,7 +44,9 @@ def replace_video_id_with_expert_features_wrapper(precomputed_features):
 
     Arguments:
         precomputed_features: an array of dicts, where each dict maps from a
-            video id to a precomputed feature.
+            video id to a tuple. The tuple has two elements, the first being the
+            data of the precomputed feature, the second being a boolean that
+            indicates if the feature is missing.
 
     Returns: a function that has two inputs, video_id, which is a video id as a
         string and ids, the contextual embeddings for the given caption. This
@@ -62,9 +64,9 @@ def replace_video_id_with_expert_features_wrapper(precomputed_features):
         video_id = video_id_encoded.decode("utf-8")
 
         for feature_dict in precomputed_features:
+            assert video_id in feature_dict, f"Video {video_id} missing data"
             features, data_exists = feature_dict[video_id]
             expert_features.append(features)
-
             missing_modalities.append(data_exists)
 
         return [np.array(missing_modalities)] + expert_features
@@ -151,7 +153,6 @@ def update_dataset_shape_wrapper(experts, language_model):
         embeddings_function=embeddings_map_fn,
         encodings_function=encodings_map_fn)
 
-
 def match_cached_embeddings_with_experts(
     language_model, experts, precomputed_features, datasets,
     training_dataset_type):
@@ -162,7 +163,7 @@ def match_cached_embeddings_with_experts(
         experts: a list of experts taht the precomputed features are from.
         precomputed_features: a list of dicts, one per expert, that map from
         video id to precomputed feature.
-        *datasets: the datasets to transform.
+        datasets: the datasets to transform.
 
     Returns: A list of tf.data Datasets, where each example in the dataset
         consists of: video id, precomputed features, contextual embeddings, and
@@ -204,7 +205,6 @@ def zero_pad_expert_features(expert, expert_value):
             expert_value, zero_padding))
 
     return video_expert_features
-
 
 def get_precomputed_features(source_dataset, experts):
     """Get precomputed features from a set of experts and a dataset.
@@ -310,7 +310,6 @@ def generate_encoder_datasets(language_model, source_dataset, experts):
         dataset_type=TrainingDatasetType.EmbeddingsDataset,
         dataset_splits=[train_ds, valid_ds, test_ds],
         splits_to_sample=[0])
-
 
 def generate_language_model_fine_tuning_datasets(
     language_model, source_dataset, experts):

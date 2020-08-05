@@ -19,7 +19,7 @@ import unittest
 from train import encoder_datasets
 import tensorflow as tf
 import numpy as np
-from base import BaseExpert, BaseLanguageModel
+from base import BaseExpert
 
 MOCK_TENSOR_SHAPE = (2, 2) 
 MOCK_TENSOR_DATA = tf.zeros(MOCK_TENSOR_SHAPE)
@@ -27,10 +27,10 @@ NUM_MOCK_VIDEOS = 5
 MOCK_CAPTIONS_PER_VIDEO = 20
 
 class MockExpert(BaseExpert):
-
+    """An implementation of BaseExpert used for unit tests."""
     def __init__(self, is_constant_length, max_frames, embedding_shape):
-        self.constant_length = is_constant_length
-        self.max_frames = max_frames
+        self._constant_length = is_constant_length
+        self._max_frames = max_frames
         self._embedding_shape = embedding_shape
 
     @property
@@ -38,24 +38,30 @@ class MockExpert(BaseExpert):
         raise NotImplementedError()
 
     @property
-    def embedding_shape():
+    def embedding_shape(self):
         return self._embedding_shape
 
-class MockLanguageModel(BaseLanguageModel):
+    @property
+    def constant_length(self):
+        return self._constant_length
+
+    @property
+    def max_frames(self):
+        return self._max_frames
+    
+
+class MockLanguageModel:
+    """An implementation of BaseLanguageModel for unit tests."""
     def __init__(self, contextual_embeddings_shape):
         self.contextual_embeddings_shape = contextual_embeddings_shape
 
-    def forward(self, ids):
-        raise NotImplementedError()
-
-    def encode(self, text):
-        raise NotImplementedError()
-
-    @property
-    def batch_size(self):
-        raise NotImplementedError()
-
 def make_mock_video_ids(num_videos):
+    """Makes a list of video ids used for unit tests.
+
+    num_videos: an integer; the number of mock video ids to make. 
+
+    Returns: a list of strings of that can be used as video ids for unit tests.
+    """
     video_ids = []
 
     for video_num in range(num_videos):
@@ -122,10 +128,45 @@ class TestEncoderDatasetsFunctions(unittest.TestCase):
 
 
     def test_update_dataset_shape_wrapper(self):
-        pass
+        """Tests updating dataset shape."""
+        mock_expert_variable_length = MockExpert(False, 10, (10, 5))
+        mock_expert_constant_length = MockExpert(True, 10, (10,))
+        mock_language_model = MockLanguageModel((10, 10))
+
+        mock_dataset = tf.data.Dataset.from_generator(
+            lambda: None,
+            (tf.string, (tf.float32, tf.float32), tf.float32, tf.bool))
+
+        map_fn = encoder_datasets.update_dataset_shape_wrapper(
+            [mock_expert_variable_length, mock_expert_constant_length],
+            mock_language_model)
+
+        mock_dataset = mock_dataset.map(map_fn)
+
+        self.assertTrue(mock_dataset.element_spec[1][0].shape == (10, 5))
+        self.assertTrue(mock_dataset.element_spec[1][1].shape == (10,))
+        self.assertTrue(mock_dataset.element_spec[2].shape == (10, 10))
 
     def test_zero_pad_expert_features(self):
-        pass
+        """Tests zero padding expert features."""
+        tf.random.set_seed(1)
+
+        mock_expert = MockExpert(False, 10, (10, 5))
+        mock_expert_value_large = tf.random.normal((15, 5))
+
+        output = encoder_datasets.zero_pad_expert_features(
+            mock_expert, mock_expert_value_large)
+        
+        self.assertTrue(output.shape == (10, 5))
+
+        mock_value_small = tf.random.normal((4, 5))
+        output = encoder_datasets.zero_pad_expert_features(
+            mock_expert, mock_value_small)
+
+        self.assertTrue(output.shape == (10, 5))
+        error = tf.abs(tf.reduce_sum(output) - tf.reduce_sum(mock_value_small))
+        self.assertTrue(error < 1e-6)
+
 
     def test_sample_captions(self):
         """Tests the sample captions method of encoder datasets."""

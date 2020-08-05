@@ -19,7 +19,7 @@ from cache import cache_language_model_embeddings, cache_language_model_encoding
 import numpy as np
 
 
-def get_encode_function(language_model):
+def get_encode_function(language_model, captions_per_video):
     """Wraps a function that uses a language model's tokenizer to encoder text.
 
     Arguments:
@@ -40,8 +40,10 @@ def get_encode_function(language_model):
     def wrapper(video_id, text):
         result, attention_mask = tf.numpy_function(
             encode_text, [text], (tf.int64, tf.int64))
-        result.set_shape((20, language_model.encoded_shape[0]))
-        attention_mask.set_shape((20, language_model.encoded_shape[0]))
+        result.set_shape(
+            (captions_per_video, language_model.encoded_shape[0]))
+        attention_mask.set_shape(
+            (captions_per_video, language_model.encoded_shape[0]))
 
         return video_id, result, attention_mask
 
@@ -90,7 +92,7 @@ def generate_contextal_embeddings(language_model, dataset):
         the number of tokens in the embedding.
     """
 
-    encode = get_encode_function(language_model)
+    encode = get_encode_function(language_model, dataset.captions_per_video)
 
     return (dataset
         .map(encode, num_parallel_calls=tf.data.experimental.AUTOTUNE)
@@ -122,13 +124,15 @@ def generate_and_cache_contextual_embeddings(language_model, source_dataset):
 
 def generate_and_cache_encodings(language_model, source_dataset):
     for ds_split, split_name in source_dataset.id_caption_pair_datasets:
-        generate_encodings = get_encode_function(language_model)
+        generate_encodings = get_encode_function(
+            language_model, source_dataset.captions_per_video)
 
         ds_split = (ds_split
             .batch(source_dataset.captions_per_video)
             .map(
-                generate_encodings))
-                #num_parallel_calls=tf.data.experimental.AUTOTUNE))
+                generate_encodings,
+                num_parallel_calls=tf.data.experimental.AUTOTUNE))
 
         cache_language_model_encodings(
             ds_split, source_dataset, language_model, split=split_name)
+
