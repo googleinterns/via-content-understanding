@@ -49,7 +49,7 @@ class TestBidirectionalMaxMarginRankingLoss(unittest.TestCase):
             [0.0, 1.0, 0.0],
         ])]
 
-        loss = bidirectional_max_margin_ranking_loss(
+        loss, _ = bidirectional_max_margin_ranking_loss(
             mock_perfect_video_embeddings,
             mock_perfect_text_embeddings,
             mock_mixture_weights,
@@ -58,7 +58,7 @@ class TestBidirectionalMaxMarginRankingLoss(unittest.TestCase):
 
         self.assertTrue(abs(loss.numpy() - 0.0) < self.error)
 
-        loss = bidirectional_max_margin_ranking_loss(
+        loss, _ = bidirectional_max_margin_ranking_loss(
             mock_perfect_video_embeddings,
             mock_perfect_text_embeddings,
             mock_mixture_weights,
@@ -79,7 +79,7 @@ class TestBidirectionalMaxMarginRankingLoss(unittest.TestCase):
             [0.0, 1.0],
         ])]
 
-        loss = bidirectional_max_margin_ranking_loss(
+        loss, _ = bidirectional_max_margin_ranking_loss(
             mock_good_video_embeddings,
             mock_good_text_embeddings,
             mock_mixture_weights,
@@ -106,7 +106,7 @@ class TestBidirectionalMaxMarginRankingLoss(unittest.TestCase):
             [0.7, 0.6],
         ])]
 
-        loss = bidirectional_max_margin_ranking_loss(
+        loss, _ = bidirectional_max_margin_ranking_loss(
             mock_bad_video_embeddings,
             mock_bad_text_embeddings,
             mock_mixture_weights,

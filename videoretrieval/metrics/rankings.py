@@ -34,28 +34,18 @@ def compute_rank(input_):
     return rank
 
 @tf.function
-def compute_ranks(
-    text_embeddings, mixture_weights, video_embeddings, missing_experts):
-    """Computes ranks for a batch of video and text embeddings.
+def compute_ranks(similarity_matrix):
+    """Computes ranks for a batch of video and text embeddings from a similarity
+        matrix.
 
     Arguments:
-        text_embeddings: a list of text embedding tensors, where each element of
-            the list is of shape batch_size x embedding dimensionality.
-        mixture_weights: a tensor of mixture weights of shape batch_size x
-            number of experts, where each element contains the mixture weights
-            for the corresponding text embedding. 
-        video_embeddings: a list of video embedding tensors, where each element
-            of the list is of shape batch_size x embedding dimensionality.
-        missing_experts: a boolean tensor of shape batch_size x number of
-            experts, where each element corresponds to a video embedding and
-            indicates the missing experts. 
+        similarity_matrix: a batch size x batch size matrix, where the item in
+            the ith row and and jth column represents the similarity between the
+            ith query and the jth stored value.
 
-    Returns: a tensor of shape batch_size containg the rank of each element in
-        the batch. 
+    Returns: a tensor of shape batch_size containing the computed rank of each
+        query.
     """
-
-    similarity_matrix = build_similarity_matrix(
-        video_embeddings, text_embeddings, mixture_weights, missing_experts)
 
     ranks_tensor = tf.map_fn(
         compute_rank,

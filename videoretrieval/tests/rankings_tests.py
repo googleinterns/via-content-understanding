@@ -26,24 +26,15 @@ class RankingMetricsTests(unittest.TestCase):
 
     def test_ranking_generation(self):
         """Tests the function rankings.compute_ranks with mock embeddings."""
-        mock_video_embeddings = [tf.constant([
-            [1.0, 0.0],
-            [-1.0, 0.0],
-            [0.0, 1.0],
-            [0.0, -1.0]])]
-        mock_text_embeddings = [tf.constant([
-            [-1.0, 0.0],
-            [1.0, 0.0],
-            [0.0, 1.0],
-            [0.0, -1.0]])]
+        mock_similarity_matrix = tf.constant([
+            [1.0, 0.9, 0.2, -0.4, 0.2],
+            [0.4, 0.3, 0.5, 0.1, -0.2],
+            [0.1, 0.2, -0.1, 0.1, 1.0],
+            [0.0, 0.0, 0.0, 1.0, -1.0],
+            [1.0, 0.9, 0.8, -0.8, 0.1]])
+        expected_ranks = tf.constant([1, 3, 5, 1, 4])
         
-        expected_ranks = tf.constant([4, 4, 1, 1])
-        
-        ranks = rankings.compute_ranks(
-            mock_text_embeddings,
-            tf.constant([[1.0], [1.0], [1.0], [1.0]]),
-            mock_video_embeddings,
-            tf.constant([[False], [False], [False], [False]]))
+        ranks = rankings.compute_ranks(mock_similarity_matrix)
         self.assertTrue(tf.reduce_max(tf.abs(expected_ranks - ranks)) == 0)
 
 

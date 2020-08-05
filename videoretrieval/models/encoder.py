@@ -82,7 +82,7 @@ class EncoderModel(tf.keras.Model):
                 [video_features, missing_experts])
             text_results, mixture_weights = self.text_encoder(text_features)
 
-            loss = self.loss_fn(
+            loss, similarity_matrix = self.loss_fn(
                 video_results, text_results, mixture_weights, missing_experts,
                 self.loss_hyperparameter_m)
 
@@ -159,7 +159,7 @@ class EncoderModel(tf.keras.Model):
                 shard_text_results,
                 shard_mixture_weights,
                 missing_experts,
-                self.loss_hyperparameter_m))
+                self.loss_hyperparameter_m)[0])
 
             ranks.append(metrics.rankings.compute_ranks(
                 shard_text_results, shard_mixture_weights, video_results,
