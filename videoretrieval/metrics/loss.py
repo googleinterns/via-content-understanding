@@ -92,7 +92,10 @@ def bidirectional_max_margin_ranking_loss(
             "m" by the authors of the paper. This parameter is added to the
             difference between each pairwise similarity between embeddings.
 
-    Returns: a tensor with one element, the loss.
+    Returns: a tuple of two tensors. The first element is a a tensor with one
+        element, the loss. The second is a batch size x batch size similarity
+        matrix, with were the element in the ith row and jth column is the 
+        similarity between the ith text embedding and the jth video embedding.
     """
 
     batch_size = video_embeddings[0].shape[0]
