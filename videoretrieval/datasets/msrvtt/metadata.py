@@ -109,7 +109,7 @@ def match_videos_and_captions(videos, sentences):
 
 def download_dataset_video_metadata():
     """Downloads metadata for train/validation/test sets."""
-    os.mkdir(constants.base_dir)
+    constants.base_dir.mkdir(parents=True, exist_ok=True)
 
     download_train_val_video_metadata()
     download_test_video_metadata()

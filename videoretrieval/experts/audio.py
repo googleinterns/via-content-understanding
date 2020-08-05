@@ -1,4 +1,4 @@
-"""Class for managing action recongition experts.
+"""Classes for managing audio experts.
 
 Copyright 2020 Google LLC
 
@@ -17,25 +17,21 @@ limitations under the License.
 
 from base import BaseExpert
 
-class I3D(BaseExpert):
-    """Implementation of the I3D expert class."""
+class AudioExpert(BaseExpert):
+    """Implementation of the Audio expert class."""
 
     @property
     def name(self):
-        return "i3d"
+        return "audio"
     
     @property
     def embedding_shape(self):
-        return (1024,)
-
-
-class R2P1D(BaseExpert):
-    """Implementation of the R(2 + 1)d expert class."""
+        return (29, 128)
 
     @property
-    def name(self):
-        return "r2p1d"
-    
+    def constant_length(self):
+        return False
+
     @property
-    def embedding_shape(self):
-        return (512,)
+    def max_frames(self):
+        return 29

@@ -1,4 +1,6 @@
-"""Copyright 2020 Google LLC
+"""Classes for managing face experts.
+
+Copyright 2020 Google LLC
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -11,19 +13,17 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-
-Class for managing OCR experts.
 """
 
 from base import BaseExpert
 
-class OCRExpert(BaseExpert):
-    """Implementation of the OCR expert class."""
+class FaceExpert(BaseExpert):
+    """Implementation of the Face expert class."""
 
     @property
     def name(self):
-        return "ocr"
+        return "face"
     
     @property
     def embedding_shape(self):
-        return (5, 300)
+        return (512,)
