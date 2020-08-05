@@ -17,6 +17,8 @@ limitations under the License.
 import tensorflow as tf
 from .loss import build_similarity_matrix
 
+parallel_iterations = 32
+
 @tf.function
 def compute_rank(input_):
     """Compute and returns the position that an item of a tensor is ranked at.
@@ -53,9 +55,9 @@ def compute_ranks(
     """
 
     similarity_matrix = build_similarity_matrix(
-        video_embeddings, missing_experts, text_embeddings, mixture_weights)
+        video_embeddings, text_embeddings, mixture_weights, missing_experts)
 
-    ranks_tensor = tf.vectorized_map(
+    ranks_tensor = tf.map_fn(
         compute_rank,
         (similarity_matrix, tf.range(similarity_matrix.shape[0])), 
         dtype=tf.int32,

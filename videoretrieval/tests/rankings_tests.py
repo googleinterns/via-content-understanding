@@ -22,28 +22,33 @@ from metrics import rankings
 
 
 class RankingMetricsTests(unittest.TestCase):
+    """Tests for the rankings module."""
 
     def test_ranking_generation(self):
+        """Tests the function rankings.compute_ranks with mock embeddings."""
         mock_video_embeddings = [tf.constant([
-            [5.0],
-            [4.0],
-            [3.0],
-            [2.0],
-            [1.0],
-            [0.]])]
+            [1.0, 0.0],
+            [-1.0, 0.0],
+            [0.0, 1.0],
+            [0.0, -1.0]])]
+        mock_text_embeddings = [tf.constant([
+            [-1.0, 0.0],
+            [1.0, 0.0],
+            [0.0, 1.0],
+            [0.0, -1.0]])]
+        
+        expected_ranks = tf.constant([4, 4, 1, 1])
+        
+        ranks = rankings.compute_ranks(
+            mock_text_embeddings,
+            tf.constant([[1.0], [1.0], [1.0], [1.0]]),
+            mock_video_embeddings,
+            tf.constant([[False], [False], [False], [False]]))
+        self.assertTrue(tf.reduce_max(tf.abs(expected_ranks - ranks)) == 0)
 
-        mock_text_embeddings = tf.constant([
-            [0.4],
-            [4.0],
-            [3.1],
-            [4.1]
-            [0.4],
-            [0.0]
-            ])
 
     def test_metric_computations(self):
-        # 1 dimensional embeddings is fine for the purpose of testing rankings
-
+        """Tests computing metrics from ranked queries."""
         mock_ranks = tf.constant([1, 1, 2, 5, 5, 7, 9, 8, 10, 11, 13, 15])
         k_expected_recall_pairs = [
             (1, 1/6),
@@ -57,4 +62,3 @@ class RankingMetricsTests(unittest.TestCase):
 
         for k, recall in k_expected_recall_pairs:
             self.assertTrue(rankings.get_recall_at_k(mock_ranks, k))
-
