@@ -18,13 +18,18 @@ import tensorflow as tf
 import metrics.rankings
 
 class EncoderModel(tf.keras.Model):
-    """An implementation of an Encoder model.
-
-    This model wraps a video and text encoder to help with training them.
+    """An implementation of a keras model that trains an arbitrary Text Encoder
+    in concept with an arbitrary video encoder.
 
     Attributes:
         video_encoder: The encoder used to encode features from videos.
         text_encoder: The encoder used to encode features from text.
+        loss_hyperparameter_m: The margin parameter for the loss function.
+        optimizer: the optimizer used to train the two encoders.
+        loss_fn: the loss function used to train the two encoders.
+        recall_at_k_bounds: the thresholds for k to use in recall at k metric
+            computation.
+        captions_per_video: the number of captions that describe each video.
     """
 
     def __init__(self, video_encoder, text_encoder, loss_hyperparameter_m):
@@ -44,7 +49,7 @@ class EncoderModel(tf.keras.Model):
 
     def compile(
             self, optimizer, loss_fn, recall_at_k_bounds, captions_per_video):
-        """Complies the encoder.
+        """Complies this model.
 
         Arguments:
             optimizer: the optimizer for the video encoder.
@@ -62,7 +67,13 @@ class EncoderModel(tf.keras.Model):
         self.captions_per_video = captions_per_video
 
     def train_step(self, video_text_pair_batch):
-        """Executes one step of training."""
+        """Executes one step of training.
+
+        Args:
+            video_text_pair_batch: a tuple of four elements. First, the video
+                ids. Then, the video features for a given batch, followed by the
+                text features for a given batch, followed by a boolean tensor
+                indicating missing video modalities."""
         video_ids, video_features, text_features, missing_experts = \
             video_text_pair_batch
 
@@ -81,7 +92,6 @@ class EncoderModel(tf.keras.Model):
 
         # It's wasteful to calculate ranking metrics for the entire train
         # dataset, so we just mark the values as nan for keras.
-
         batch_metrics = {
             label: float("nan") for label in self.recall_at_k_labels}
 
@@ -109,7 +119,13 @@ class EncoderModel(tf.keras.Model):
         return tensor[::self.captions_per_video]
 
     def test_step(self, video_text_pair_batch):
-        """Executes one test step."""
+        """Executes one test step.
+
+        Args:
+            video_text_pair_batch: a tuple of four elements. First, the video
+                ids. Then, the video features for a given batch, followed by the
+                text features for a given batch, followed by a boolean tensor
+                indicating missing video modalities."""
         video_ids, video_features, text_features, missing_experts = \
             video_text_pair_batch
 
