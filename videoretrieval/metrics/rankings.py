@@ -55,7 +55,7 @@ def compute_ranks(
     """
 
     similarity_matrix = build_similarity_matrix(
-        video_embeddings, missing_experts, text_embeddings, mixture_weights)
+        video_embeddings, text_embeddings, mixture_weights, missing_experts)
 
     ranks_tensor = tf.map_fn(
         compute_rank,
