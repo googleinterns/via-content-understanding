@@ -15,7 +15,7 @@ limitations under the License.
 """
 
 import tensorflow as tf
-from .loss import build_similaritiy_matrix
+from .loss import build_similarity_matrix
 
 parallel_iterations = 8
 
@@ -54,7 +54,7 @@ def compute_ranks(
         the batch. 
     """
 
-    similarity_matrix = build_similaritiy_matrix(
+    similarity_matrix = build_similarity_matrix(
         video_embeddings, missing_experts, text_embeddings, mixture_weights)
 
     ranks_tensor = tf.map_fn(
