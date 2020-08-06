@@ -17,5 +17,5 @@ import writer
 
 if __name__ == "__main__":
   segment_reader = readers.SplitDataset(pipeline_type="train")
-  input_dataset = segment_reader.get_dataset("/home/conorfvedova_google_com/data/segments/validation", batch_size=1, type="train")
+  input_dataset = segment_reader.get_dataset("/home/conorfvedova_google_com/data/segments/validation", batch_size=1, type="validation")
   writer.split_data("/home/conorfvedova_google_com/data/segments/split_train2", input_dataset, pipeline_type="train")
