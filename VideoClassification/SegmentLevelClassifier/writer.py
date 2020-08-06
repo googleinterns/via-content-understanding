@@ -313,7 +313,7 @@ def split_data(data_dir, input_dataset, shard_size=85, num_classes=1000, file_ty
             new_context["segment_label"] = tf.convert_to_tensor([1801])
             new_context["segment_score"] = tf.convert_to_tensor([0.0])
             serialized_video = serialize_data(new_context, new_features, "segment", pipeline_type=pipeline_type)
-            video_holder[1000].append(serialized_video)
+            video_holder[999].append(serialized_video)
             num_neg_segments += 1
         elif pipeline_type == "test":
           if segment_score == 1:
