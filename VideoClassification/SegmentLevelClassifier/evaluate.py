@@ -49,7 +49,7 @@ def evaluate_model(model, dataset):
   aucroc_calculator = metrics.AUC()
   aucpr_calculator = metrics.AUC(curve='PR')
   pr_calculator = metrics.PrecisionAtRecall(0.7)
-  rp_calculator = metrics.RecallAtPrecision(0.7)
+  rp_calculator = metrics.RecallAtPrecision(0.6)
   for input_data, label in dataset:
     if np.where(label)[1][0] >= 900:
       prediction = evaluate_example(model, input_data)
