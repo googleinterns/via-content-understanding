@@ -91,4 +91,4 @@ def load_and_evaluate(data_dir, model_path, num_clusters=150, batch_size=20, fc_
   print(eval_dict)
 
 if __name__ == "__main__":
-  load_and_evaluate("/home/conorfvedova_google_com/data/segments/finalized_test_data", "model_weights_segment_level.h5")
+  load_and_evaluate("/home/conorfvedova_google_com/data/segments/finalized_test_data", "model_weights_segment_level_no_class.h5")
