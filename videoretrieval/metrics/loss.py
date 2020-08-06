@@ -84,7 +84,7 @@ def bidirectional_max_margin_ranking_loss(
             "m" by the authors of the paper. This parameter is added to the
             difference between each pairwise similarity between embeddings.
 
-    Returns: A tensor with one element, the loss. 
+    Returns: A tensor with one element, the loss.
     """
 
     batch_size = similarity_matrix[0].shape[0]
