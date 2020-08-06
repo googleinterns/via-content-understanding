@@ -33,7 +33,8 @@ def evaluate_example(model, example, num_classes=1000):
   for class_features_list in class_features_lists:
     prediction = model.predict((video_matrix, tf.convert_to_tensor([class_features_list[0][1:]])))
     class_num = tf.cast(class_features_list[0][0], tf.int64).numpy()
-    predictions[class_num] = prediction[0][0]
+    if class_num <= 100:
+      predictions[class_num] = prediction[0][0]
   return tf.reshape(tf.convert_to_tensor(predictions), [1,-1])
 
 def evaluate_model(model, dataset):
@@ -50,14 +51,15 @@ def evaluate_model(model, dataset):
   pr_calculator = metrics.PrecisionAtRecall(0.7)
   rp_calculator = metrics.RecallAtPrecision(0.7)
   for input_data, label in dataset:
-    prediction = evaluate_example(model, input_data)
-    #Update Metrics
-    aucroc_calculator.update_state(label, prediction)
-    aucpr_calculator.update_state(label, prediction)
-    pr_calculator.update_state(label, prediction)
-    rp_calculator.update_state(label, prediction)
-    print(f"Processing segment number {segment_num}")
-    segment_num += 1
+    if np.where(label == 1)[0][1] <= 100:
+      prediction = evaluate_example(model, input_data)
+      #Update Metrics
+      aucroc_calculator.update_state(label, prediction)
+      aucpr_calculator.update_state(label, prediction)
+      pr_calculator.update_state(label, prediction)
+      rp_calculator.update_state(label, prediction)
+      print(f"Processing segment number {segment_num}")
+      segment_num += 1
   #Get results
   auc_roc = aucroc_calculator.result()
   auc_pr = aucpr_calculator.result()
