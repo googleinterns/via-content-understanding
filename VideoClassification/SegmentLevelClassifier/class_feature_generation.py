@@ -30,7 +30,7 @@ def calculate_cosine(segment1, segment2):
   similarity = np.array(similarity)
   return np.mean(similarity)
 
-def compute_and_save(data_dir, input_dir, comparison_directory="/home/conorfvedova_google_com/data/segments/split_validation", pipeline_type="train", num_classes=1000):
+def compute_and_save(data_dir, input_dir, comparison_directory="/home/conorfvedova_google_com/data/segments/split_validation", pipeline_type="test", num_classes=1000):
   """Compute class specific features for input_dataset and save them to data_dir.
 
   Args:
@@ -56,7 +56,7 @@ def compute_and_save(data_dir, input_dir, comparison_directory="/home/conorfvedo
       context["segment_score"] = context["segment_score"][0].numpy()
       video_holder_comparison.append((context, features))
   if pipeline_type == "test":
-    input_dataset_reader = readers.SegmentDataset(class_num=label, pipeline_type=pipeline_type)
+    input_dataset_reader = readers.SegmentDataset(class_num=label, pipeline_type="train")
     input_dataset = input_dataset_reader.get_dataset(input_dir, batch_size=1, type="class")
     for segment in input_dataset:
       context = segment[0]
@@ -93,7 +93,7 @@ def compute_and_save(data_dir, input_dir, comparison_directory="/home/conorfvedo
         total_positive += positive
         total_negative += negative
     features["class_features"] = np.array([total_positive, total_negative])
-    shard.append(writer.serialize_data(context.copy(), features.copy(), "csf", pipeline_type=pipeline_type))
+    shard.append(writer.serialize_data(context.copy(), features.copy(), "csf", pipeline_type="train"))
     num_segment += 1
     if total_negative == 0 or total_positive == 0:
       print(f"Invalid calculation for segment {num_segment-1}")
