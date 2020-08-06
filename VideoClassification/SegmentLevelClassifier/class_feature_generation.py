@@ -92,12 +92,12 @@ def compute_and_save(data_dir, input_dir, comparison_directory="/home/conorfvedo
           total_positive += positive
           total_negative += negative
       features["class_features"] = np.array([total_positive, total_negative])
-      shard.append(writer.serialize_data(context.copy(), features.copy(), "csf", pipeline_type="test"))
+      shard.append(writer.serialize_data(context.copy(), features.copy(), "csf", pipeline_type=pipeline_type))
       num_segment += 1
       if total_negative == 0 or total_positive == 0:
         print(f"Invalid calculation for segment {num_segment-1}")
         assert False
-    writer.save_shard(data_dir, shard, "train", label)
+    writer.save_shard(data_dir, shard, pipeline_type, label)
 
 if __name__ == "__main__":
   compute_and_save("/home/conorfvedova_google_com/data/segments/input_test_data", "/home/conorfvedova_google_com/data/segments/split_test", pipeline_type="test")
