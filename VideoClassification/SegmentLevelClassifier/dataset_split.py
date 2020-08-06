@@ -16,6 +16,6 @@ import readers
 import writer
 
 if __name__ == "__main__":
-  segment_reader = readers.SplitDataset()
+  segment_reader = readers.SplitDataset(pipeline_type="test")
   input_dataset = segment_reader.get_dataset("/home/conorfvedova_google_com/data/segments/candidate_test", batch_size=1, type="test")
-  writer.split_data("/home/conorfvedova_google_com/data/segments/split_test", input_dataset)
+  writer.split_data("/home/conorfvedova_google_com/data/segments/split_test", input_dataset, pipeline_type="test")

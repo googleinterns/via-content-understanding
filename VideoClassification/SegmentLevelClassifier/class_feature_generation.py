@@ -30,14 +30,13 @@ def calculate_cosine(segment1, segment2):
   similarity = np.array(similarity)
   return np.mean(similarity)
 
-def compute_and_save(data_dir, input_dir, comparison_directory="/home/conorfvedova_google_com/data/segments/split_validation", comparison_type="train", num_classes=1000):
+def compute_and_save(data_dir, input_dir, comparison_directory="/home/conorfvedova_google_com/data/segments/split_validation", pipeline_type="train", num_classes=1000):
   """Compute class specific features for input_dataset and save them to data_dir.
 
   Args:
     data_dir: directory to save data to
     input_dir: directory where input data is stored.
   """
-  #Store previous computations to speed up runtime
   num_segment = 0
   for label in range(num_classes):
     shard = []
@@ -55,8 +54,8 @@ def compute_and_save(data_dir, input_dir, comparison_directory="/home/conorfvedo
         context["id"] = tf.convert_to_tensor(context["id"])[0].numpy()
         context["segment_score"] = context["segment_score"][0].numpy()
         video_holder_comparison.append((context, features))
-    if comparison_type == "test":
-      input_dataset_reader = readers.SegmentDataset(class_num=label)
+    if pipeline_type == "test":
+      input_dataset_reader = readers.SegmentDataset(class_num=label, pipeline_type=pipeline_type)
       input_dataset = input_dataset_reader.get_dataset(input_dir, batch_size=1, type="class")
       for segment in input_dataset:
         context = segment[0]
@@ -93,7 +92,7 @@ def compute_and_save(data_dir, input_dir, comparison_directory="/home/conorfvedo
           total_positive += positive
           total_negative += negative
       features["class_features"] = np.array([total_positive, total_negative])
-      shard.append(writer.serialize_data(context.copy(), features.copy(), "csf"))
+      shard.append(writer.serialize_data(context.copy(), features.copy(), "csf", pipeline_type="test"))
       num_segment += 1
       if total_negative == 0 or total_positive == 0:
         print(f"Invalid calculation for segment {num_segment-1}")
@@ -101,4 +100,4 @@ def compute_and_save(data_dir, input_dir, comparison_directory="/home/conorfvedo
     writer.save_shard(data_dir, shard, "train", label)
 
 if __name__ == "__main__":
-  compute_and_save("/home/conorfvedova_google_com/data/segments/input_train_data", "/home/conorfvedova_google_com/data/segments/split_validation")
+  compute_and_save("/home/conorfvedova_google_com/data/segments/input_test_data", "/home/conorfvedova_google_com/data/segments/split_test", pipeline_type="test")
