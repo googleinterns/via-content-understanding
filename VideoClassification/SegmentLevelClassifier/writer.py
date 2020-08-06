@@ -309,7 +309,7 @@ def split_data(data_dir, input_dataset, shard_size=85, num_classes=1000, file_ty
         new_features["rgb"] = features["rgb"][:,segment_start_times[segment_index]:segment_start_times[segment_index]+5,:]
         new_features["audio"] = features["audio"][:,segment_start_times[segment_index]:segment_start_times[segment_index]+5,:]
         if pipeline_type == "train":
-          if 1801 not in context["labels"]:
+          if 1801 not in context["labels"].values.numpy():
             new_context["segment_label"] = tf.convert_to_tensor([1801])
             new_context["segment_score"] = tf.convert_to_tensor([0.0])
             serialized_video = serialize_data(new_context, new_features, "segment", pipeline_type=pipeline_type)
