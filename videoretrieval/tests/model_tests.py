@@ -63,6 +63,7 @@ class CollaborativeExpertsTestCase(unittest.TestCase, AbstractClass):
         self.assertTrue(tuple(vector.shape) == tuple(shape))
 
 class TestCollaborativeExpertsModels(CollaborativeExpertsTestCase):
+    """Tests inferencing and training with a video and text encoder."""
     text_encoder = TextEncoder(
         NUM_EXPERTS,
         num_netvlad_clusters=5,
@@ -81,7 +82,7 @@ class TestCollaborativeExpertsModels(CollaborativeExpertsTestCase):
     encoder = EncoderModel(video_encoder, text_encoder, MOCK_MARGIN_PARAMETER)
 
     def test_video_encoder(self):
-        """Tests initializing a video encoder and making a forward pass."""
+        """Tests making a forward pass with a video encoder."""
         expert_one_data = tf.random.normal(EXPERT_ONE_SHAPE)
         expert_two_data = tf.random.normal(EXPERT_TWO_SHAPE)
         expert_three_data = tf.random.normal(EXPERT_THREE_SHAPE)
@@ -101,7 +102,7 @@ class TestCollaborativeExpertsModels(CollaborativeExpertsTestCase):
             self.assert_last_axis_has_norm(embedding_shard, norm=1)
 
     def test_text_encoder(self):
-        """Tests initializing a text encoder and making a forward pass."""
+        """Tests making a forward pass with a text encoder."""
         mock_text_embeddings = tf.random.normal(MOCK_TEXT_EMBEDDING_SHAPE)
         embeddings, mixture_weights = self.text_encoder(mock_text_embeddings)
 
@@ -118,6 +119,7 @@ class TestCollaborativeExpertsModels(CollaborativeExpertsTestCase):
                 mixture_weight_sums == tf.ones_like(mixture_weight_sums)))
 
     def test_encoder_training(self):
+        """Tests making one train step and one test step on an encoder model."""
         self.encoder.compile(
             tf.keras.optimizers.Adam(),
             bidirectional_max_margin_ranking_loss, 
