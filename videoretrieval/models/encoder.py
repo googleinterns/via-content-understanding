@@ -167,7 +167,7 @@ class EncoderModel(tf.keras.Model):
                 missing_experts)
 
             loss.append(self.loss_fn(
-                similarity_matrix, self.loss_hyperparameter_m)[0])
+                similarity_matrix, self.loss_hyperparameter_m))
             ranks.append(metrics.rankings.compute_ranks(similarity_matrix))
 
         valid_metrics["loss"] = tf.reduce_mean(tf.stack(loss))
