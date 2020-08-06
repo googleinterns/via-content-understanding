@@ -101,4 +101,4 @@ def compute_and_save(data_dir, input_dir, comparison_directory="/home/conorfvedo
   writer.save_shard(data_dir, shard, "train", 1000)
 
 if __name__ == "__main__":
-  compute_and_save("/home/conorfvedova_google_com/data/segments/input_train_data", "/home/conorfvedova_google_com/data/segments/split_train2", pipeline_type="train")
+  compute_and_save("/home/conorfvedova_google_com/data/segments/input_train_data", "/home/conorfvedova_google_com/data/segments/split_train2", pipeline_type="test")
