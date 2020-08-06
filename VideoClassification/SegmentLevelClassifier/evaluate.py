@@ -31,7 +31,6 @@ def evaluate_example(model, example, num_classes=1000):
   video_matrix = tf.convert_to_tensor(example[0])
   class_features_lists = tf.reshape(example[1].values, [-1, 1, 3])
   for class_features_list in class_features_lists:
-    print(tf.convert_to_tensor(class_features_list[:,1:]))
     prediction = model.predict((video_matrix, tf.convert_to_tensor(class_features_list[:,1:])))
     class_num = tf.cast(class_features_list[0][0], tf.int64).numpy()
     if class_num >= 900:
