@@ -288,13 +288,18 @@ def split_data(data_dir, input_dataset, shard_size=85, num_classes=1000, file_ty
   video_holder = [[] for i in range(num_classes)]
   video_number = 0
   number_faulty_examples = 0
+  num_neg_segments = 0
   for video in input_dataset:
+    if num_neg_segments == 200:
+      break
     print(f"Processing video number {video_number}")
     context = video[0]
     features = video[1]
     segment_start_times = context["segment_start_times"].values.numpy()
     for segment_index in range(len(segment_start_times)):
       if segment_start_times[segment_index]+5 <= tf.shape(features["rgb"])[1]:
+        if num_neg_segments == 200:
+          break
         new_context, new_features = {}, {}
         segment_score = context["segment_scores"].values.numpy()[segment_index]
         new_context["id"] = context["id"]
@@ -304,10 +309,12 @@ def split_data(data_dir, input_dataset, shard_size=85, num_classes=1000, file_ty
         new_features["rgb"] = features["rgb"][:,segment_start_times[segment_index]:segment_start_times[segment_index]+5,:]
         new_features["audio"] = features["audio"][:,segment_start_times[segment_index]:segment_start_times[segment_index]+5,:]
         if pipeline_type == "train":
-          label = new_context["segment_label"]
-          label = convert_labels(label).numpy()[0]
-          serialized_video = serialize_data(new_context, new_features, "segment", pipeline_type=pipeline_type)
-          video_holder[label].append(serialized_video)
+          if 1801 not in context["labels"]:
+            new_context["segment_label"] = tf.convert_to_tensor([1801])
+            new_context["segment_score"] = tf.convert_to_tensor([0.0])
+            serialized_video = serialize_data(new_context, new_features, "segment", pipeline_type=pipeline_type)
+            video_holder[1000].append(serialized_video)
+            num_neg_segments += 1
         elif pipeline_type == "test":
           if segment_score == 1:
             new_context["segment_id"] = np.array(segment_index)
@@ -327,5 +334,7 @@ def split_data(data_dir, input_dataset, shard_size=85, num_classes=1000, file_ty
   for shard_number in range(len(video_holder)):
     print(f"Class number {shard_number} has {len(video_holder[shard_number])} segments")
     if len(video_holder[shard_number]) != 0:
+      print(shard_number)
+      print(video_holder[shard_number])
       save_shard(data_dir, video_holder[shard_number], file_type, shard_number)
   print(f"Number of faulty examples {number_faulty_examples}")
