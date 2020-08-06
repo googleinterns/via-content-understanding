@@ -33,8 +33,7 @@ def evaluate_example(model, example, num_classes=1000):
   for class_features_list in class_features_lists:
     prediction = model.predict((video_matrix, class_features_list))
     class_num = tf.cast(class_features_list[0][0], tf.int64).numpy()
-    if class_num == 999 or class_num <= 100:
-      predictions[class_num] = prediction[0][0]
+    predictions[class_num] = prediction[0][0]
   return tf.reshape(tf.convert_to_tensor(predictions), [1,-1])
 
 def evaluate_model(model, dataset):
@@ -51,15 +50,14 @@ def evaluate_model(model, dataset):
   pr_calculator = metrics.PrecisionAtRecall(0.7)
   rp_calculator = metrics.RecallAtPrecision(0.6)
   for input_data, label in dataset:
-    if np.where(label)[1][0] == 999 or np.where(label)[1][0] <= 100:
-      prediction = evaluate_example(model, input_data)
-      #Update Metrics
-      aucroc_calculator.update_state(label, prediction)
-      aucpr_calculator.update_state(label, prediction)
-      pr_calculator.update_state(label, prediction)
-      rp_calculator.update_state(label, prediction)
-      print(f"Processing segment number {segment_num}")
-      segment_num += 1
+    prediction = evaluate_example(model, input_data)
+    #Update Metrics
+    aucroc_calculator.update_state(label, prediction)
+    aucpr_calculator.update_state(label, prediction)
+    pr_calculator.update_state(label, prediction)
+    rp_calculator.update_state(label, prediction)
+    print(f"Processing segment number {segment_num}")
+    segment_num += 1
   #Get results
   auc_roc = aucroc_calculator.result()
   auc_pr = aucpr_calculator.result()
@@ -90,4 +88,4 @@ def load_and_evaluate(data_dir, model_path, num_clusters=10, batch_size=20, fc_u
   print(eval_dict)
 
 if __name__ == "__main__":
-  load_and_evaluate("/home/conorfvedova_google_com/data/segments/finalized_test_data", "model_weights_segment_level.h5")
+  load_and_evaluate("/home/conorfvedova_google_com/data/segments/finalized_test_data", "model_weights_segment_level_more_neg.h5")
