@@ -16,6 +16,7 @@ limitations under the License.
 """
 import tensorflow as tf
 import metrics.rankings
+from metrics.loss import build_similarity_matrix
 
 class EncoderModel(tf.keras.Model):
     """An implementation of a keras model that trains an arbitrary Text Encoder
@@ -82,9 +83,9 @@ class EncoderModel(tf.keras.Model):
                 [video_features, missing_experts])
             text_results, mixture_weights = self.text_encoder(text_features)
 
-            loss, similarity_matrix = self.loss_fn(
-                video_results, text_results, mixture_weights, missing_experts,
-                self.loss_hyperparameter_m)
+            similarity_matrix = build_similarity_matrix(
+                video_results, text_results, mixture_weights, missing_experts)
+            loss = self.loss_fn(similarity_matrix, self.loss_hyperparameter_m)
 
         gradients = gradient_tape.gradient(loss, self.trainable_variables)
 
@@ -154,16 +155,13 @@ class EncoderModel(tf.keras.Model):
             shard_mixture_weights = mixture_weights[
                 caption_index::self.captions_per_video]
 
-            loss.append(self.loss_fn(
-                video_results,
-                shard_text_results,
-                shard_mixture_weights,
-                missing_experts,
-                self.loss_hyperparameter_m)[0])
+            similarity_matrix = build_similarity_matrix(
+                video_results, shard_text_results, shard_mixture_weights,
+                missing_experts)
 
-            ranks.append(metrics.rankings.compute_ranks(
-                shard_text_results, shard_mixture_weights, video_results,
-                missing_experts))
+            loss.append(self.loss_fn(
+                similarity_matrix, self.loss_hyperparameter_m)[0])
+            ranks.append(metrics.rankings.compute_ranks(similarity_matrix))
 
         valid_metrics["loss"] = tf.reduce_mean(tf.stack(loss))
         ranks = tf.concat(ranks, axis=0)

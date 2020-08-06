@@ -73,51 +73,36 @@ def build_similarity_matrix(
     return similarity_matrix
 
 def bidirectional_max_margin_ranking_loss(
-    video_embeddings, text_embeddings, mixture_weights, missing_experts,
-    embedding_distance_parameter):
+    similarity_matrix, embedding_margin):
     """Implementation of the Bidirectional max margin ranking loss.
 
     Args:
-        video_embeddings: a list of video embedding tensors, where each element
-            of the list is of shape batch_size x embedding dimensionality.
-        text_embeddings: a list of text embedding tensors, where each element of
-            the list is of shape batch_size x embedding dimensionality.
-        mixture_weights: a tensor of mixture weights of shape batch_size x
-            number of experts, where each element contains the mixture weights
-            for the corresponding text embedding.
-        missing_experts: a boolean tensor of shape batch_size x number of
-            experts, where each element corresponds to a video embedding and
-            indicates the missing experts. 
-        embedding_distance_parameter: a positive margin hyper-parameter, called
+        similarity_matrix: a batch size x batch size similarity matrix, where
+            the element in the ith row and jth column is the similarity between
+            the ith text embedding and the jth video embedding.
+        embedding_margin: a positive margin hyper-parameter, called
             "m" by the authors of the paper. This parameter is added to the
             difference between each pairwise similarity between embeddings.
 
-    Returns: a tuple of two tensors. The first element is a a tensor with one
-        element, the loss. The second is a batch size x batch size similarity
-        matrix, with were the element in the ith row and jth column is the 
-        similarity between the ith text embedding and the jth video embedding.
+    Returns: A tensor with one element, the loss. 
     """
 
-    batch_size = video_embeddings[0].shape[0]
+    batch_size = similarity_matrix[0].shape[0]
 
-    similarities = build_similarity_matrix(
-        video_embeddings,  text_embeddings, mixture_weights, missing_experts)
+    similarities_transpose = tf.transpose(similarity_matrix)
 
-    similarities_transpose = tf.transpose(similarities)
-
-    matching_similarities = tf.linalg.tensor_diag_part(similarities)
+    matching_similarities = tf.linalg.tensor_diag_part(similarity_matrix)
     matching_similarities = tf.expand_dims(matching_similarities, 1)
     matching_similarities = tf.tile(matching_similarities, [1, batch_size])
 
     computed_similarities = tf.nn.relu(
-        embedding_distance_parameter + similarities - matching_similarities)
+        embedding_margin + similarity_matrix - matching_similarities)
     computed_similarities += tf.nn.relu(
-        embedding_distance_parameter +\
-        similarities_transpose - matching_similarities)
+        embedding_margin + similarities_transpose - matching_similarities)
 
     computed_similarities = computed_similarities *  (1 - tf.eye(batch_size))
 
     loss = tf.reduce_sum(
         computed_similarities) / (2 * (batch_size**2 - batch_size))
 
-    return loss, similarities
+    return loss
