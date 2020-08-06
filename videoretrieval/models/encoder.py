@@ -20,7 +20,7 @@ from metrics.loss import build_similarity_matrix
 
 class EncoderModel(tf.keras.Model):
     """An implementation of a keras model that trains an arbitrary Text Encoder
-    in concept with an arbitrary video encoder.
+    in concert with an arbitrary Video Encoder.
 
     Attributes:
         video_encoder: The encoder used to encode features from videos.
@@ -57,6 +57,8 @@ class EncoderModel(tf.keras.Model):
             loss_fn: the loss function for this model.
             recall_at_k_bounds: the a list of integers to use as thresholds when
                 computing recall at k.
+            captions_per_video: the number of captions associated with each
+                video.
         """
         super(EncoderModel, self).compile()
 
@@ -126,7 +128,12 @@ class EncoderModel(tf.keras.Model):
             video_text_pair_batch: a tuple of four elements. First, the video
                 ids. Then, the video features for a given batch, followed by the
                 text features for a given batch, followed by a boolean tensor
-                indicating missing video modalities."""
+                indicating missing video modalities. Additionally, for each
+                video caption pair inputted to this function, must have 
+                self.num_captions_per_video associated with it. Each video
+                caption pair also must be adjacent to all other video caption
+                pairs for the same video. 
+        """
         video_ids, video_features, text_features, missing_experts = \
             video_text_pair_batch
 
