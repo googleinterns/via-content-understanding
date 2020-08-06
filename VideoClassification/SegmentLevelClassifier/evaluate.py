@@ -68,7 +68,7 @@ def evaluate_model(model, dataset):
   eval_dict = {"AUCPR": auc_pr, "AUCROC": auc_roc, "precision": precision, "recall": recall}
   return eval_dict
 
-def load_and_evaluate(data_dir, model_path, num_clusters=150, batch_size=20, fc_units=512):
+def load_and_evaluate(data_dir, model_path, num_clusters=10, batch_size=20, fc_units=512):
   """Load and test the video classifier model.
 
   Args:
