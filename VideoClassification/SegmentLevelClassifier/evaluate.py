@@ -70,7 +70,7 @@ def evaluate_model(model, dataset, precision_at_recall, recall_at_precision):
   eval_dict = {"AUCPR": auc_pr, "AUCROC": auc_roc, "precision": precision, "recall": recall}
   return eval_dict
 
-def load_and_evaluate(data_dir, model_path, precision_at_recall=0.7, recall_at_precision=0.7, num_clusters=150, batch_size=20, fc_units=512):
+def load_and_evaluate(data_dir, model_path, precision_at_recall=0.7, recall_at_precision=0.7, num_clusters=150, batch_size=1, fc_units=512):
   """Load and test the video classifier model.
 
   Args:
@@ -80,7 +80,7 @@ def load_and_evaluate(data_dir, model_path, precision_at_recall=0.7, recall_at_p
     recall_at_precision: the precision float value for which to calculate recall
   """
   data_reader = readers.EvaluationDataset()
-  test_dataset = data_reader.get_dataset(data_dir, batch_size)
+  test_dataset = data_reader.get_dataset(data_dir, batch_size, type="test")
 
   video_input_shape = (batch_size, 5, 1024)
   audio_input_shape = (batch_size, 5, 128)
