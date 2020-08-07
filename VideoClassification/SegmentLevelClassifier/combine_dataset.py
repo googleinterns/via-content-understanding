@@ -30,9 +30,7 @@ def combine_data(data_dir, input_dir, shard_size=85, file_type="test"):
   feature_storage = {}
   input_dataset_reader = readers.CombineSegmentDataset()
   input_dataset = input_dataset_reader.get_dataset(input_dir, batch_size=1)
-  segment_num = 0
   for segment in input_dataset:
-    print(segment_num)
     context = segment[0]
     features = segment[1]
     video_id = tf.convert_to_tensor(context["id"])[0].numpy()
