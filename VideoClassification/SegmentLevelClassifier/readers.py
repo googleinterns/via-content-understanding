@@ -17,7 +17,54 @@ import os
 import reader_utils as utils
 import tensorflow as tf
 
-class VideoDataset():
+class BaseDataset():
+	"""Base class for which all Dataset classes within readers.py inherit from.
+	"""
+
+	def __init__(
+      self,
+      num_classes,
+      feature_sizes,
+      feature_names):
+	    """Construct a YT8MFrameFeatureDataset.
+
+	    Args:
+	      num_classes: a positive integer for the number of classes.
+	      feature_sizes: positive integer(s) for the feature dimensions as a list. Must be same size as feature_names
+	      feature_names: the feature name(s) in the tensorflow record as a list. Must be same size as feature_sizes
+	    """
+
+	    assert len(feature_names) == len(feature_sizes), (
+	        "length of feature_names (={}) != length of feature_sizes (={})".format(
+	            len(feature_names), len(feature_sizes)))
+
+	    self.num_classes = num_classes
+	    self.feature_sizes = feature_sizes
+	    self.feature_names = feature_names
+
+	  def get_dataset(self, data_dir, batch_size=1, type="train"):
+	    """Returns TFRecordDataset after it has been parsed.
+
+	    Args:
+	      data_dir: directory of the TFRecords
+	    Returns:
+	      dataset: TFRecordDataset of the input training data
+	    """
+	    files = tf.io.matching_files(os.path.join(data_dir, '%s*.tfrecord' % type))
+	    
+	    files_dataset = tf.data.Dataset.from_tensor_slices(files)
+	    files_dataset = files_dataset.batch(tf.cast(tf.shape(files)[0], tf.int64))
+
+	    dataset = files_dataset.interleave(lambda files: tf.data.TFRecordDataset(files, num_parallel_reads=tf.data.experimental.AUTOTUNE))
+
+	    parser = partial(self._parse_fn)
+	    dataset = dataset.map(parser, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+
+	    dataset = dataset.batch(batch_size).prefetch(tf.data.experimental.AUTOTUNE)
+
+	    return dataset
+
+class VideoDataset(BaseDataset):
   """Reads TFRecords of SequenceExamples.
 
   The TFRecords must contain SequenceExamples with the sparse in64 'labels'
@@ -41,13 +88,7 @@ class VideoDataset():
       max_frames: the maximum number of frames to process.
     """
 
-    assert len(feature_names) == len(feature_sizes), (
-        "length of feature_names (={}) != length of feature_sizes (={})".format(
-            len(feature_names), len(feature_sizes)))
-
-    self.num_classes = num_classes
-    self.feature_sizes = feature_sizes
-    self.feature_names = feature_names
+    super().__init__(num_classes, feature_sizes, feature_names)
     self.max_frames = max_frames
 
   def get_video_matrix(self, features, feature_size, max_frames, max_quantized_value, min_quantized_value):
@@ -74,29 +115,6 @@ class VideoDataset():
 
     feature_matrix = utils.resize_axis(feature_matrix, 0, max_frames)
     return feature_matrix, num_frames
-
-  def get_dataset(self, data_dir, batch_size, type="train", max_quantized_value=2, min_quantized_value=-2):
-    """Returns TFRecordDataset after it has been parsed.
-
-    Args:
-      data_dir: directory of the TFRecords
-    Returns:
-      dataset: TFRecordDataset of the input training data
-    """
-    files = tf.io.matching_files(os.path.join(data_dir, '%s*.tfrecord' % type))
-
-    
-    files_dataset = tf.data.Dataset.from_tensor_slices(files)
-    files_dataset = files_dataset.batch(tf.cast(tf.shape(files)[0], tf.int64))
-
-    dataset = files_dataset.interleave(lambda files: tf.data.TFRecordDataset(files, num_parallel_reads=tf.data.experimental.AUTOTUNE))
-
-    parser = partial(self._parse_fn, max_quantized_value=max_quantized_value, min_quantized_value=min_quantized_value)
-    dataset = dataset.map(parser, num_parallel_calls=tf.data.experimental.AUTOTUNE)
-
-    dataset = dataset.batch(1).prefetch(tf.data.experimental.AUTOTUNE)
-
-    return dataset
 
   def _parse_fn(self, serialized_example, max_quantized_value=2, min_quantized_value=-2):
     """Parse single Serialized Example from the TFRecords."""
@@ -162,7 +180,7 @@ class VideoDataset():
     batch_video_matrix = tf.nn.l2_normalize(batch_video_matrix, feature_dim)
     return (contexts["id"], batch_video_matrix, batch_labels)
 
-class BasicDataset():
+class BasicDataset(BaseDataset):
   """Reads TFRecords of SequenceExamples for Segment level data. Used in candidate_generation.py
 
   The TFRecords must contain SequenceExamples with the sparse int64 'labels', string 'id', int64 'segment_labels',
@@ -184,34 +202,7 @@ class BasicDataset():
       feature_names: the feature name(s) in the tensorflow record as a list. Must be same size as feature_sizes
     """
 
-    assert len(feature_names) == len(feature_sizes), (
-        "length of feature_names (={}) != length of feature_sizes (={})".format(
-            len(feature_names), len(feature_sizes)))
-    self.num_classes = num_classes
-    self.feature_sizes = feature_sizes
-    self.feature_names = feature_names
-
-  def get_dataset(self, data_dir, batch_size, type="train"):
-    """Returns TFRecordDataset after it has been parsed.
-
-    Args:
-      data_dir: directory of the TFRecords
-    Returns:
-      dataset: TFRecordDataset of the input training data
-    """
-    files = tf.io.matching_files(os.path.join(data_dir, '%s*.tfrecord' % type))
-    
-    files_dataset = tf.data.Dataset.from_tensor_slices(files)
-    files_dataset = files_dataset.batch(tf.cast(tf.shape(files)[0], tf.int64))
-
-    dataset = files_dataset.interleave(lambda files: tf.data.TFRecordDataset(files, num_parallel_reads=tf.data.experimental.AUTOTUNE))
-
-    parser = partial(self._parse_fn)
-    dataset = dataset.map(parser, num_parallel_calls=tf.data.experimental.AUTOTUNE)
-
-    dataset = dataset.batch(1).prefetch(tf.data.experimental.AUTOTUNE)
-
-    return dataset
+    super().__init__(num_classes, feature_sizes, feature_names)
 
   def _parse_fn(self, serialized_example):
     """Parse single Serialized Example from the TFRecords."""
@@ -233,7 +224,7 @@ class BasicDataset():
     features["audio"] = tf.io.decode_raw(features["audio"], tf.uint8)
     return (context, features)
 
-class SplitDataset():
+class SplitDataset(BaseDataset):
   """Reads TFRecords of SequenceExamples for Segment level data. Used for the input pipeline where data is split.
 
   The TFRecords must contain SequenceExamples with the sparse int64 'labels', string 'id', int64 'segment_labels',
@@ -256,35 +247,8 @@ class SplitDataset():
       feature_names: the feature name(s) in the tensorflow record as a list. Must be same size as feature_sizes
     """
 
-    assert len(feature_names) == len(feature_sizes), (
-        "length of feature_names (={}) != length of feature_sizes (={})".format(
-            len(feature_names), len(feature_sizes)))
-    self.num_classes = num_classes
-    self.feature_sizes = feature_sizes
-    self.feature_names = feature_names
+    super().__init__(num_classes, feature_sizes, feature_names)
     self.pipeline_type = pipeline_type
-
-  def get_dataset(self, data_dir, batch_size, type="train"):
-    """Returns TFRecordDataset after it has been parsed.
-
-    Args:
-      data_dir: directory of the TFRecords
-    Returns:
-      dataset: TFRecordDataset of the input training data
-    """
-    files = tf.io.matching_files(os.path.join(data_dir, '%s*.tfrecord' % type))
-    
-    files_dataset = tf.data.Dataset.from_tensor_slices(files)
-    files_dataset = files_dataset.batch(tf.cast(tf.shape(files)[0], tf.int64))
-
-    dataset = files_dataset.interleave(lambda files: tf.data.TFRecordDataset(files, num_parallel_reads=tf.data.experimental.AUTOTUNE))
-
-    parser = partial(self._parse_fn)
-    dataset = dataset.map(parser, num_parallel_calls=tf.data.experimental.AUTOTUNE)
-
-    dataset = dataset.batch(1).prefetch(tf.data.experimental.AUTOTUNE)
-
-    return dataset
 
   def _parse_fn(self, serialized_example):
     """Parse single Serialized Example from the TFRecords."""
@@ -322,7 +286,7 @@ class SplitDataset():
     features["audio"] = feature_matrices[1]
     return (context, features)
 
-class SegmentDataset():
+class SegmentDataset(BaseDataset):
   """Reads TFRecords of SequenceExamples for Segment level data. Used for the input pipeline where class specific features are generated.
 
   The TFRecords must contain SequenceExamples with the string 'id', int64 'segment_label',
@@ -346,12 +310,7 @@ class SegmentDataset():
       class_num: determines which class file to read. To read all files, do not modify class_num.
     """
 
-    assert len(feature_names) == len(feature_sizes), (
-        "length of feature_names (={}) != length of feature_sizes (={})".format(
-            len(feature_names), len(feature_sizes)))
-    self.num_classes = num_classes
-    self.feature_sizes = feature_sizes
-    self.feature_names = feature_names
+    super().__init__(num_classes, feature_sizes, feature_names)
     self.class_num = class_num
     self.pipeline_type = pipeline_type
 
@@ -415,7 +374,7 @@ class SegmentDataset():
     features["audio"] = feature_matrices[1]
     return (context, features)
 
-class CombineSegmentDataset():
+class CombineSegmentDataset(BaseDataset):
   """Reads TFRecords of SequenceExamples for Segment level data. Used for the input pipeline where class specific features are generated.
 
   The TFRecords must contain SequenceExamples with the string 'id', int64 'segment_label',
@@ -438,12 +397,7 @@ class CombineSegmentDataset():
       class_num: determines which class file to read. To read all files, do not modify class_num.
     """
 
-    assert len(feature_names) == len(feature_sizes), (
-        "length of feature_names (={}) != length of feature_sizes (={})".format(
-            len(feature_names), len(feature_sizes)))
-    self.num_classes = num_classes
-    self.feature_sizes = feature_sizes
-    self.feature_names = feature_names
+    super().__init__(num_classes, feature_sizes, feature_names)
     self.class_num = class_num
 
   def get_dataset(self, data_dir, batch_size, type="train"):
@@ -506,7 +460,7 @@ class CombineSegmentDataset():
     features["audio"] = feature_matrices[1]
     return (context, features)
 
-class InputDataset():
+class InputDataset(BaseDataset):
   """Reads TFRecords of SequenceExamples for Segment level data. Used for input to the model
 
   The TFRecords must contain SequenceExamples with the string 'id', int64 'segment_label',
@@ -519,24 +473,16 @@ class InputDataset():
       self,
       num_classes=1000,
       feature_sizes=[1024, 128, 2],
-      feature_names=["rgb", "audio", "class_features"],
-      class_num=-1):
+      feature_names=["rgb", "audio", "class_features"]):
     """Construct a InputDataset.
 
     Args:
       num_classes: a positive integer for the number of classes.
       feature_sizes: positive integer(s) for the feature dimensions as a list. Must be same size as feature_names
       feature_names: the feature name(s) in the tensorflow record as a list. Must be same size as feature_sizes
-      class_num: determines which class file to read. To read all files, do not modify class_num.
     """
 
-    assert len(feature_names) == len(feature_sizes), (
-        "length of feature_names (={}) != length of feature_sizes (={})".format(
-            len(feature_names), len(feature_sizes)))
-    self.num_classes = num_classes
-    self.feature_sizes = feature_sizes
-    self.feature_names = feature_names
-    self.class_num = class_num
+    super().__init__(num_classes, feature_sizes, feature_names)
 
   def get_video_matrix(self, features, feature_size, max_quantized_value, min_quantized_value):
     """Decodes features from an input string and quantizes it.
@@ -557,23 +503,6 @@ class InputDataset():
     feature_matrix = utils.dequantize(decoded_features, max_quantized_value,
                                       min_quantized_value)
     return feature_matrix
-
-  def get_dataset(self, data_dir, batch_size, type="train", max_quantized_value=2, min_quantized_value=-2):
-    """Returns TFRecordDataset after it has been parsed.
-
-    Args:
-      data_dir: directory of the TFRecords
-    Returns:
-      dataset: TFRecordDataset of the input training data
-    """
-    files = tf.io.matching_files(os.path.join(data_dir, '%s*.tfrecord' % type))
-    files_dataset = tf.data.Dataset.from_tensor_slices(files)
-    files_dataset = files_dataset.batch(tf.cast(tf.shape(files)[0], tf.int64))
-    dataset = files_dataset.interleave(lambda files: tf.data.TFRecordDataset(files, num_parallel_reads=tf.data.experimental.AUTOTUNE))
-    parser = partial(self._parse_fn, max_quantized_value=max_quantized_value, min_quantized_value=min_quantized_value)
-    dataset = dataset.map(parser, num_parallel_calls=tf.data.experimental.AUTOTUNE)
-    dataset = dataset.batch(batch_size, drop_remainder=True).prefetch(tf.data.experimental.AUTOTUNE)
-    return dataset
 
   def _parse_fn(self, serialized_example, max_quantized_value=2, min_quantized_value=-2):
     """Parse single Serialized Example from the TFRecords."""
@@ -613,7 +542,7 @@ class InputDataset():
     video_matrix = tf.nn.l2_normalize(video_matrix, feature_dim)
     return ((video_matrix, class_features_list), label)
 
-class EvaluationDataset():
+class EvaluationDataset(BaseDataset):
   """Reads TFRecords of SequenceExamples for Segment level data. Used for input to the model
 
   The TFRecords must contain SequenceExamples with the string 'id', int64 'segment_label',
@@ -626,24 +555,15 @@ class EvaluationDataset():
       self,
       num_classes=1000,
       feature_sizes=[1024, 128],
-      feature_names=["rgb", "audio"],
-      class_num=-1):
+      feature_names=["rgb", "audio"]):
     """Construct a EvaluationDataset.
 
     Args:
       num_classes: a positive integer for the number of classes.
       feature_sizes: positive integer(s) for the feature dimensions as a list. Must be same size as feature_names
       feature_names: the feature name(s) in the tensorflow record as a list. Must be same size as feature_sizes
-      class_num: determines which class file to read. To read all files, do not modify class_num.
     """
-
-    assert len(feature_names) == len(feature_sizes), (
-        "length of feature_names (={}) != length of feature_sizes (={})".format(
-            len(feature_names), len(feature_sizes)))
-    self.num_classes = num_classes
-    self.feature_sizes = feature_sizes
-    self.feature_names = feature_names
-    self.class_num = class_num
+    super().__init__(num_classes, feature_sizes, feature_names)
 
   def get_video_matrix(self, features, feature_size, max_quantized_value, min_quantized_value):
     """Decodes features from an input string and quantizes it.
@@ -664,23 +584,6 @@ class EvaluationDataset():
     feature_matrix = utils.dequantize(decoded_features, max_quantized_value,
                                       min_quantized_value)
     return feature_matrix
-
-  def get_dataset(self, data_dir, batch_size, type="test", max_quantized_value=2, min_quantized_value=-2):
-    """Returns TFRecordDataset after it has been parsed.
-
-    Args:
-      data_dir: directory of the TFRecords
-    Returns:
-      dataset: TFRecordDataset of the input training data
-    """
-    files = tf.io.matching_files(os.path.join(data_dir, '%s*.tfrecord' % type))
-    files_dataset = tf.data.Dataset.from_tensor_slices(files)
-    files_dataset = files_dataset.batch(tf.cast(tf.shape(files)[0], tf.int64))
-    dataset = files_dataset.interleave(lambda files: tf.data.TFRecordDataset(files, num_parallel_reads=tf.data.experimental.AUTOTUNE))
-    parser = partial(self._parse_fn, max_quantized_value=max_quantized_value, min_quantized_value=min_quantized_value)
-    dataset = dataset.map(parser, num_parallel_calls=tf.data.experimental.AUTOTUNE)
-    dataset = dataset.batch(1).prefetch(tf.data.experimental.AUTOTUNE)
-    return dataset
 
   def _parse_fn(self, serialized_example, max_quantized_value=2, min_quantized_value=-2):
     """Parse single Serialized Example from the TFRecords."""
