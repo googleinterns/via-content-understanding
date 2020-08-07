@@ -18,10 +18,10 @@ import reader_utils as utils
 import tensorflow as tf
 
 class BaseDataset():
-	"""Base class for which all Dataset classes within readers.py inherit from.
-	"""
+  """Base class for which all Dataset classes within readers.py inherit from.
+  """
 
-	def __init__(self, num_classes, feature_sizes, feature_names):
+  def __init__(self, num_classes, feature_sizes, feature_names):
     """Construct a YT8MFrameFeatureDataset.
 
     Args:
