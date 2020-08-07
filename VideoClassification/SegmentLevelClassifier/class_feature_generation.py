@@ -12,8 +12,10 @@ limitations under the License.
 
 Compute and add Class specific features to the data.
 """
+import getopt
 import numpy as np
 import readers
+import sys
 import tensorflow as tf
 import writer
 
@@ -100,4 +102,20 @@ def compute_and_save(data_dir, input_dir, comparison_directory="/home/conorfvedo
     writer.save_shard(data_dir, shard, pipeline_type, label)
 
 if __name__ == "__main__":
-  compute_and_save("/home/conorfvedova_google_com/data/segments/input_test_data", "/home/conorfvedova_google_com/data/segments/split_test", pipeline_type="test")
+  assert len(sys.argv) == 4, ("Incorrect number of arguments {}. Should be 3. Please consult the README.md for proper argument use.".format(len(sys.argv)))
+  short_options = "i:w:p:"
+  long_options = ["input_dir=", "write_dir=", "pipeline_type="]
+  try:
+    arguments, values = getopt.getopt(sys.argv[1:], short_options, long_options)
+  except getopt.error as err:
+    print(str(err))
+    sys.exit(2)
+
+  for current_argument, current_value in arguments:
+    if current_argument in ("-i", "--input_dir"):
+      input_dir = current_value
+    elif current_argument in ("-w", "--write_dir"):
+      write_dir = current_value
+    elif current_argument in ("-p", "--pipeline_type"):
+      pipeline_type = current_value
+  compute_and_save(write_dir, input_dir, pipeline_type=pipeline_type)

@@ -13,8 +13,10 @@ limitations under the License.
 Combine segment records back together so that they may be easily evaluated. At this point, segments have been split according to their
 candidate labels, but they need to be put back together.
 """
+import getopt
 import numpy as np
 import readers
+import sys
 import tensorflow as tf
 import writer
 
@@ -99,4 +101,18 @@ def combine_data(data_dir, input_dir, shard_size=85, file_type="test"):
       shard = []
 
 if __name__ == "__main__":
-  combine_data("/home/conorfvedova_google_com/data/segments/finalized_test_data", "/home/conorfvedova_google_com/data/segments/input_test_data")
+  assert len(sys.argv) == 3, ("Incorrect number of arguments {}. Should be 2. Please consult the README.md for proper argument use.".format(len(sys.argv)))
+  short_options = "i:w:"
+  long_options = ["input_dir=", "write_dir="]
+  try:
+    arguments, values = getopt.getopt(sys.argv[1:], short_options, long_options)
+  except getopt.error as err:
+    print(str(err))
+    sys.exit(2)
+
+  for current_argument, current_value in arguments:
+    if current_argument in ("-i", "--input_dir"):
+      input_dir = current_value
+    elif current_argument in ("-w", "--write_dir"):
+      write_dir = current_value
+  combine_data(write_dir, input_dir)

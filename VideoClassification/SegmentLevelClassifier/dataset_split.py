@@ -12,10 +12,28 @@ limitations under the License.
 
 Split dataset into segments used for Class Feature Generation.
 """
+import getopt
 import readers
+import sys
 import writer
 
 if __name__ == "__main__":
-  segment_reader = readers.SplitDataset(pipeline_type="test")
-  input_dataset = segment_reader.get_dataset("/home/conorfvedova_google_com/data/segments/candidate_test", batch_size=1, type="test")
-  writer.split_data("/home/conorfvedova_google_com/data/segments/split_test", input_dataset, pipeline_type="test")
+  assert len(sys.argv) == 4, ("Incorrect number of arguments {}. Should be 3. Please consult the README.md for proper argument use.".format(len(sys.argv)))
+  short_options = "i:w:p:"
+  long_options = ["input_dir=", "write_dir=", "pipeline_type="]
+  try:
+    arguments, values = getopt.getopt(sys.argv[1:], short_options, long_options)
+  except getopt.error as err:
+    print(str(err))
+    sys.exit(2)
+
+  for current_argument, current_value in arguments:
+    if current_argument in ("-i", "--input_dir"):
+      input_dir = current_value
+    elif current_argument in ("-w", "--write_dir"):
+      write_dir = current_value
+    elif current_argument in ("-p", "--pipeline_type"):
+      pipeline_type = current_value
+  segment_reader = readers.SplitDataset(pipeline_type=pipeline_type)
+  input_dataset = segment_reader.get_dataset(input_dir, batch_size=1, type=pipeline_type)
+  writer.split_data(write_dir, input_dataset, pipeline_type=pipeline_type)

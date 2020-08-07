@@ -13,8 +13,10 @@ limitations under the License.
 Used to perform candidate generation preprocessing step
 """
 import candidate_generation_utils as utils
+import getopt
 import model as model_lib
 import readers
+import sys
 import tensorflow as tf
 import tensorflow_datasets as tfds
 import writer
@@ -53,10 +55,29 @@ def generate_candidates(input_dataset, model, k, class_csv):
   return probability_holder.find_candidates()
 
 if __name__ == "__main__":
+  assert len(sys.argv) == 5, ("Incorrect number of arguments {}. Should be 4. Please consult the README.md for proper argument use.".format(len(sys.argv)))
+  short_options = "i:m:f:w:"
+  long_options = ["input_dir=", "model_weights_path=", "file_type_name=", "write_dir="]
+  try:
+    arguments, values = getopt.getopt(sys.argv[1:], short_options, long_options)
+  except getopt.error as err:
+    print(str(err))
+    sys.exit(2)
+
+  for current_argument, current_value in arguments:
+    if current_argument in ("-i", "--input_dir"):
+      input_dir = current_value
+    elif current_argument in ("-m", "--model_weights_path"):
+      model_weights_path = current_value
+    elif current_argument in ("-f", "--file_type_name"):
+      file_type_name = current_value
+    elif current_argument in ("-w", "--write_dir"):
+      write_dir = current_value
+
   video_reader = readers.VideoDataset()
-  input_dataset = video_reader.get_dataset("/home/conorfvedova_google_com/data/segments/test", batch_size=1, type="test")
-  model = load_model("../model_weights.h5")
+  input_dataset = video_reader.get_dataset(input_dir, batch_size=1, type=file_type_name)
+  model = load_model(model_weights_path)
   candidates = generate_candidates(input_dataset, model, 50, "vocabulary.csv")
   segment_reader = readers.BasicDataset()
-  input_dataset = segment_reader.get_dataset("/home/conorfvedova_google_com/data/segments/test", batch_size=1, type="test")
-  writer.save_data("/home/conorfvedova_google_com/data/segments/candidate_test", input_dataset, candidates)
+  input_dataset = segment_reader.get_dataset(input_dir, batch_size=1, type=file_type_name)
+  writer.save_data(write_dir, input_dataset, candidates)

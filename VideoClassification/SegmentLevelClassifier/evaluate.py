@@ -12,9 +12,11 @@ limitations under the License.
 
 Evaluate different performance metrics of given model.
 """
+import getopt
 import model as model_lib
 import os
 import readers
+import sys
 import tensorflow as tf
 import tensorflow.keras.metrics as metrics
 import numpy as np
@@ -88,4 +90,18 @@ def load_and_evaluate(data_dir, model_path, num_clusters=150, batch_size=20, fc_
   print(eval_dict)
 
 if __name__ == "__main__":
-  load_and_evaluate("/home/conorfvedova_google_com/data/segments/finalized_test_data", "model_weights_segment_level.h5")
+  assert len(sys.argv) == 3, ("Incorrect number of arguments {}. Should be 2. Please consult the README.md for proper argument use.".format(len(sys.argv)))
+  short_options = "i:m:"
+  long_options = ["input_dir=", "model_weights_path="]
+  try:
+    arguments, values = getopt.getopt(sys.argv[1:], short_options, long_options)
+  except getopt.error as err:
+    print(str(err))
+    sys.exit(2)
+
+  for current_argument, current_value in arguments:
+    if current_argument in ("-i", "--input_dir"):
+      input_dir = current_value
+    elif current_argument in ("-m", "--model_weights_path"):
+      model_weights_path = current_value
+  load_and_evaluate(input_dir, model_weights_path)
