@@ -32,7 +32,7 @@ def calculate_cosine(segment1, segment2):
   similarity = np.array(similarity)
   return np.mean(similarity)
 
-def compute_and_save(data_dir, input_dir, comparison_directory="/home/conorfvedova_google_com/data/segments/split_validation", pipeline_type="train", num_classes=1000):
+def compute_and_save(data_dir, input_dir, comparison_directory="", pipeline_type="train", num_classes=1000):
   """Compute class specific features for input_dataset and save them to data_dir.
 
   Args:

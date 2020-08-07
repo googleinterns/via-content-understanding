@@ -21,48 +21,44 @@ class BaseDataset():
 	"""Base class for which all Dataset classes within readers.py inherit from.
 	"""
 
-	def __init__(
-      self,
-      num_classes,
-      feature_sizes,
-      feature_names):
-	    """Construct a YT8MFrameFeatureDataset.
+	def __init__(self, num_classes, feature_sizes, feature_names):
+    """Construct a YT8MFrameFeatureDataset.
 
-	    Args:
-	      num_classes: a positive integer for the number of classes.
-	      feature_sizes: positive integer(s) for the feature dimensions as a list. Must be same size as feature_names
-	      feature_names: the feature name(s) in the tensorflow record as a list. Must be same size as feature_sizes
-	    """
+    Args:
+      num_classes: a positive integer for the number of classes.
+      feature_sizes: positive integer(s) for the feature dimensions as a list. Must be same size as feature_names
+      feature_names: the feature name(s) in the tensorflow record as a list. Must be same size as feature_sizes
+    """
 
-	    assert len(feature_names) == len(feature_sizes), (
-	        "length of feature_names (={}) != length of feature_sizes (={})".format(
-	            len(feature_names), len(feature_sizes)))
+    assert len(feature_names) == len(feature_sizes), (
+        "length of feature_names (={}) != length of feature_sizes (={})".format(
+            len(feature_names), len(feature_sizes)))
 
-	    self.num_classes = num_classes
-	    self.feature_sizes = feature_sizes
-	    self.feature_names = feature_names
+    self.num_classes = num_classes
+    self.feature_sizes = feature_sizes
+    self.feature_names = feature_names
 
-	  def get_dataset(self, data_dir, batch_size=1, type="train"):
-	    """Returns TFRecordDataset after it has been parsed.
+  def get_dataset(self, data_dir, batch_size=1, type="train"):
+    """Returns TFRecordDataset after it has been parsed.
 
-	    Args:
-	      data_dir: directory of the TFRecords
-	    Returns:
-	      dataset: TFRecordDataset of the input training data
-	    """
-	    files = tf.io.matching_files(os.path.join(data_dir, '%s*.tfrecord' % type))
-	    
-	    files_dataset = tf.data.Dataset.from_tensor_slices(files)
-	    files_dataset = files_dataset.batch(tf.cast(tf.shape(files)[0], tf.int64))
+    Args:
+      data_dir: directory of the TFRecords
+    Returns:
+      dataset: TFRecordDataset of the input training data
+    """
+    files = tf.io.matching_files(os.path.join(data_dir, '%s*.tfrecord' % type))
+    
+    files_dataset = tf.data.Dataset.from_tensor_slices(files)
+    files_dataset = files_dataset.batch(tf.cast(tf.shape(files)[0], tf.int64))
 
-	    dataset = files_dataset.interleave(lambda files: tf.data.TFRecordDataset(files, num_parallel_reads=tf.data.experimental.AUTOTUNE))
+    dataset = files_dataset.interleave(lambda files: tf.data.TFRecordDataset(files, num_parallel_reads=tf.data.experimental.AUTOTUNE))
 
-	    parser = partial(self._parse_fn)
-	    dataset = dataset.map(parser, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+    parser = partial(self._parse_fn)
+    dataset = dataset.map(parser, num_parallel_calls=tf.data.experimental.AUTOTUNE)
 
-	    dataset = dataset.batch(batch_size).prefetch(tf.data.experimental.AUTOTUNE)
+    dataset = dataset.batch(batch_size).prefetch(tf.data.experimental.AUTOTUNE)
 
-	    return dataset
+    return dataset
 
 class VideoDataset(BaseDataset):
   """Reads TFRecords of SequenceExamples.
@@ -73,7 +69,7 @@ class VideoDataset(BaseDataset):
   back into a range between min_quantized_value and max_quantized_value.
   """
 
-  def __init__(  # pylint: disable=dangerous-default-value
+  def __init__(
       self,
       num_classes=3862,
       feature_sizes=[1024, 128],
@@ -118,8 +114,6 @@ class VideoDataset(BaseDataset):
 
   def _parse_fn(self, serialized_example, max_quantized_value=2, min_quantized_value=-2):
     """Parse single Serialized Example from the TFRecords."""
-
-    # Read/parse frame/segment-level labels.
     context_features = {
         "id": tf.io.FixedLenFeature([], tf.string),
         "labels": tf.io.VarLenFeature(tf.int64)
@@ -134,7 +128,6 @@ class VideoDataset(BaseDataset):
         context_features=context_features,
         sequence_features=sequence_features)
 
-    # loads (potentially) different types of features and concatenates them
     num_features = len(self.feature_names)
     assert num_features > 0, "No feature selected: feature_names is empty!"
 
@@ -142,8 +135,8 @@ class VideoDataset(BaseDataset):
         "length of feature_names (={}) != length of feature_sizes (={})".format(
             len(self.feature_names), len(self.feature_sizes)))
 
-    num_frames = -1  # the number of frames in the video
-    feature_matrices = [None] * num_features  # an array of different features
+    num_frames = -1
+    feature_matrices = [None] * num_features
     for feature_index in range(num_features):
       feature_matrix, num_frames_in_this_feature = self.get_video_matrix(
           features[self.feature_names[feature_index]],
@@ -154,23 +147,15 @@ class VideoDataset(BaseDataset):
 
       feature_matrices[feature_index] = feature_matrix
 
-    # cap the number of frames at self.max_frames
     num_frames = tf.minimum(num_frames, self.max_frames)
-
-    # concatenate different features
     video_matrix = tf.concat(feature_matrices, 1)
-
-    #Select num_samples frames.
     num_frames = tf.expand_dims(num_frames, 0)
-
-    # Process video-level labels.
     label_indices = contexts["labels"].values
     sparse_labels = tf.sparse.SparseTensor(
         tf.expand_dims(label_indices, axis=-1),
         tf.ones_like(contexts["labels"].values, dtype=tf.bool),
         (self.num_classes,))
     labels = tf.sparse.to_dense(sparse_labels, default_value=False, validate_indices=False)
-    # convert to batch format.
     batch_video_ids = tf.expand_dims(contexts["id"], 0)
     
     batch_video_matrix = video_matrix
@@ -276,7 +261,7 @@ class SplitDataset(BaseDataset):
         "length of feature_names (={}) != length of feature_sizes (={})".format(
             len(self.feature_names), len(self.feature_sizes)))
 
-    feature_matrices = [None] * num_features  # an array of different features
+    feature_matrices = [None] * num_features
     for feature_index in range(num_features):
       feature_matrix = tf.reshape(tf.io.decode_raw(features[self.feature_names[feature_index]], tf.uint8), 
                                     [-1, self.feature_sizes[feature_index]])
@@ -364,7 +349,7 @@ class SegmentDataset(BaseDataset):
         "length of feature_names (={}) != length of feature_sizes (={})".format(
             len(self.feature_names), len(self.feature_sizes)))
 
-    feature_matrices = [None] * num_features  # an array of different features
+    feature_matrices = [None] * num_features
     for feature_index in range(num_features):
       feature_matrix = tf.reshape(tf.io.decode_raw(features[self.feature_names[feature_index]], tf.uint8), 
                                     [-1, self.feature_sizes[feature_index]])
@@ -450,10 +435,9 @@ class CombineSegmentDataset(BaseDataset):
         "length of feature_names (={}) != length of feature_sizes (={})".format(
             len(self.feature_names), len(self.feature_sizes)))
 
-    feature_matrices = [None] * num_features  # an array of different features
+    feature_matrices = [None] * num_features
     for feature_index in range(num_features):
-      feature_matrix = tf.reshape(tf.io.decode_raw(features[self.feature_names[feature_index]], tf.uint8), 
-                                    [-1, self.feature_sizes[feature_index]])
+      feature_matrix = tf.reshape(tf.io.decode_raw(features[self.feature_names[feature_index]], tf.uint8), [-1, self.feature_sizes[feature_index]])
       feature_matrices[feature_index] = feature_matrix
 
     features["rgb"] = feature_matrices[0]
