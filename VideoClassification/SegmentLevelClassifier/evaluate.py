@@ -94,7 +94,7 @@ def load_and_evaluate(data_dir, model_path, precision_at_recall=0.7, recall_at_p
   print(eval_dict)
 
 if __name__ == "__main__":
-  assert len(sys.argv) == 3, ("Incorrect number of arguments {}. Should be 2. Please consult the README.md for proper argument use.".format(len(sys.argv)))
+  assert len(sys.argv) == 3, ("Incorrect number of arguments {}. Should be 2. Please consult the README.md for proper argument use.".format(len(sys.argv)-1))
   short_options = "i:m:"
   long_options = ["input_dir=", "model_weights_path="]
   try:

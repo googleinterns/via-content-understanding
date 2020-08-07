@@ -55,7 +55,7 @@ def generate_candidates(input_dataset, model, k, class_csv):
   return probability_holder.find_candidates()
 
 if __name__ == "__main__":
-  assert len(sys.argv) == 5, ("Incorrect number of arguments {}. Should be 4. Please consult the README.md for proper argument use.".format(len(sys.argv)))
+  assert len(sys.argv) == 5, ("Incorrect number of arguments {}. Should be 4. Please consult the README.md for proper argument use.".format(len(sys.argv)-1))
   short_options = "i:m:f:w:"
   long_options = ["input_dir=", "model_weights_path=", "file_type_name=", "write_dir="]
   try:

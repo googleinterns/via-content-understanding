@@ -18,7 +18,7 @@ import sys
 import writer
 
 if __name__ == "__main__":
-  assert len(sys.argv) == 4, ("Incorrect number of arguments {}. Should be 3. Please consult the README.md for proper argument use.".format(len(sys.argv)))
+  assert len(sys.argv) == 4, ("Incorrect number of arguments {}. Should be 3. Please consult the README.md for proper argument use.".format(len(sys.argv)-1))
   short_options = "i:w:p:"
   long_options = ["input_dir=", "write_dir=", "pipeline_type="]
   try:

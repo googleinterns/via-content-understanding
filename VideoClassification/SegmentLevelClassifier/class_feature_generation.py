@@ -102,7 +102,7 @@ def compute_and_save(data_dir, input_dir, comparison_directory, pipeline_type="t
     writer.save_shard(data_dir, shard, pipeline_type, label)
 
 if __name__ == "__main__":
-  assert len(sys.argv) == 4, ("Incorrect number of arguments {}. Should be 3. Please consult the README.md for proper argument use.".format(len(sys.argv)))
+  assert len(sys.argv) == 5, ("Incorrect number of arguments {}. Should be 4. Please consult the README.md for proper argument use.".format(len(sys.argv)-1))
   short_options = "i:w:c:p:"
   long_options = ["input_dir=", "write_dir=", "comparison_directory=", "pipeline_type="]
   try:
