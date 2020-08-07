@@ -6,7 +6,7 @@ class TestCandidateGeneration(unittest.TestCase):
   """Class used to test the candidate generation utils defined in candidate_generation_utils.py"""
 
   def test_sorted_append(self):
-    prob_holder = ProbabilityHolder("vocabulary.csv", 50)
+    prob_holder = candidate_generation_utils.ProbabilityHolder("vocabulary.csv", 50)
     candidates = prob_holder.candidates.copy()
     candidate_probs = prob_holder.candidate_probs.copy()
     
@@ -26,7 +26,7 @@ class TestCandidateGeneration(unittest.TestCase):
     self.assertEqual(candidate_probs, prob_holder.candidate_probs)
 
   def test_sorted_insert(self):
-    prob_holder = ProbabilityHolder("vocabulary.csv", 2)
+    prob_holder = candidate_generation_utils.ProbabilityHolder("vocabulary.csv", 2)
     candidates = prob_holder.candidates.copy()
     candidate_probs = prob_holder.candidate_probs.copy()
     
@@ -43,25 +43,25 @@ class TestCandidateGeneration(unittest.TestCase):
     self.assertEqual(candidates, prob_holder.candidates)
     self.assertEqual(candidate_probs, prob_holder.candidate_probs)
 
-    def test_find_candidates(self):
-      prob_holder = ProbabilityHolder("vocabulary.csv", 2)
-      
-      prob_holder.sorted_append(0, 0.1, 0)
-      prob_holder.sorted_append(0, 0.5, 1)
-      prob_holder.sorted_append(0, 0.2, 2)
-      prob_holder.sorted_insert(0, 0.2, 3)
-      prob_holder.sorted_insert(0, 0.2, 4)
-      prob_holder.sorted_insert(0, 0.9, 5)
-      prob_holder.sorted_append(1, 0.5, 1)
+  def test_find_candidates(self):
+    prob_holder = candidate_generation_utils.ProbabilityHolder("vocabulary.csv", 2)
+    
+    prob_holder.sorted_append(0, 0.1, 0)
+    prob_holder.sorted_append(0, 0.5, 1)
+    prob_holder.sorted_append(0, 0.2, 2)
+    prob_holder.sorted_insert(0, 0.2, 3)
+    prob_holder.sorted_insert(0, 0.2, 4)
+    prob_holder.sorted_insert(0, 0.9, 5)
+    prob_holder.sorted_append(1, 0.5, 1)
 
-      candidates = prob_holder.find_candidates()
+    candidates = prob_holder.find_candidates()
 
-      test_candidates = {}
-      test_candidates[4] = [0]
-      test_candidates[1] = [0, 1]
-      test_candidates[5] = [0]
+    test_candidates = {}
+    test_candidates[4] = [0]
+    test_candidates[1] = [0, 1]
+    test_candidates[5] = [0]
 
-      self.assertEqual(candidates, test_candidates)
+    self.assertEqual(candidates, test_candidates)
 
 if __name__ == "__main__":
   unittest.main()
