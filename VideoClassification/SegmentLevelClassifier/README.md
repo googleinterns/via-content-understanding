@@ -11,7 +11,7 @@ Example Commands for training:
 ```
 python dataset_split.py --input_dir=data/train --write_dir=data/split_train --pipeline_type=train
 python class_feature_generation.py --input_dir=data/split_train --write_dir=data/input_train_data --comparison_directory=data/split_train --pipeline_type=train
-python train.py --input_dir=data/input_train_data --model_path=model_weights.h5
+python train.py --input_dir=data/input_train_data --model_path=model_weights.h5 --logs_dir=logs
 ```
 
 To evaluate the model, the pipeline is:
