@@ -48,7 +48,7 @@ def train(data_dir, model_path, logs_dir, epochs=100, lr=0.0002, num_clusters=15
   return model
 
 if __name__ == "__main__":
-  assert len(sys.argv) == 3, ("Incorrect number of arguments {}. Should be 2. Please consult the README.md for proper argument use.".format(len(sys.argv)-1))
+  assert len(sys.argv) == 4, ("Incorrect number of arguments {}. Should be 3. Please consult the README.md for proper argument use.".format(len(sys.argv)-1))
   short_options = "i:m:l:"
   long_options = ["input_dir=", "model_path=", "logs_dir="]
   try:
