@@ -32,7 +32,7 @@ def calculate_cosine(segment1, segment2):
   similarity = np.array(similarity)
   return np.mean(similarity)
 
-def compute_and_save(data_dir, input_dir, comparison_directory="", pipeline_type="train", num_classes=1000):
+def compute_and_save(data_dir, input_dir, comparison_directory, pipeline_type="train", num_classes=1000):
   """Compute class specific features for input_dataset and save them to data_dir.
 
   Args:
@@ -103,8 +103,8 @@ def compute_and_save(data_dir, input_dir, comparison_directory="", pipeline_type
 
 if __name__ == "__main__":
   assert len(sys.argv) == 4, ("Incorrect number of arguments {}. Should be 3. Please consult the README.md for proper argument use.".format(len(sys.argv)))
-  short_options = "i:w:p:"
-  long_options = ["input_dir=", "write_dir=", "pipeline_type="]
+  short_options = "i:w:c:p:"
+  long_options = ["input_dir=", "write_dir=", "comparison_directory=", "pipeline_type="]
   try:
     arguments, values = getopt.getopt(sys.argv[1:], short_options, long_options)
   except getopt.error as err:
@@ -118,4 +118,6 @@ if __name__ == "__main__":
       write_dir = current_value
     elif current_argument in ("-p", "--pipeline_type"):
       pipeline_type = current_value
-  compute_and_save(write_dir, input_dir, pipeline_type=pipeline_type)
+    elif current_argument in ("-c", "--comparison_directory"):
+      comparison_directory = current_value
+  compute_and_save(write_dir, input_dir, comparison_directory, pipeline_type=pipeline_type)

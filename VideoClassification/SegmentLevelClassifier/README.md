@@ -10,7 +10,7 @@ dataset_split.py -> class_feature_generation.py -> train.py
 Example Commands for training:
 ```
 python dataset_split.py --input_dir=data/train --write_dir=data/split_train --pipeline_type=train
-python class_feature_generation.py --input_dir=data/split_train --write_dir=data/input_train_data --pipeline_type=train
+python class_feature_generation.py --input_dir=data/split_train --write_dir=data/input_train_data --comparison_directory=data/split_train --pipeline_type=train
 python train.py --input_dir=data/input_train_data --model_path=model_weights.h5
 ```
 
@@ -21,7 +21,7 @@ Example Commands for evaluation:
 ```
 python candidate_generation.py --input_dir=data/test --model_weights_path=model_weights.h5 --file_type_name=test --write_dir=data/test_candidate_gen
 python dataset_split.py --input_dir=data/test_candidate_gen --write_dir=data/split_test --pipeline_type=test
-python class_feature_generation.py --input_dir=data/split_test --write_dir=data/input_test_data --pipeline_type=test
+python class_feature_generation.py --input_dir=data/split_test --write_dir=data/input_test_data --comparison_directory=data/split_train --pipeline_type=test
 python combine_dataset.py --input_dir=data/input_test_data --write_dir=data/finalized_test_data
 python evaluate.py --input_dir=data/finalized_test_data --model_weights_path=model_weights.h5
 ```
