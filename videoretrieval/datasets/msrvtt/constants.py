@@ -52,12 +52,6 @@ audio_path = precomputed_features_base_path + \
 face_path = precomputed_features_base_path + \
 	"aggregated_face_feats/facefeats-avg.pickle"
 
-audio_path = precomputed_features_base_path + \
-	"aggregated_audio_feats/Audio_MSRVTT_new.pickle"
-
-face_path = precomputed_features_base_path + \
-	"aggregated_face_feats/facefeats-avg.pickle"
-
 expert_to_features = {
 	experts.i3d: i3d_path,
 	experts.resnext: resnext_path,

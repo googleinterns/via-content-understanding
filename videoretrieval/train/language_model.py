@@ -76,7 +76,7 @@ def get_language_model_inference_function(language_model):
 
     return wrapper
 
-def generate_contextal_embeddings(language_model, dataset):
+def generate_contextual_embeddings(language_model, dataset):
     """Generate the contextual embeddings for a given dataset.
 
     Arguments:
@@ -117,7 +117,7 @@ def generate_and_cache_contextual_embeddings(language_model, source_dataset):
     """
 
     for ds_split, split_name in source_dataset.id_caption_pair_datasets:
-        ds_split = generate_contextal_embeddings(language_model, ds_split)
+        ds_split = generate_contextual_embeddings(language_model, ds_split)
 
         cache_language_model_embeddings(
             ds_split, source_dataset, language_model, split=split_name)

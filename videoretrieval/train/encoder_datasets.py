@@ -99,17 +99,18 @@ def replace_video_id_with_expert_features_wrapper(precomputed_features):
         encodings_function=encodings_wrapper)
 
 def update_dataset_shape_wrapper(experts, language_model):
-    """Updates the shapes of expert features and text embedding a given dataset.
+    """Updates the shapes of expert features and text embeddings for a dataset.
 
     Arguments:
         experts: a list of experts (type BaseExpert) used in the dataset.
-        language_model: 
+        language_model: a language model of type BaseLanguageModel that was used
+            to generate contextual embeddings. 
 
     Returns: a function that takes in video id, expert features, contextual
         embeddings, and missing modalities as parameters and assigns a shape to
-        the contextual embeddings and the expert features, then returns the a
-        tuple of the video ids, expert features, contextual embeddings, and
-        missing modalities.
+        the contextual embeddings and the expert features, then returns a tuple
+        of the video ids, expert features, contextual embeddings, and missing
+        modalities.
     """
 
     num_experts = len(experts)

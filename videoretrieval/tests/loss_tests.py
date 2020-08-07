@@ -50,19 +50,21 @@ class TestBidirectionalMaxMarginRankingLoss(unittest.TestCase):
         ])]
 
         loss = bidirectional_max_margin_ranking_loss(
-            mock_perfect_video_embeddings,
-            mock_perfect_text_embeddings,
-            mock_mixture_weights,
-            mock_missing_experts,
+            build_similarity_matrix(
+                mock_perfect_video_embeddings,
+                mock_perfect_text_embeddings,
+                mock_mixture_weights,
+                mock_missing_experts),
             1.0)
 
         self.assertTrue(abs(loss.numpy() - 0.0) < self.error)
 
         loss = bidirectional_max_margin_ranking_loss(
-            mock_perfect_video_embeddings,
-            mock_perfect_text_embeddings,
-            mock_mixture_weights,
-            mock_missing_experts,
+            build_similarity_matrix(
+                mock_perfect_video_embeddings,
+                mock_perfect_text_embeddings,
+                mock_mixture_weights,
+                mock_missing_experts),
             100.0)
 
         self.assertTrue(abs(loss.numpy() - 99.0) < self.error)
@@ -80,10 +82,11 @@ class TestBidirectionalMaxMarginRankingLoss(unittest.TestCase):
         ])]
 
         loss = bidirectional_max_margin_ranking_loss(
-            mock_good_video_embeddings,
-            mock_good_text_embeddings,
-            mock_mixture_weights,
-            mock_missing_experts,
+            build_similarity_matrix(
+                mock_good_video_embeddings,
+                mock_good_text_embeddings,
+                mock_mixture_weights,
+                mock_missing_experts),
             1.0)
 
         self.assertTrue(abs(loss.numpy() - 0.5084931) < self.error)
@@ -107,10 +110,11 @@ class TestBidirectionalMaxMarginRankingLoss(unittest.TestCase):
         ])]
 
         loss = bidirectional_max_margin_ranking_loss(
-            mock_bad_video_embeddings,
-            mock_bad_text_embeddings,
-            mock_mixture_weights,
-            mock_missing_experts,
+            build_similarity_matrix(
+                mock_bad_video_embeddings,
+                mock_bad_text_embeddings,
+                mock_mixture_weights,
+                mock_missing_experts),
             1.5)
 
         self.assertTrue(abs(loss.numpy() - 1.21000000333) < self.error)

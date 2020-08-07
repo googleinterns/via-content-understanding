@@ -47,7 +47,6 @@ def get_records_directory(dataset, language_model, split, postfix=""):
     language_model_name = language_model.name
 
     path = base_path / f"{dataset_name}/{language_model_name}/{split}{postfix}"
-
     path.mkdir(parents=True, exist_ok=True)
 
     return path
@@ -63,12 +62,13 @@ def serialize_to_protobuf(video_id, contextual_embeddings, tokens):
     Returns:
         A protobuf serialized as a string.
     """
-    video_id_feature = get_bytes_feature(video_id)
-
-    # Accessing contextual_embeddings[0] to gets rid of the extra dimension.
+    assert contextual_embeddings.shape[0] == 1
+    # Accessing contextual_embeddings[0] to get rid of the extra dimension.
     serialized_embedding = tf.io.serialize_tensor(
-        contextual_embeddings)
-    embeddings_feature = get_bytes_feature(serialized_embedding)
+        contextual_embeddings[0, :tokens])
+
+    video_id_feature = get_feature(video_id)
+    embeddings_feature = get_feature(serialized_embedding)
 
     feature = {
         "video_id": video_id_feature,
@@ -76,9 +76,7 @@ def serialize_to_protobuf(video_id, contextual_embeddings, tokens):
     }
 
     protobuf = tf.train.Example(features=tf.train.Features(feature=feature))
-
     serialized_protobuf = protobuf.SerializeToString()
-
     return serialized_protobuf
 
 def serialize_to_protobuf_wrapper(*args):
