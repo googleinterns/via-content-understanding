@@ -31,10 +31,6 @@ class BERTLargeModel(BaseLanguageModel):
     def contextual_embeddings_shape(self):
         return (1024, )
 
-    @property
-    def zero_pad(self):
-        return False
-
     def encode(self, text):
         """Encode the given text as ids to be passed into the model.
 
@@ -92,10 +88,6 @@ class BERTModel(BaseLanguageModel):
     def contextual_embeddings_shape(self):
         return (37, 768)
 
-    @property
-    def zero_pad(self):
-        return True
-
     def encode(self, text):
         """Encode the given text as ids to be passed into the model.
 
@@ -149,10 +141,6 @@ class RobertaModel(BaseLanguageModel):
     @property
     def contextual_embeddings_shape(self):
         return (37,)
-
-    @property
-    def zero_pad(self):
-        return True
 
     def encode(self, text):
         """Encode the given text as ids to be passed into the model.

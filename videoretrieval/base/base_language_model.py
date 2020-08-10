@@ -66,6 +66,3 @@ class BaseLanguageModel(AbstractClass):
         """
         pass
 
-    @property
-    def zero_pad(self):
-        return False
