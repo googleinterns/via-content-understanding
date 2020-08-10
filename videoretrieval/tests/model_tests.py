@@ -21,9 +21,12 @@ from tensorflow.python.framework import random_seed
 import numpy as np
 from abc import ABC as AbstractClass
 
+from models.encoder import EncoderModel
 from models.components import VideoEncoder, TextEncoder
 from models.layers import GatedEmbeddingUnitReasoning, GatedEmbeddingModule,\
     TemporalAggregationLayer, NetVLAD
+
+from metrics.loss import bidirectional_max_margin_ranking_loss
 
 random_seed.set_seed(1)
 
@@ -38,8 +41,10 @@ EXPERT_THREE_SHAPE = (BATCH_SIZE, 3, 4)
 EXPERT_NETVLAD_CLUSTERS = 5
 EXPERT_AGGREGATED_SIZE = OUTPUT_DIM
 MOCK_TEXT_EMBEDDING_SHAPE = (BATCH_SIZE, 5, 20)
-
+MOCK_MARGIN_PARAMETER = 0.05
 MLP_LAYERS = 2
+
+CAPTIONS_PER_VIDEO = 20
 
 class CollaborativeExpertsTestCase(unittest.TestCase, AbstractClass):
     """An class with helper methods for test of collaborative experts."""
@@ -58,18 +63,26 @@ class CollaborativeExpertsTestCase(unittest.TestCase, AbstractClass):
         self.assertTrue(tuple(vector.shape) == tuple(shape))
 
 class TestCollaborativeExpertsModels(CollaborativeExpertsTestCase):
+    """Tests inferencing and training with a video and text encoder."""
+    text_encoder = TextEncoder(
+        NUM_EXPERTS,
+        num_netvlad_clusters=5,
+        ghost_clusters=1,
+        language_model_dimensionality=MOCK_TEXT_EMBEDDING_SHAPE[-1],
+        encoded_expert_dimensionality=EXPERT_AGGREGATED_SIZE)
+
+    video_encoder = VideoEncoder(
+        NUM_EXPERTS,
+        experts_use_netvlad=[False, False, True],
+        experts_netvlad_shape=[None, None, EXPERT_NETVLAD_CLUSTERS],
+        expert_aggregated_size=EXPERT_AGGREGATED_SIZE,
+        encoded_expert_dimensionality=EXPERT_AGGREGATED_SIZE,
+        g_mlp_layers=2)
+
+    encoder = EncoderModel(video_encoder, text_encoder, MOCK_MARGIN_PARAMETER)
 
     def test_video_encoder(self):
-        """Tests initializing a video encoder and making a forward pass."""
-
-        video_encoder = VideoEncoder(
-            num_experts=NUM_EXPERTS,
-            experts_use_netvlad=[False, False, True],
-            experts_netvlad_shape=[None, None, EXPERT_NETVLAD_CLUSTERS],
-            expert_aggregated_size=EXPERT_AGGREGATED_SIZE,
-            encoded_expert_dimensionality=EXPERT_AGGREGATED_SIZE,
-            g_mlp_layers=2)
-        
+        """Tests making a forward pass with a video encoder."""
         expert_one_data = tf.random.normal(EXPERT_ONE_SHAPE)
         expert_two_data = tf.random.normal(EXPERT_TWO_SHAPE)
         expert_three_data = tf.random.normal(EXPERT_THREE_SHAPE)
@@ -78,7 +91,7 @@ class TestCollaborativeExpertsModels(CollaborativeExpertsTestCase):
             [[False, False, False],
             [False, True, False]])
 
-        outputs = video_encoder(
+        outputs = self.video_encoder(
             (
                 [expert_one_data, expert_two_data, expert_three_data],
                 missing_experts))
@@ -88,23 +101,66 @@ class TestCollaborativeExpertsModels(CollaborativeExpertsTestCase):
                 embedding_shard, (BATCH_SIZE, EXPERT_AGGREGATED_SIZE))
             self.assert_last_axis_has_norm(embedding_shard, norm=1)
 
-
     def test_text_encoder(self):
-        """Tests initializing a text encoder and making a forward pass."""
-        text_encoder = TextEncoder(
-            num_experts=NUM_EXPERTS,
-            language_model_dimensionality=MOCK_TEXT_EMBEDDING_SHAPE[-1]
-            encoded_expert_dimensionality=EXPERT_AGGREGATED_SIZE)
-
+        """Tests making a forward pass with a text encoder."""
         mock_text_embeddings = tf.random.normal(MOCK_TEXT_EMBEDDING_SHAPE)
-        embeddings, mixture_weights = mock_text_embeddings(mock_text_embeddings)
+        embeddings, mixture_weights = self.text_encoder(mock_text_embeddings)
 
-        self.assert_vector_has_shape(
-            embeddings, (BATCH_SIZE, EXPERT_AGGREGATED_SIZE))
-        self.assert_last_axis_has_norm(
-            embeddings, norm=1)
-        self.assert_last_axis_has_norm(
-            mixture_weights, norm=1)
+        for embedding in embeddings:
+            self.assert_vector_has_shape(
+                embedding, (BATCH_SIZE, EXPERT_AGGREGATED_SIZE))
+            self.assert_last_axis_has_norm(
+                embedding, norm=1)
+        
+        mixture_weight_sums = tf.reduce_sum(mixture_weights, axis=-1)
+
+        self.assertTrue(
+            tf.reduce_all(
+                mixture_weight_sums == tf.ones_like(mixture_weight_sums)))
+
+    def test_encoder_training(self):
+        """Tests making one train step and one test step on an encoder model."""
+        self.encoder.compile(
+            tf.keras.optimizers.Adam(),
+            bidirectional_max_margin_ranking_loss, 
+            [1, 5, 10],
+            CAPTIONS_PER_VIDEO)
+
+        num_text_embeddings = CAPTIONS_PER_VIDEO * MOCK_TEXT_EMBEDDING_SHAPE[0]
+        mock_text_embeddings_shape_multiple_captions = (
+            (num_text_embeddings,) + MOCK_TEXT_EMBEDDING_SHAPE[1:])
+
+        mock_text_data = tf.random.normal(
+            mock_text_embeddings_shape_multiple_captions)
+
+        expert_data = []
+        expert_shapes = [EXPERT_ONE_SHAPE, EXPERT_TWO_SHAPE, EXPERT_THREE_SHAPE]
+
+        missing_experts = tf.constant(
+            [[False, False, False],
+            [False, True, False]])
+
+        for shape in expert_shapes:
+            expert_data.append(tf.repeat(tf.random.normal(shape),
+                [CAPTIONS_PER_VIDEO] * shape[0], axis=0))
+
+        missing_experts = tf.repeat(missing_experts,
+            [CAPTIONS_PER_VIDEO] * missing_experts.shape[0], axis=0)
+
+        train_data = (
+            tf.constant([f"video{i}" for i in range(BATCH_SIZE)]),
+            [data[::CAPTIONS_PER_VIDEO] for data in expert_data],
+            mock_text_data[::CAPTIONS_PER_VIDEO],
+            missing_experts[::CAPTIONS_PER_VIDEO])
+
+        test_data = (
+            tf.constant([f"video{i}" for i in range(BATCH_SIZE)]),
+            expert_data,
+            mock_text_data,
+            missing_experts)
+
+        self.encoder.train_step(train_data)
+        self.encoder.test_step(test_data)
 
 
 class TestCollaborativeExpertsLayers(CollaborativeExpertsTestCase):
