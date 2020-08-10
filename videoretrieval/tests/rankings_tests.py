@@ -42,10 +42,10 @@ class RankingMetricsTests(unittest.TestCase):
         """Tests computing metrics from ranked queries."""
         mock_ranks = tf.constant([1, 1, 2, 5, 5, 7, 9, 8, 10, 11, 13, 15])
         k_expected_recall_pairs = [
-            (1, 1/6),
-            (5, 5/12),
-            (10, 9/12),
-            (11, 10/12),
+            (1, 1.0/6.0),
+            (5, 5.0/12.0),
+            (10, 9.0/12.0),
+            (11, 10.0/12.0),
             (15, 1.0)]
 
         self.assertTrue(rankings.get_mean_rank(mock_ranks) == 7.25)
