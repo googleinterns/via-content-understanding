@@ -25,6 +25,7 @@ class EncoderBaseModel(tf.keras.Model, abstract_class):
     def __init__(
         self, video_encoder, text_encoder, margin_hyperparameter,
         recall_at_k_bounds, captions_per_video):
+        super(EncoderBaseModel, self).__init__()
         self.video_encoder = video_encoder
         self.text_encoder = text_encoder
         self.margin_hyperparameter = margin_hyperparameter
@@ -74,7 +75,7 @@ class EncoderBaseModel(tf.keras.Model, abstract_class):
 
         return batch_metrics
 
-    def remove_repeated_video_data(self, tensor):
+    def remove_repeated_data(self, tensor):
         """Removes repeated video data from a tensor.
 
         Because the dataset is constructed on a pairwise basis, if there are
@@ -90,22 +91,22 @@ class EncoderBaseModel(tf.keras.Model, abstract_class):
         """
         return tensor[::self.captions_per_video]
 
-    def remove_repeated_video_data(video_text_pair_batch):
+    def remove_repeated_video_data(self, video_text_pair_batch):
         video_text_pair_batch = list(video_text_pair_batch)
         video_ids = video_text_pair_batch[0]
         video_features = video_text_pair_batch[1]
         missing_experts = video_text_pair_batch[-1]
 
-        video_ids = self.remove_repeated_video_data(video_ids)
+        video_ids = self.remove_repeated_data(video_ids)
         video_features = list(map(
-            self.remove_repeated_video_data, video_features))
-        missing_experts = self.remove_repeated_video_data(missing_experts)
+            self.remove_repeated_data, video_features))
+        missing_experts = self.remove_repeated_data(missing_experts)
 
         video_text_pair_batch[0] = video_ids
         video_text_pair_batch[1] = video_features
         video_text_pair_batch[-1] = missing_experts
 
-        return tupe(video_text_pair_batch)
+        return tuple(video_text_pair_batch)
 
     def test_step(self, video_text_pair_batch):
         """Executes one test step."""
@@ -174,7 +175,7 @@ class EncoderForFrozenLanguageModel(EncoderBaseModel):
 
         return video_embeddings, text_embeddings, mixture_weights
 
-class EncoderFineTuning(tf.keras.Model):
+class EncoderForLanguageModelTuning(EncoderBaseModel):
     """An implementation of an Encoder model.
 
     This model wraps a video and text encoder to help with training them.
@@ -184,9 +185,10 @@ class EncoderFineTuning(tf.keras.Model):
         text_encoder: The encoder used to encode features from text.
     """
     def __init__(
-        video_encoder, text_encoder, margin_hyperparameter, recall_at_k_bounds,
-        captions_per_video, language_model, language_model_batch_size):
-        super(EncoderBaseModel, self).__init__(
+        self, video_encoder, text_encoder, margin_hyperparameter,
+        recall_at_k_bounds, captions_per_video, language_model,
+        language_model_batch_size):
+        super(EncoderForLanguageModelTuning, self).__init__(
             video_encoder, text_encoder, margin_hyperparameter,
             recall_at_k_bounds, captions_per_video)
 
@@ -219,6 +221,11 @@ class EncoderFineTuning(tf.keras.Model):
         return tf.concat(embeddings, axis=0)
 
     def forward_pass(self, input_data, training=False):
+        video_features = input_data[1]
+        text_tokens = input_data[2]
+        attention_masks = input_data[3]
+        missing_experts = input_data[4]
+
         video_embeddings = self.video_encoder([video_features, missing_experts])
         contextual_embeddings = self.language_model_forward_pass(
             text_tokens, attention_masks, training)

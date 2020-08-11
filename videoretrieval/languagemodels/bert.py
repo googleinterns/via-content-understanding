@@ -17,7 +17,7 @@ limitations under the License.
 from base import BaseLanguageModel
 from transformers import BertTokenizerFast, TFBertModel
 from transformers import RobertaTokenizerFast, TFRobertaModel
-from abc import ABC as abstract_class, abstract_method
+from abc import ABC as abstract_class, abstractmethod
 
 class BERTLikeModel(BaseLanguageModel, abstract_class):
     """An implementation of BaseLanguageModel for BERT like models."""
@@ -25,7 +25,7 @@ class BERTLikeModel(BaseLanguageModel, abstract_class):
     _batch_size = 32
     _contextual_embeddings_shape = 768
     
-    @abstactmethod
+    @abstractmethod
     def __init__(self):
         pass
 
