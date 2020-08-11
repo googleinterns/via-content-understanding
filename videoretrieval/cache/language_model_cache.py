@@ -77,8 +77,8 @@ def serialize_to_protobuf(video_id, contextual_embeddings, tokens):
     serialized_embedding = tf.io.serialize_tensor(
         contextual_embeddings[0, :tokens])
 
-    video_id_feature = get_feature(video_id)
-    embeddings_feature = get_feature(serialized_embedding)
+    video_id_feature = get_bytes_feature(video_id)
+    embeddings_feature = get_bytes_feature(serialized_embedding)
 
     feature = {
         "video_id": video_id_feature,
