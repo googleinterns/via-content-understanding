@@ -65,7 +65,7 @@ class EncoderBaseModel(tf.keras.Model, abstract_class):
         self.optimizer.apply_gradients(zip(gradients, self.trainable_variables))
 
         # It's wasteful to calculate ranking metrics for the entire train
-        # dataset, so we just mark the values as nan for keras.
+        # dataset, so we just mark the values as NaN for keras.
         batch_metrics = {
             label: float("nan") for label in self.recall_at_k_labels}
         batch_metrics["median_rank"] = float("nan")
