@@ -51,7 +51,12 @@ class EncoderBaseModel(tf.keras.Model, abstract_class):
         self.loss_function = loss_function
 
     def train_step(self, video_text_pair_batch):
-        """Executes one step of training."""
+        """Executes one step of training.
+
+        Args:
+            video_text_pair_batch: the data to be inputted to the forward_pass
+                function.
+        """
         missing_experts = video_text_pair_batch[-1]
 
         with tf.GradientTape() as gradient_tape:
@@ -92,6 +97,7 @@ class EncoderBaseModel(tf.keras.Model, abstract_class):
         return tensor[::self.captions_per_video]
 
     def remove_repeated_video_data(self, video_text_pair_batch):
+        """Removes repeated video data from a batch."""
         video_text_pair_batch = list(video_text_pair_batch)
         video_ids = video_text_pair_batch[0]
         video_features = video_text_pair_batch[1]
@@ -109,7 +115,15 @@ class EncoderBaseModel(tf.keras.Model, abstract_class):
         return tuple(video_text_pair_batch)
 
     def test_step(self, video_text_pair_batch):
-        """Executes one test step."""
+        """Executes one test step.
+
+        Args:
+            video_text_pair_batch: input to the forward_pass function.
+                Additionally, for each video caption pair in this tuple, each
+                video must have self.num_captions_per_video associated with it.
+                Each video caption pair also must be adjacent to all other video
+                caption pairs for the same video. 
+        """
         video_text_pair_batch = self.remove_repeated_video_data(
             video_text_pair_batch)
         missing_experts = video_text_pair_batch[-1]
@@ -131,13 +145,13 @@ class EncoderBaseModel(tf.keras.Model, abstract_class):
                 for embed in text_results]
             shard_mixture_weights = mixture_weights[
                 caption_index::self.captions_per_video]
-            
+
             similarity_matrix = build_similarity_matrix(
                 video_results,
                 shard_text_results,
                 shard_mixture_weights,
                 missing_experts)
-            
+
             loss.append(self.loss_function(
                 similarity_matrix, self.margin_hyperparameter))
             ranks.append(metrics.rankings.compute_ranks(similarity_matrix))
@@ -155,8 +169,7 @@ class EncoderBaseModel(tf.keras.Model, abstract_class):
 
     @abstractmethod
     def forward_pass(self, data, training=False):
-        """TODO(ryanehrlich)"""
-    
+        """Executes a forward pass with the given data."""
 
 class EncoderForFrozenLanguageModel(EncoderBaseModel):
     """An implementation of a keras model that trains an arbitrary Text Encoder
@@ -197,6 +210,7 @@ class EncoderForLanguageModelTuning(EncoderBaseModel):
 
     def language_model_forward_pass(
         self, text_tokens, attention_mask, training=False):
+        """Executes a forward pass on the language model."""
         embeddings = []
         num_tokens = text_tokens.shape[0]
 
