@@ -65,6 +65,11 @@ class TextEncoder(tf.keras.Model):
                 model.
             encoded_expert_dimensionality: the dimensionality video experts
                 embeddings are computed down to.
+            residual_cls_token: a boolean indicating if the CLS output from the
+                language model should be seperated from the other embeddings. If
+                this is True, the first token output from the language model is
+                not inputted to NetVLAD. Instead, it's appended to the
+                aggregated outputs from NetVLAD.
             kernel_initializer: the strategy used to initialize the weights in
                 dense layers' kernel. The default is glorot uniform, the default
                 strategy for keras.
