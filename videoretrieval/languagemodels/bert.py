@@ -92,7 +92,7 @@ class BERTModel(BERTLikeModel):
         return "bert_base"
 
 class RobertaModel(BERTLikeModel):
-    """An implementation of BaseLanguageModel for RoBERTa Large."""
+    """An implementation of BaseLanguageModel for RoBERTa Base."""
     def __init__(self):
         self.model = TFRobertaModel.from_pretrained("roberta-base")
         self.tokenizer = RobertaTokenizerFast.from_pretrained("roberta-base")
