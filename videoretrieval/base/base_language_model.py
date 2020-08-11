@@ -65,4 +65,3 @@ class BaseLanguageModel(AbstractClass):
             text.
         """
         pass
-
