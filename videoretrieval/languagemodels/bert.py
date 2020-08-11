@@ -49,8 +49,7 @@ class BERTLikeModel(BaseLanguageModel, abstract_class):
 
         Returns:
             A tuple of two elements. First, a python list of ids zero padded to
-            the appropriate size. Second, the number of tokens the text was
-            encoded to.
+            the appropriate size. Second, the attention mask for the ids.
         """
         tokenized = self.tokenizer(text, padding="max_length", truncation=True)
         input_ids = tokenized["input_ids"]
@@ -61,6 +60,7 @@ class BERTLikeModel(BaseLanguageModel, abstract_class):
 
         Parameters:
             ids: a batched tensor of ids.
+            attention_mask: the attention mask for the ids.
 
         Returns: a tensor of contextual embeddings.
         """
