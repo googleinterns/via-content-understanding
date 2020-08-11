@@ -57,7 +57,7 @@ class EncoderBaseModel(tf.keras.Model, abstract_class):
             encoder_output = self.forward_pass(
                 video_text_pair_batch, training=True)
             similarity_matrix = build_similarity_matrix(
-                *encoder_output)
+                *(*encoder_output, missing_experts))
             loss = self.loss_function(
                 similarity_matrix, self.margin_hyperparameter)
 
@@ -153,25 +153,26 @@ class EncoderBaseModel(tf.keras.Model, abstract_class):
         return valid_metrics
 
     @abstractmethod
-    def forward_pass(self, *data):
+    def forward_pass(self, data, training=False):
         """TODO(ryanehrlich)"""
     
 
-class EncoderModel(EncoderBaseModel):
+class EncoderForFrozenLanguageModel(EncoderBaseModel):
     """An implementation of a keras model that trains an arbitrary Text Encoder
     in concert with an arbitrary Video Encoder.
 
     Attributes:
         video_encoder: The encoder used to encode features from videos.
         text_encoder: The encoder used to encode features from text.
-        loss_hyperparameter_m: The margin parameter for the loss function.
-        optimizer: the optimizer used to train the two encoders.
-        loss_fn: the loss function used to train the two encoders.
-        recall_at_k_bounds: the thresholds for k to use in recall at k metric
-            computation.
-        captions_per_video: the number of captions that describe each video.
     """
 
+    def forward_pass(self, input_data, training=False):
+        _, video_data, text_data, missing_experts = input_data
+
+        video_embeddings = self.video_encoder([video_data, missing_experts])
+        text_embeddings, mixture_weights = self.text_encoder(text_data)
+
+        return video_embeddings, text_embeddings, mixture_weights
 
 class EncoderFineTuning(tf.keras.Model):
     """An implementation of an Encoder model.
@@ -182,9 +183,18 @@ class EncoderFineTuning(tf.keras.Model):
         video_encoder: The encoder used to encode features from videos.
         text_encoder: The encoder used to encode features from text.
     """
+    def __init__(
+        video_encoder, text_encoder, margin_hyperparameter, recall_at_k_bounds,
+        captions_per_video, language_model, language_model_batch_size):
+        super(EncoderBaseModel, self).__init__(
+            video_encoder, text_encoder, margin_hyperparameter,
+            recall_at_k_bounds, captions_per_video)
+
+        self.language_model = language_model
+        self.language_model_batch_size = language_model_batch_size
 
     def language_model_forward_pass(
-            self, text_tokens, attention_mask, training=False):
+        self, text_tokens, attention_mask, training=False):
         embeddings = []
         num_tokens = text_tokens.shape[0]
 
@@ -201,20 +211,18 @@ class EncoderFineTuning(tf.keras.Model):
                 attention_mask=attention_mask_shard,
                 training=training)[0]
 
-            embeddings.append(
-                language_model_output * tf.cast(
-                    attention_mask_shard[:, :, None], tf.float32))
+            # Zero out missing embeddings
+            zero_masked_output = language_model_output * tf.cast(
+                attention_mask_shard[:, :, None], tf.float32)
+            embeddings.append(zero_masked_output)
 
         return tf.concat(embeddings, axis=0)
 
-    def forward_pass(
-        self, video_ids, video_features, text_tokens, attention_masks,
-        missing_experts, training=False):
-        
+    def forward_pass(self, input_data, training=False):
         video_embeddings = self.video_encoder([video_features, missing_experts])
         contextual_embeddings = self.language_model_forward_pass(
             text_tokens, attention_masks, training)
         text_embeddings, mixture_weights = self.text_encoder(
             contextual_embeddings)
-        
+
         return video_embeddings, text_embeddings, mixture_weights
