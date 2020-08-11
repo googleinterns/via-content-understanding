@@ -52,6 +52,7 @@ class TextEncoder(tf.keras.Model):
             ghost_clusters,
             language_model_dimensionality,
             encoded_expert_dimensionality,
+            residual_cls_token=True,
             kernel_initializer="glorot_uniform",
             bias_initializer="zeros"):
         """Initialize this model.
@@ -78,6 +79,7 @@ class TextEncoder(tf.keras.Model):
         self.language_model_dimensionality = language_model_dimensionality
         self.netvlad = NetVLAD(num_netvlad_clusters, ghost_clusters)
         self.encoded_expert_dimensionality = encoded_expert_dimensionality
+        self.residual_cls_token = residual_cls_token
 
         self.make_gems(
             kernel_initializer=kernel_initializer,
@@ -126,11 +128,15 @@ class TextEncoder(tf.keras.Model):
         for the embeddings of shape batch size x number of experts.
         """
 
-        cls_token = contextual_embeddings[:, 1:, :]
-        aggregated_embeddings = self.netvlad(contextual_embeddings)
+        if self.residual_cls_token:
+            cls_token = contextual_embeddings[:, 0 :]
+            aggregated_embeddings = self.netvlad(
+                contextual_embeddings[:, 1:, :])
 
-        aggregated_embeddings = tf.concat([
-            cls_token, aggregated_embeddings], axis=1)
+            aggregated_embeddings = tf.concat([
+                cls_token, aggregated_embeddings], axis=1)
+        else:
+            aggregated_embeddings = self.netvlad(aggregated_embeddings)
 
         expert_embeddings = []
 
