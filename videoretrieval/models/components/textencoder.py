@@ -126,7 +126,7 @@ class TextEncoder(tf.keras.Model):
         for the embeddings of shape batch size x number of experts.
         """
 
-        cls_token = contextual_embeddings[:, 0, :]
+        cls_token = contextual_embeddings[:, 1:, :]
         aggregated_embeddings = self.netvlad(contextual_embeddings)
 
         aggregated_embeddings = tf.concat([
