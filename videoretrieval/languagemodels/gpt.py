@@ -16,8 +16,7 @@ limitations under the License.
 """
 
 from base import BaseLanguageModel
-from transformers import TFOpenAIGPTModel, OpenAIGPTTokenizer, TFGPT2Model, \
-    GPT2Tokenizer
+from transformers import TFOpenAIGPTModel, OpenAIGPTTokenizer
 
 GPT_PAD_TOKEN = 0
 
