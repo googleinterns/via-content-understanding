@@ -169,7 +169,6 @@ def match_cached_embeddings_with_experts(
     Returns: A list of tf.data Datasets, where each example in the dataset
         consists of: video id, precomputed features, contextual embeddings, and
         a boolean vector that indiicates which expert modalities are missing.  
-
     """
 
     match_features_fn = get_map_function(
@@ -282,7 +281,7 @@ def sample_captions(ds, captions_per_video, dataset_type):
 def generate_encoder_datasets(language_model, source_dataset, experts):
     """Generates datasets necessary to train encoders.
 
-    Arguments:
+    Args:
         language_model: an instance of BaseLanguageModel who's embeddings should
             be use.
         source_dataset: The dataset to generate the embeddings from. 
@@ -314,7 +313,21 @@ def generate_encoder_datasets(language_model, source_dataset, experts):
 
 def generate_language_model_fine_tuning_datasets(
     language_model, source_dataset, experts):
+    """Generates datasets for 
 
+    Args:
+        language_model: an instance of BaseLanguageModel who's embeddings should
+            be use.
+        source_dataset: The dataset to generate the embeddings from. 
+        experts: The experts to be used.
+
+    Returns: A tuple of three tf.data datasets: the train dataset, the
+        validation dataset, and the test dataset. Each element of each of these
+        datasets is a tuple where the first element is the video ids, the second
+        element is the precomputed video features, the third is the encoded
+        text, the fourth is the attention masks for the encoded text, and the 
+        fifth is the boolean tensor of missing video expert modalities.
+    """
     train_ds = cache.get_cached_language_model_encodings(
         source_dataset, language_model, "train").cache()
 
@@ -335,7 +348,18 @@ def generate_language_model_fine_tuning_datasets(
 def generate_dataset(
     language_model, experts, source_dataset, dataset_type, dataset_splits,
     splits_to_sample):
+    """Generates a dataset for training.
 
+    Args:
+        language_model: the language model that is going to be used for this
+            model.
+        experts: the experts to be used.
+        source_dataset: the dataset to generate embeddings from.
+        dataset_type: the dataset type (an option from TrainingDatasetType).
+        dataset_splits: the cached text data for each split in the dataset.
+        splits_to_sample: indexes of items in dataset_splits that captions will
+            be sampled from. 
+    """
     for split_index in splits_to_sample:
         dataset_splits[split_index] = sample_captions(
             ds=dataset_splits[split_index],
