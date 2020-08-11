@@ -134,7 +134,7 @@ class TextEncoder(tf.keras.Model):
         """
 
         if self.residual_cls_token:
-            cls_token = contextual_embeddings[:, 0 :]
+            cls_token = contextual_embeddings[:, 0, :]
             aggregated_embeddings = self.netvlad(
                 contextual_embeddings[:, 1:, :])
 
