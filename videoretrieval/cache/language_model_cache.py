@@ -204,7 +204,7 @@ def get_cached_records_dataset(
     """
 
     records_directory = get_records_directory(
-        source_dataset, language_model, split, type)
+        source_dataset, language_model, split, type_)
     glob_string = str((records_directory / "*.tfrecord").absolute())
 
     file_paths = glob.glob(glob_string)
