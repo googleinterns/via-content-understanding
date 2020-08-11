@@ -88,4 +88,3 @@ class OpenAIGPTModel(BaseLanguageModel):
         """
 
         return self.model(ids)
-
