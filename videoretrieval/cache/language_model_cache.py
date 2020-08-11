@@ -41,12 +41,22 @@ def get_bytes_feature(value):
     bytes_list = tf.train.BytesList(value=[value.numpy()])
     return tf.train.Feature(bytes_list=bytes_list)
 
-def get_records_directory(dataset, language_model, split, postfix=""):
-    """Gets a path to cache the data from the dataset/model/split."""
+def get_records_directory(dataset, language_model, split, type_=""):
+    """Gets a path to cache the data from the dataset/model/split.
+
+    Args:
+        dataset: the dataset the directory is for. This object should extends
+            BaseDataset and have the attribute dataset_name.
+        language_model: the language model the directory is for. Should extend
+            BaseLanguageModel and have the attribute name
+        split: a string that names the split of the dataset (train, valid, test)
+        type_: a string that is appended after the split name to specify the
+            type of data stored. Defaults to a blank string.
+    """
     dataset_name = dataset.dataset_name
     language_model_name = language_model.name
 
-    path = base_path / f"{dataset_name}/{language_model_name}/{split}{postfix}"
+    path = base_path / f"{dataset_name}/{language_model_name}/{split}{type_}"
     path.mkdir(parents=True, exist_ok=True)
 
     return path
@@ -84,6 +94,16 @@ def serialize_to_protobuf_wrapper(*args):
     return tf.py_function(serialize_to_protobuf, args, tf.string)
 
 def serialize_encodings(video_id, encodings, attention_mask):
+    """Serializes a video id, encodings, and an attention mask to a protobuf.
+
+    Args:
+        video_id: the id of the video this data corresponds to.
+        encodings: the encodings that should be stored.
+        attention_mask: the attention mask for the encodings.
+
+    Returns:
+        A protobuf serialized as a string.
+    """ 
     serialized_video_ids = tf.io.serialize_tensor(video_id)
     serialized_encodings = tf.io.serialize_tensor(encodings)
     serialized_attention_masks = tf.io.serialize_tensor(attention_mask)
@@ -99,7 +119,6 @@ def serialize_encodings(video_id, encodings, attention_mask):
     }
 
     protobuf = tf.train.Example(features=tf.train.Features(feature=feature))
-
     serialized_protobuf = protobuf.SerializeToString()
 
     return serialized_protobuf
@@ -123,22 +142,32 @@ def write_dataset(dataset, records_directory):
         writer = tf.data.experimental.TFRecordWriter(str(file_path))
         writer.write(shard)
  
-def cache_language_model_encodings(dataset, source_dataset, language_model,
-    split):
+def cache_language_model_encodings(
+    dataset, source_dataset, language_model, split):
+    """Caches text encodings for a specific dataset/model/split.
+
+    Args:
+        dataset: a tf.data Dataset to be cached. Each element of the dataset
+            should be a tuple where the first element is the video id as a
+            string tensor, the second is the encodings as an int64 tensor, and
+            the third is the attention mask for the given encoding.
+        source_dataset: an instance of BaseDataset for the dataset to be cached.
+        language_model: an instance of BaseLanguageModel for the language model
+            used that the encodings will be inputted to.
+        split: the name of the split (as a string).
+    """
     dataset = dataset.map(
         serialize_encodings_wrapper,
         num_parallel_calls=tf.data.experimental.AUTOTUNE)
-
     records_directory = get_records_directory(
-        source_dataset, language_model, split, "encodings")
-
+        source_dataset, language_model, split, type_="encodings")
     write_dataset(dataset, records_directory)
 
-def cache_language_model_embeddings(dataset, source_dataset, language_model,
-    split):
+def cache_language_model_embeddings(
+    dataset, source_dataset, language_model, split):
     """Caches embeddings for a specific dataset/model/split.
 
-    Parameters:
+    Args:
         dataset: a tf.data Dataset to be cached. Each element of the dataset
             should be a tuple where the first element is the video id as a
             string tensor, the second is the contextual embeddings as a float32
@@ -149,21 +178,18 @@ def cache_language_model_embeddings(dataset, source_dataset, language_model,
             used to generate the contextual embeddings.
         split: the name of the split (as a string).
     """
-
     dataset = dataset.map(
         serialize_to_protobuf_wrapper,
         num_parallel_calls=tf.data.experimental.AUTOTUNE)
-
     records_directory = get_records_directory(
         source_dataset, language_model, split)
-
     write_dataset(dataset, records_directory)
 
 def get_cached_records_dataset(
-    source_dataset, language_model, split, shuffle_files, postfix=""):
+    source_dataset, language_model, split, shuffle_files, type_=""):
     """Gets a TFRecordDataset of cached data.
 
-    Parameters:
+    Args:
         source_dataset: an instance of BaseDataset that the cached embeddings
             were generated from. 
         language_model: an instance of BaseLanguage model that the cached
@@ -171,12 +197,14 @@ def get_cached_records_dataset(
         split: the name of the dataset split.
         shuffle_files: a boolean indicating if the order in which the files are
             read should be random or not.
+        type_: a string that is appended after the split name to specify the
+            type of data stored. Defaults to a blank string.
 
     Returns: a TFRecord dataset of serialized embeddings.
     """
 
     records_directory = get_records_directory(
-        source_dataset, language_model, split, postfix)
+        source_dataset, language_model, split, type)
     glob_string = str((records_directory / "*.tfrecord").absolute())
 
     file_paths = glob.glob(glob_string)
@@ -199,7 +227,7 @@ def get_cached_records_dataset(
 def unserialize_embeddings_wrapper(text_max_length):
     """Wrapper for unserialize function.
 
-    Parameters:
+    Args:
         text_max_length: the length to zero-pad the contextual embeddings to.
         contextual_embeddings_dim: the last dimension of the contextual
             embeddings.
@@ -228,37 +256,50 @@ def unserialize_embeddings_wrapper(text_max_length):
 
     return unserialize_data
 
-def unserialize_encodings_wrapper(text_max_length):
-    """Wrapper for unserialize cached encodings.
+def unserialize_encodings(serialized_item):
+    """Unserializes a serialized encodings protocol buffer.
 
-    Parameters:
-        text_max_length: the length to zero-pad the contextual embeddings to.
+    Args:
+        serialized_item: the protocol buffer containing the encodings serialized
+            as a string.
 
-    Returns: a function that maps from a serialized protobuf string to a tuple
-        with three elements: the first being the video id, the second the
-        encoded captions, and third being the attention mask.
+    Returns: a tuple with three elements: the first being the video id, the
+        second being the encoded captions, and third being the attention mask.
     """ 
 
-    def unserialize_data(serialized_item):
-        example = tf.io.parse_single_example(serialized_item, encodings_schema)
-        video_id = tf.io.parse_tensor(example["video_id"], tf.string)
+    example = tf.io.parse_single_example(serialized_item, encodings_schema)
+    video_id = tf.io.parse_tensor(example["video_id"], tf.string)
 
-        encodings = tf.io.parse_tensor(
-            example["serialized_encodings"], tf.int64)
-        attention_mask = tf.io.parse_tensor(
-            example["serialized_attention_masks"], tf.int64)
-        return (video_id, encodings, attention_mask)
-
-    return unserialize_data
+    encodings = tf.io.parse_tensor(
+        example["serialized_encodings"], tf.int64)
+    attention_mask = tf.io.parse_tensor(
+        example["serialized_attention_masks"], tf.int64)
+    return (video_id, encodings, attention_mask)
 
 def get_cached_language_model_encodings(
     source_dataset, language_model, split, shuffle_files=True):
+    """Loads cached encodings for a specific dataset/split.
+
+    Args:
+        source_dataset: an instance of BaseDataset for the dataset to be loaded.
+        language_model: an instance of BaseLanguageModel for the language model
+            used to generate the contextual embeddings.
+        split: the name of the split (as a string).
+        shuffle_files: a boolean indicating if the files should be shuffled
+            before they are read.
+    
+    Returns: a tf.data Dataset where each item is a tuple of three items,
+        ordered such that captions for the same video will be adjacent to each
+        other. In this tuple, the first item is the video id as a string tensor.
+        The second is caption text encoded as an int64 tensor for a language
+        model, and the third is the attention mask as an int64 tensor for the
+        language model.
+    """
     dataset = get_cached_records_dataset(
-        source_dataset, language_model, split, shuffle_files, "encodings")
+        source_dataset, language_model, split, shuffle_files, type_="encodings")
 
     return dataset.map(
-        unserialize_encodings_wrapper(
-            language_model.contextual_embeddings_shape[0]),
+        unserialize_encodings,
         num_parallel_calls=tf.data.experimental.AUTOTUNE).unbatch()
 
 
@@ -266,7 +307,7 @@ def get_cached_language_model_embeddings(
     source_dataset, language_model, split, shuffle_files=True):
     """Loads the cached embeddings for a specific dataset/split.
 
-    Parameters:
+    Args:
         source_dataset: an instance of BaseDataset for the dataset to be loaded.
         language_model: an instance of BaseLanguageModel for the language model
             used to generate the contextual embeddings.
