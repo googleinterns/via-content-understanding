@@ -45,10 +45,10 @@ def get_records_directory(dataset, language_model, split, type_=""):
     """Gets a path to cache the data from the dataset/model/split.
 
     Args:
-        dataset: the dataset the directory is for. This object should extends
+        dataset: the dataset the directory is for. This object should extend
             BaseDataset and have the attribute dataset_name.
         language_model: the language model the directory is for. Should extend
-            BaseLanguageModel and have the attribute name
+            BaseLanguageModel and have the attribute name.
         split: a string that names the split of the dataset (train, valid, test)
         type_: a string that is appended after the split name to specify the
             type of data stored. Defaults to a blank string.
@@ -61,19 +61,21 @@ def get_records_directory(dataset, language_model, split, type_=""):
 
     return path
 
-def serialize_to_protobuf(video_id, contextual_embeddings, tokens):
+def serialize_to_protobuf(video_id, contextual_embeddings, attention_mask):
     """Serializes the video_id and contextual_embeddings.
 
     Parameters:
         video_id: the id of the video corresponding to the caption.
         contextual_embeddings: a 1 x padded size x embedding dimension tensor.
-        tokens: the number of tokens created from the original caption.
+        attention_mask: the attention mask for the encodings for the original
+            caption.
 
     Returns:
         A protobuf serialized as a string.
     """
     assert contextual_embeddings.shape[0] == 1
     # Accessing contextual_embeddings[0] to get rid of the extra dimension.
+    tokens = attention_mask.index(0)
     serialized_embedding = tf.io.serialize_tensor(
         contextual_embeddings[0, :tokens])
 
@@ -252,6 +254,13 @@ def unserialize_embeddings_wrapper(text_max_length):
         contextual_embeddings = tf.io.parse_tensor(
             example["serialized_embeddings"], tf.float32)
 
+        embedding_length = get_embedding_length(contextual_embeddings)
+        extra_padding_tokens_needed = max(text_max_length - embedding_length, 0)
+
+        contextual_embeddings = tf.concat(
+            [contextual_embeddings, tf.zeros((
+                extra_padding_tokens_needed, contextual_embeddings.shape[-1]))],
+            axis=0)
         return (video_id, contextual_embeddings)
 
     return unserialize_data
