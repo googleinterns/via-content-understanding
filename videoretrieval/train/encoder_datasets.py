@@ -22,15 +22,38 @@ import numpy as np
 import enum
 
 class TrainingDatasetType(enum.Enum):
+    """An enum that indicates what type of text data the dataset holds."""
     EmbeddingsDataset = 0
     EncodingsDataset = 1
 
 class MapFunctionWrapper:
+    """A wrapper for functions that operate on different types of datasets.""" 
     def __init__(self, embeddings_function, encodings_function):
+        """Initializes the wrapper.
+
+        Args:
+            embeddings_function: a map function that operates on embeddings
+                datasets.
+            encodings_function: a map function that operates on encoding
+                datasets.
+        """
         self.embeddings_function = embeddings_function
         self.encodings_function = encodings_function
 
 def get_map_function(map_function_wrapper, training_dataset_type):
+    """Gets the correct map function for a given dataset type.
+
+    Args:
+        map_function_wrapper: an object of type MapFunctionWrapper.
+        training_dataset_type: a value from the TrainingDatasetType enum that
+            indicates the type of dataset that map function should be for.
+
+    Returns: a function that operates on the correct dataset type.
+
+    Raises:
+        Value Error: a `ValueError` is raised if the training_dataset_type is
+            invalid. 
+    """  
     if training_dataset_type == TrainingDatasetType.EmbeddingsDataset:
         return map_function_wrapper.embeddings_function
     elif training_dataset_type == TrainingDatasetType.EncodingsDataset:
@@ -48,12 +71,13 @@ def replace_video_id_with_expert_features_wrapper(precomputed_features):
             data of the precomputed feature, the second being a boolean that
             indicates if the feature is missing.
 
-    Returns: a function that has two inputs, video_id, which is a video id as a
-        string and ids, the contextual embeddings for the given caption. This
-        function then returns a tuple of video_id, expert_features, the
-        contextual embeddings, and an tensor of missing expert modalities. 
+    Returns: a MapFunctionWrapper for a map function that takes
+        a video_id, which is a video id as a string, and ids, the contextual
+        embeddings for the given caption. This function then returns a tuple of
+        video_id, expert_features, the contextual embeddings, an attention mask
+        if the dataset has attention masks, and a tensor of missing expert
+        modalities.
     """
-
     output_shape = (tf.bool,) + len(precomputed_features) * (tf.float32,)
 
     def get_expert_features(video_id_encoded):
@@ -106,13 +130,9 @@ def update_dataset_shape_wrapper(experts, language_model):
         language_model: a language model of type BaseLanguageModel that was used
             to generate contextual embeddings. 
 
-    Returns: a function that takes in video id, expert features, contextual
-        embeddings, and missing modalities as parameters and assigns a shape to
-        the contextual embeddings and the expert features, then returns a tuple
-        of the video ids, expert features, contextual embeddings, and missing
-        modalities.
+    Returns: a function wrapped by MapFunctionWrapper that takes data for a
+        given dataset as parameters and updates the shape of the tensors. 
     """
-
     num_experts = len(experts)
     expert_shapes = [expert.embedding_shape for expert in experts]
     contextual_embeddings_shape = language_model.contextual_embeddings_shape
@@ -161,16 +181,17 @@ def match_cached_embeddings_with_experts(
 
     Parameters:
         language_model: the language model the contextual embeddings are from.
-        experts: a list of experts taht the precomputed features are from.
+        experts: a list of experts that the precomputed features are from.
         precomputed_features: a list of dicts, one per expert, that map from
-        video id to precomputed feature.
+          video id to precomputed feature.
         datasets: the datasets to transform.
 
     Returns: A list of tf.data Datasets, where each example in the dataset
-        consists of: video id, precomputed features, contextual embeddings, and
-        a boolean vector that indiicates which expert modalities are missing.  
+        consists of: a video id, precomputed features,
+        contextual embeddings or encodings, potentially an attention mask
+        (depending on the dataset type), and a boolean
+        vector that indicates which expert modalities are missing.  
     """
-
     match_features_fn = get_map_function(
         replace_video_id_with_expert_features_wrapper(precomputed_features),
         training_dataset_type)
@@ -313,7 +334,7 @@ def generate_encoder_datasets(language_model, source_dataset, experts):
 
 def generate_language_model_fine_tuning_datasets(
     language_model, source_dataset, experts):
-    """Generates datasets for 
+    """Generates datasets for training encoders and fine tuning a language model.
 
     Args:
         language_model: an instance of BaseLanguageModel who's embeddings should
