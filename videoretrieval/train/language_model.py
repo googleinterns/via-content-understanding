@@ -20,9 +20,9 @@ import numpy as np
 
 
 def get_encode_function(language_model, captions_per_video):
-    """Wraps a function that uses a language model's tokenizer to encoder text.
+    """Wraps a function that uses a language model's tokenizer to encode text.
 
-    Arguments:
+    Args:
         language_model: an instance of BaseLanguageModel that is used to encode
             the text.
 
@@ -52,7 +52,7 @@ def get_encode_function(language_model, captions_per_video):
 def get_language_model_inference_function(language_model):
     """Wraps a function that uses a language model to generate embeddings.
 
-    Arguments:
+    Args:
         language_model: an instance of BaseLanguageModel that is used to
             generate contextual embeddings from the text.
 
@@ -79,7 +79,7 @@ def get_language_model_inference_function(language_model):
 def generate_contextual_embeddings(language_model, dataset, captions_per_video):
     """Generate the contextual embeddings for a given dataset.
 
-    Arguments:
+    Args:
         language_model: an instance of BaseLanguageModel that is used to
             generate contextual embeddings.
         dataset: a tf.data Dataset where each of the dataset has two items.
@@ -107,12 +107,10 @@ def generate_and_cache_contextual_embeddings(language_model, source_dataset):
     source_dataset.id_caption_pair_dataset, generate contextual embeddings using
     language_model and cache them.
 
-    Arguments:
+    Args:
         language_model: an instance of BaseLanguageModel used for generating
             contextual embeddings.
         source_dataset: the source dataset as an an instance of BaseDataset.
-
-    Returns: nothing.
     """
 
     for ds_split, split_name in source_dataset.id_caption_pair_datasets:
@@ -123,6 +121,17 @@ def generate_and_cache_contextual_embeddings(language_model, source_dataset):
             ds_split, source_dataset, language_model, split=split_name)
 
 def generate_and_cache_encodings(language_model, source_dataset):
+    """Generates and caches encodings for a given dataset/language model.
+
+    For each split in the source dataset, given by
+    source_dataset.id_caption_pair_dataset, generate text encodings for
+    language_model and cache them.
+
+    Args:
+        language_model: an instance of BaseLanguageModel used for generating
+            encodings.
+        source_dataset: the source dataset as an an instance of BaseDataset.
+    """
     for ds_split, split_name in source_dataset.id_caption_pair_datasets:
         generate_encodings = get_encode_function(
             language_model, source_dataset.captions_per_video)
