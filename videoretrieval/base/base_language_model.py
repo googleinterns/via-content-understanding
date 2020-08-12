@@ -81,7 +81,7 @@ class BaseLanguageModel(AbstractClass):
 
         Returns: a tensor of contextual embeddings.
         """
-        return [self.model(ids, attention_mask=attention_mask)[0]]
+        return self.model(ids, attention_mask=attention_mask)
 
     def __call__(self, ids, attention_mask):
         """Does a forward pass on the language model."""

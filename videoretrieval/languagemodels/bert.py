@@ -44,6 +44,9 @@ class BERTLargeModel(BaseLanguageModel):
     def contextual_embeddings_shape(self):
         return (37, 1024)
 
+    def forward(self, ids, attention_mask):
+        return [super(BERTLargeModel, self).forward(ids, attention_mask)[0]]
+
 class BERTModel(BERTLikeModel):
     """An implementation of BaseLanguageModel for BERT Base."""
     @property
@@ -69,6 +72,9 @@ class BERTModel(BERTLikeModel):
     @abstractmethod
     def contextual_embeddings_shape(self):
         return (37, 768)
+
+    def forward(self, ids, attention_mask):
+        return [super(BERTModel, self).forward(ids, attention_mask)[0]]
 
 class RobertaModel(BERTLikeModel):
     """An implementation of BaseLanguageModel for RoBERTa Base."""
@@ -100,3 +106,6 @@ class RobertaModel(BERTLikeModel):
     @abstractmethod
     def contextual_embeddings_shape(self):
         return (37, 768)
+
+    def forward(self, ids, attention_mask):
+        return [super(RobertaModel, self).forward(ids, attention_mask)[0]]
