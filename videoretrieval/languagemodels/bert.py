@@ -44,7 +44,7 @@ class BERTLargeModel(BaseLanguageModel):
     def forward(self, ids, attention_mask):
         return [super(BERTLargeModel, self).forward(ids, attention_mask)[0]]
 
-class BERTModel(BERTLikeModel):
+class BERTModel(BaseLanguageModel):
     """An implementation of BaseLanguageModel for BERT Base."""
     @property
     def name(self):
@@ -70,7 +70,7 @@ class BERTModel(BERTLikeModel):
     def forward(self, ids, attention_mask):
         return [super(BERTModel, self).forward(ids, attention_mask)[0]]
 
-class RobertaModel(BERTLikeModel):
+class RobertaModel(BaseLanguageModel):
     """An implementation of BaseLanguageModel for RoBERTa Base."""
     def __init__(self):
         self.model = TFRobertaModel.from_pretrained("roberta-base")
