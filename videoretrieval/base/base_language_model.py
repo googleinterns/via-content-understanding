@@ -14,8 +14,6 @@ limitations under the License.
 
 Defines a base class for language models.
 """
-
-
 from abc import ABC as AbstractClass
 from abc import abstractmethod
 
@@ -25,7 +23,7 @@ class BaseLanguageModel(AbstractClass):
     def __init__(self):
         self.model = self.get_model()
         self.tokenizer = self.get_tokenizer()
-        self.tokenizer.model_max_length = self.get_max_input_length()
+        self.tokenizer.model_max_length = self.max_input_length
 
     @property
     @abstractmethod
@@ -37,8 +35,9 @@ class BaseLanguageModel(AbstractClass):
     def batch_size(self):
         """The batch size used when inferencing with this model."""
 
+    @property
     @abstractmethod
-    def get_max_input_length(self):
+    def max_input_length(self):
         """The max input length for this model."""
 
     @abstractmethod

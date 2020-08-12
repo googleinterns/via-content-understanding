@@ -85,20 +85,25 @@ def get_mock_video_data():
 
 class TestCollaborativeExpertsModels(CollaborativeExpertsTestCase):
     """Tests inferencing and training with a video and text encoder."""
-    text_encoder = TextEncoder(
-        NUM_EXPERTS,
-        num_netvlad_clusters=5,
-        ghost_clusters=1,
-        language_model_dimensionality=MOCK_TEXT_EMBEDDING_SHAPE[-1],
-        encoded_expert_dimensionality=EXPERT_AGGREGATED_SIZE)
 
-    video_encoder = VideoEncoder(
-        NUM_EXPERTS,
-        experts_use_netvlad=[False, False, True],
-        experts_netvlad_shape=[None, None, EXPERT_NETVLAD_CLUSTERS],
-        expert_aggregated_size=EXPERT_AGGREGATED_SIZE,
-        encoded_expert_dimensionality=EXPERT_AGGREGATED_SIZE,
-        g_mlp_layers=2)
+    @property
+    def text_encoder(self):
+        return TextEncoder(
+            NUM_EXPERTS,
+            num_netvlad_clusters=5,
+            ghost_clusters=1,
+            language_model_dimensionality=MOCK_TEXT_EMBEDDING_SHAPE[-1],
+            encoded_expert_dimensionality=EXPERT_AGGREGATED_SIZE)
+
+    @property
+    def video_encoder(self):
+        return VideoEncoder(
+            NUM_EXPERTS,
+            experts_use_netvlad=[False, False, True],
+            experts_netvlad_shape=[None, None, EXPERT_NETVLAD_CLUSTERS],
+            expert_aggregated_size=EXPERT_AGGREGATED_SIZE,
+            encoded_expert_dimensionality=EXPERT_AGGREGATED_SIZE,
+            g_mlp_layers=2)
 
     def test_video_encoder(self):
         """Tests making a forward pass with a video encoder."""

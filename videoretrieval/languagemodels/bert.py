@@ -19,7 +19,7 @@ from transformers import BertTokenizerFast, TFBertModel
 from transformers import RobertaTokenizerFast, TFRobertaModel
 
 class BERTLargeModel(BaseLanguageModel):
-    """An implementation of BaseLanguageModel for the BERT Large."""
+    """An implementation of BaseLanguageModel for BERT Large."""
     @property
     def name(self):
         return "bert_large"
@@ -28,7 +28,8 @@ class BERTLargeModel(BaseLanguageModel):
     def batch_size(self):
         return 32
 
-    def get_max_input_length(self):
+    @property
+    def max_input_length(self):
         return 37
 
     def get_tokenizer(self):
@@ -54,7 +55,8 @@ class BERTModel(BaseLanguageModel):
     def batch_size(self):
         return 32
 
-    def get_max_input_length(self):
+    @property
+    def max_input_length(self):
         return 37
 
     def get_tokenizer(self):
@@ -72,11 +74,6 @@ class BERTModel(BaseLanguageModel):
 
 class RobertaModel(BaseLanguageModel):
     """An implementation of BaseLanguageModel for RoBERTa Base."""
-    def __init__(self):
-        self.model = TFRobertaModel.from_pretrained("roberta-base")
-        self.tokenizer = RobertaTokenizerFast.from_pretrained("roberta-base")
-        self.tokenizer.model_max_length = self.max_input_length
-
     @property
     def name(self):
         return "roberta_base"
@@ -85,7 +82,8 @@ class RobertaModel(BaseLanguageModel):
     def batch_size(self):
         return 32
 
-    def get_max_input_length(self):
+    @property
+    def max_input_length(self):
         return 37
 
     def get_tokenizer(self):

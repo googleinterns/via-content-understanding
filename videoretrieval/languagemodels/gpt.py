@@ -31,7 +31,8 @@ class OpenAIGPTModel(BaseLanguageModel):
     def batch_size(self):
         return 42
 
-    def get_max_input_length(self):
+    @property
+    def max_input_length(self):
         return 37
 
     def get_tokenizer(self):
