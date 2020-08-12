@@ -34,15 +34,12 @@ class OpenAIGPTModel(BaseLanguageModel):
     def get_max_input_length(self):
         return 37
 
-    @abstractmethod
     def get_tokenizer(self):
         return OpenAIGPTTokenizer.from_pretrained("openai-gpt")
 
-    @abstractmethod
     def get_model(self):
         return TFOpenAIGPTModel.from_pretrained("openai-gpt")
 
     @property
-    @abstractmethod
     def contextual_embeddings_shape(self):
         return (37, 768)

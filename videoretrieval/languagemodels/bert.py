@@ -31,16 +31,13 @@ class BERTLargeModel(BaseLanguageModel):
     def get_max_input_length(self):
         return 37
 
-    @abstractmethod
     def get_tokenizer(self):
         return BertTokenizerFast.from_pretrained("bert-large-uncased")
 
-    @abstractmethod
     def get_model(self):
         return TFBertModel.from_pretrained("bert-large-uncased")
 
     @property
-    @abstractmethod
     def contextual_embeddings_shape(self):
         return (37, 1024)
 
@@ -60,16 +57,13 @@ class BERTModel(BERTLikeModel):
     def get_max_input_length(self):
         return 37
 
-    @abstractmethod
     def get_tokenizer(self):
         return BertTokenizerFast.from_pretrained("bert-base-uncased")
 
-    @abstractmethod
     def get_model(self):
         return TFBertModel.from_pretrained("bert-base-uncased")
 
     @property
-    @abstractmethod
     def contextual_embeddings_shape(self):
         return (37, 768)
 
@@ -94,16 +88,13 @@ class RobertaModel(BERTLikeModel):
     def get_max_input_length(self):
         return 37
 
-    @abstractmethod
     def get_tokenizer(self):
         return RobertaTokenizerFast.from_pretrained("roberta-base")
 
-    @abstractmethod
     def get_model(self):
         return TFRobertaModel.from_pretrained("roberta-base")
 
     @property
-    @abstractmethod
     def contextual_embeddings_shape(self):
         return (37, 768)
 
