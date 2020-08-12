@@ -21,7 +21,8 @@ import tensorflow as tf
 import numpy as np
 from base import BaseExpert
 
-MOCK_TENSOR_SHAPE = (2, 2) 
+MOCK_TENSOR_SHAPE = (2, 2)
+MOCK_ENCODINGS_SHAPE = (10,)
 MOCK_TENSOR_DATA = tf.zeros(MOCK_TENSOR_SHAPE)
 NUM_MOCK_VIDEOS = 5
 MOCK_CAPTIONS_PER_VIDEO = 20
@@ -84,6 +85,25 @@ def make_mock_id_embeddings_pair_dataset(
     return tf.data.Dataset.from_generator(dataset_generator, 
         (tf.string, tf.float32))
 
+def mock_id_encodings_pair_dataset_generator(
+    video_ids, mock_tensor_shape, mock_encodings_per_video):
+    for video_id in video_ids:
+        for _ in range(mock_encodings_per_video):
+            yield (
+                video_id,
+                tf.zeros(mock_tensor_shape, dtype=tf.int64),
+                tf.zeros(mock_tensor_shape, dtype=tf.int64))
+
+def make_mock_id_encodings_pair_dataset(
+    video_ids, mock_tensor_shape, mock_encodings_per_video=1):
+    
+    dataset_generator = lambda: mock_id_encodings_pair_dataset_generator(
+        video_ids, mock_tensor_shape, mock_encodings_per_video)
+
+    return tf.data.Dataset.from_generator(dataset_generator, 
+        (tf.string, tf.int64, tf.int64))
+
+
 def make_mock_precomputed_features(video_ids):
     mock_precomputed_features_available = {}
     mock_precomputed_features_half_missing = {}
@@ -103,29 +123,44 @@ class TestEncoderDatasetsFunctions(unittest.TestCase):
     mock_video_ids = make_mock_video_ids(NUM_MOCK_VIDEOS)
     mock_dataset = make_mock_id_embeddings_pair_dataset(
         mock_video_ids, MOCK_TENSOR_SHAPE)
+    mock_encodings_dataset = make_mock_id_encodings_pair_dataset(
+        mock_video_ids, MOCK_ENCODINGS_SHAPE)
     mock_precomputed_features = make_mock_precomputed_features(
         mock_video_ids)
 
+    def assert_video_data_is_correct(
+        self, video_id, expert_features, missing_modalities):
+        video_id = video_id.numpy().decode("utf-8")
+
+        for feature_index, (feature, missing) in enumerate(zip(
+            expert_features, missing_modalities)):
+
+            expected_feature, expected_missing = \
+                self.mock_precomputed_features[feature_index][video_id]
+            
+            self.assertTrue(np.array_equal(
+                feature.numpy(), expected_feature.numpy()))
+            self.assertEqual(missing, expected_missing)
+
     def test_replacing_video_id_with_expert_features(self):
         """Tests the replace_video_id_with_expert_features_wrapper function."""
-        map_fn = encoder_datasets.replace_video_id_with_expert_features_wrapper(
+        wrapper = encoder_datasets.replace_video_id_with_expert_features_wrapper(
             self.mock_precomputed_features)
 
-        output = list(iter(mock_dataset.map(map_fn)))
+        ouput_embeddings_dataset = list(iter(
+            self.mock_dataset.map(wrapper.embeddings_function)))
+        output_encodings_dataset = list(iter(
+            self.mock_encodings_dataset.map(wrapper.encodings_function)))
 
-        for video_id, expert_features, _, missing_modalities in output:
-            video_id = video_id.numpy().decode("utf-8")
+        for data in ouput_embeddings_dataset:
+            video_id, expert_features, _, missing_modalities = data
+            self.assert_video_data_is_correct(
+                video_id, expert_features, missing_modalities)
 
-            for feature_index, (feature, missing) in enumerate(zip(
-                expert_features, missing_modalities)):
-
-                expected_feature, expected_missing = \
-                    self.mock_precomputed_features[feature_index][video_id]
-                
-                self.assertTrue(np.array_equal(
-                    feature.numpy(), expected_feature.numpy()))
-                self.assertEqual(missing, expected_missing)
-
+        for data in output_encodings_dataset:
+            video_id, expert_features, _, _, missing_modalities = data
+            self.assert_video_data_is_correct(
+                video_id, expert_features, missing_modalities)
 
     def test_update_dataset_shape_wrapper(self):
         """Tests updating dataset shape."""

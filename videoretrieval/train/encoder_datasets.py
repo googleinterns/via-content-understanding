@@ -334,7 +334,7 @@ def generate_encoder_datasets(language_model, source_dataset, experts):
 
 def generate_language_model_fine_tuning_datasets(
     language_model, source_dataset, experts):
-    """Generates datasets for training encoders and fine tuning a language model.
+    """Generates datasets for training while fine-tuning a language model.
 
     Args:
         language_model: an instance of BaseLanguageModel who's embeddings should
