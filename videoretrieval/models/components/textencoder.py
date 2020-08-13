@@ -141,7 +141,7 @@ class TextEncoder(tf.keras.Model):
             aggregated_embeddings = tf.concat([
                 cls_token, aggregated_embeddings], axis=1)
         else:
-            aggregated_embeddings = self.netvlad(aggregated_embeddings)
+            aggregated_embeddings = self.netvlad(contextual_embeddings)
 
         expert_embeddings = []
 
