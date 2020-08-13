@@ -49,7 +49,7 @@ class BERTModel(BaseLanguageModel):
     """An implementation of BaseLanguageModel for BERT Base."""
     @property
     def name(self):
-        return "bert_large"
+        return "bert_base"
 
     @property
     def batch_size(self):
