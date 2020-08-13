@@ -249,6 +249,9 @@ def unserialize_embeddings_wrapper(text_max_length):
     def get_embedding_length(embedding):
         return embedding.shape[0]
 
+    def get_embedding_dim(embedding):
+        return embedding.shape[-1]
+
     def unserialize_data(serialized_item):
         """Unserializes a serialized protobuf feature.
 
@@ -262,11 +265,13 @@ def unserialize_embeddings_wrapper(text_max_length):
             example["serialized_embeddings"], tf.float32)
         embedding_length = tf.py_function(
             get_embedding_length, [contextual_embeddings], tf.int64)
+        embedding_dim = tf.py_function(
+            get_embedding_dim, [contextual_embeddings], tf.int64)
         extra_padding_tokens_needed = tf.math.maximum(
             text_max_length - embedding_length, tf.constant(0, tf.int64))
         contextual_embeddings = tf.concat(
-            [contextual_embeddings, tf.zeros_like(
-                contextual_embeddings)[:extra_padding_tokens_needed]],
+            [contextual_embeddings, tf.zeros((
+                extra_padding_tokens_needed, embedding_dim), dtype=tf.float32)],
             axis=0)
         return (video_id, contextual_embeddings)
 
