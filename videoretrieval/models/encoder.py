@@ -22,9 +22,36 @@ import metrics.rankings
 from metrics.loss import build_similarity_matrix
 
 class EncoderBaseModel(tf.keras.Model, abstract_class):
+    """An abstract class for training encoders.
+
+    This is an abstract class for that implements test_step and train_step, and
+    handles the details of training except making a forward pass.
+
+    Attrs:
+        video_encoder: the video encoder model.
+        text_encoder: the text encoder model.
+        margin_hyperparameter: the margin hyper-parameter for the loss function.
+        recall_at_k_bounds: a list of integers that are the k's recall at k will
+            be computed for.
+        recall_at_k_labels: a list of labels for each recall at k bound.
+        captions_per_video: the number of captions per video.
+    """
     def __init__(
         self, video_encoder, text_encoder, margin_hyperparameter,
         recall_at_k_bounds, captions_per_video):
+        """Initializes the encoder.
+
+        Args:
+            video_encoder: a model that maps video features and missing experts
+                to output embeddings.
+            text_encoder a model that maps text features to output embeddings
+                and mixture weights:
+            margin_hyperparameter: a margin hyper-parameter for the loss
+                function.
+            recall_at_k_bounds: a list of integers that are the k's recall at k
+                will be computed for.
+            captions_per_video: the number of captions per video.
+        """ 
         super(EncoderBaseModel, self).__init__()
         self.video_encoder = video_encoder
         self.text_encoder = text_encoder
@@ -173,11 +200,7 @@ class EncoderBaseModel(tf.keras.Model, abstract_class):
 
 class EncoderForFrozenLanguageModel(EncoderBaseModel):
     """An implementation of a keras model that trains an arbitrary Text Encoder
-    in concert with an arbitrary Video Encoder.
-
-    Attributes:
-        video_encoder: The encoder used to encode features from videos.
-        text_encoder: The encoder used to encode features from text.
+    in concert with an arbitrary Video Encoder with a frozen language.
     """
 
     def forward_pass(self, input_data, training=False):
@@ -189,13 +212,8 @@ class EncoderForFrozenLanguageModel(EncoderBaseModel):
         return video_embeddings, text_embeddings, mixture_weights
 
 class EncoderForLanguageModelTuning(EncoderBaseModel):
-    """An implementation of an Encoder model.
-
-    This model wraps a video and text encoder to help with training them.
-
-    Attributes:
-        video_encoder: The encoder used to encode features from videos.
-        text_encoder: The encoder used to encode features from text.
+    """An implementation of an Encoder model for training a text encoder, video
+    encoder, and fine tuning a language model.
     """
     def __init__(
         self, video_encoder, text_encoder, margin_hyperparameter,
