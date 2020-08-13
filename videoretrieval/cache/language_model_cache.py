@@ -21,7 +21,7 @@ from pathlib import Path
 import glob
 import random
 
-embeddings_per_file = 250
+embeddings_per_file = 300
 
 embeddings_schema = {
     "video_id": tf.io.FixedLenFeature([], tf.string),
