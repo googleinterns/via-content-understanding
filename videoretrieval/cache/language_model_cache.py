@@ -188,8 +188,8 @@ def cache_language_model_embeddings(
         split: the name of the split (as a string).
     """
     dataset = dataset.map(
-        serialize_to_protobuf_wrapper)
-        #num_parallel_calls=tf.data.experimental.AUTOTUNE)
+        serialize_to_protobuf_wrapper,
+        num_parallel_calls=tf.data.experimental.AUTOTUNE)
     records_directory = get_records_directory(
         source_dataset, language_model, split)
     write_dataset(dataset, records_directory)
