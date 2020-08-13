@@ -260,13 +260,13 @@ def unserialize_embeddings_wrapper(text_max_length):
 
         contextual_embeddings = tf.io.parse_tensor(
             example["serialized_embeddings"], tf.float32)
-
-        embedding_length = get_embedding_length(contextual_embeddings)
-        extra_padding_tokens_needed = max(text_max_length - embedding_length, 0)
-
+        embedding_length = tf.py_function(
+            get_embedding_length, [contextual_embeddings], tf.int64)
+        extra_padding_tokens_needed = tf.math.maximum(
+            text_max_length - embedding_length, tf.constant(0, tf.int64))
         contextual_embeddings = tf.concat(
-            [contextual_embeddings, tf.zeros((
-                extra_padding_tokens_needed, contextual_embeddings.shape[-1]))],
+            [contextual_embeddings, tf.zeros_like(
+                contextual_embeddings)[:extra_padding_tokens_needed]],
             axis=0)
         return (video_id, contextual_embeddings)
 
