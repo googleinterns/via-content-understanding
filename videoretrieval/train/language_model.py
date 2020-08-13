@@ -98,8 +98,7 @@ def generate_contextual_embeddings(language_model, dataset, captions_per_video):
     return (dataset
         .batch(captions_per_video)
         .map(encode, num_parallel_calls=tf.data.experimental.AUTOTUNE)
-        .map(get_language_model_inference_function(language_model))
-        .unbatch())
+        .map(get_language_model_inference_function(language_model)))
 
 
 def generate_and_cache_contextual_embeddings(language_model, source_dataset):

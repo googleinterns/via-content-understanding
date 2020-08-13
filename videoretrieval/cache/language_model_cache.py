@@ -100,8 +100,11 @@ def serialize_to_protobuf(video_id, contextual_embeddings, attention_mask):
 
 def serialize_to_protobuf_wrapper(*args):
     def serialize_embeddings(caption_info):
-        return tf.py_function(serialize_to_protobuf, caption_info, tf.string)
-    return tf.vectorized_map(serialize_embeddings, args)
+        return (
+            tf.py_function(serialize_to_protobuf, caption_info, tf.string),
+            caption_info[1],
+            caption_info[2])
+    return tf.map_fn(serialize_embeddings, args)[0]
 
 def serialize_encodings(video_id, encodings, attention_mask):
     """Serializes a video id, encodings, and an attention mask to a protobuf.
