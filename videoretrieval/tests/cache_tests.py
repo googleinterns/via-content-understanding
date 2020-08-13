@@ -30,9 +30,9 @@ class TestLanguageModelCache(unittest.TestCase):
     deserialize_embeddings = staticmethod(
         language_model_cache.unserialize_embeddings_wrapper(MOCK_NUM_TOKENS))
 
-    def serialize_embeddings(self, data, num_tokens):
+    def serialize_embeddings(self, data, attention_mask):
         return language_model_cache.serialize_to_protobuf(
-            self.MOCK_VIDEO_ID, data, num_tokens)
+            self.MOCK_VIDEO_ID, data, attention_mask)
 
     def assertTensorsEqual(self, tensor_a, tensor_b):
         self.assertTrue(tf.reduce_all(tensor_a == tensor_b) == True)
@@ -42,50 +42,36 @@ class TestLanguageModelCache(unittest.TestCase):
         tf.random.set_seed(1)
 
         mock_embeddings = tf.random.normal(
-            (1, self.MOCK_NUM_TOKENS, self.MOCK_EMBEDDING_DIM))
+            (self.MOCK_NUM_TOKENS, self.MOCK_EMBEDDING_DIM))
+        mock_attention_mask = tf.ones(
+            (mock_embeddings.shape[0],), dtype=tf.int64)
 
         serialized = self.serialize_embeddings(
-            mock_embeddings, self.MOCK_NUM_TOKENS)
+            mock_embeddings, mock_attention_mask)
         deserialized_video_id, deserialized_data = self.deserialize_embeddings(
             serialized)
 
         self.assertEqual(deserialized_video_id, self.MOCK_VIDEO_ID)
-        self.assertTensorsEqual(deserialized_data, mock_embeddings[0])
-
-    def test_serialization_loop_truncating_embeddings(self):
-        """Tests serializing and deserializing with truncation."""
-        tf.random.set_seed(1)
-
-        mock_embeddings = tf.random.normal(
-            (1, self.MOCK_NUM_TOKENS + 1, self.MOCK_EMBEDDING_DIM))
-
-        serialized = self.serialize_embeddings(
-            mock_embeddings, self.MOCK_EMBEDDING_DIM)
-        deserialized_video_id, deserialized_data = self.deserialize_embeddings(
-            serialized)
-
-        self.assertEqual(deserialized_video_id, self.MOCK_VIDEO_ID)
-        self.assertTensorsEqual(
-            mock_embeddings[0, :self.MOCK_NUM_TOKENS], deserialized_data)
+        self.assertTensorsEqual(deserialized_data, mock_embeddings)
 
     def test_serialization_loop_padding_embeddings(self):
         """Tests serializing and deserializing with padding."""
         tf.random.set_seed(1)
 
         mock_embeddings = tf.random.normal(
-            (1, self.MOCK_NUM_TOKENS - 1, self.MOCK_EMBEDDING_DIM))
+            (self.MOCK_NUM_TOKENS, self.MOCK_EMBEDDING_DIM))
+        mock_attention_mask = tf.constant(
+            [1 for _ in range(self.MOCK_NUM_TOKENS - 1)] + [0])
 
         serialized = self.serialize_embeddings(
-            mock_embeddings, self.MOCK_EMBEDDING_DIM)
+            mock_embeddings, mock_attention_mask)
         deserialized_video_id, deserialized_data = self.deserialize_embeddings(
             serialized)
 
         self.assertEqual(deserialized_video_id, self.MOCK_VIDEO_ID)
         self.assertTensorsEqual(
-            mock_embeddings, deserialized_data[:self.MOCK_NUM_TOKENS - 1])
-        self.assertTensorsEqual(
-            deserialized_data[self.MOCK_NUM_TOKENS + 1:],
-            tf.zeros_like(deserialized_data[self.MOCK_NUM_TOKENS + 1:]))
+            mock_embeddings * tf.cast(mock_attention_mask, tf.float32)[:, None],
+            deserialized_data)
 
     def test_serialization_loop_encodings(self):
         """Test serializing encodings."""

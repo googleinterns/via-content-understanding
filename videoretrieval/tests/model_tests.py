@@ -135,12 +135,11 @@ class TestCollaborativeExpertsModels(CollaborativeExpertsTestCase):
                 embedding, (BATCH_SIZE, EXPERT_AGGREGATED_SIZE))
             self.assert_last_axis_has_norm(
                 embedding, norm=1)
-        
         mixture_weight_sums = tf.reduce_sum(mixture_weights, axis=-1)
 
-        self.assertTrue(
-            tf.reduce_all(
-                mixture_weight_sums == tf.ones_like(mixture_weight_sums)))
+        self.assertAlmostEqual(
+            0.0, tf.reduce_max(tf.abs(
+                mixture_weight_sums - tf.ones_like(mixture_weight_sums))))
 
     def test_encoder_training(self):
         """Tests making one train step and one test step on an encoder model."""
@@ -236,7 +235,7 @@ class TestCollaborativeExpertsLayers(CollaborativeExpertsTestCase):
 
     def test_gated_embedding_module(self):
         """Tests a gated embedding module layer."""
-        gated_embedding_unit_reasoning = GatedEmbeddingUnitReasoning(
+        gated_embedding_unit_reasoning = GatedEmbeddingModule(
             FEATURE_SIZE,
             kernel_initializer="glorot_uniform",
             bias_initializer="zeros")

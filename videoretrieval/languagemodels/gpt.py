@@ -16,9 +16,7 @@ limitations under the License.
 """
 
 from base import BaseLanguageModel
-from transformers import TFOpenAIGPTModel, OpenAIGPTTokenizer
-
-GPT_PAD_TOKEN = 0
+from transformers import TFOpenAIGPTModel, OpenAIGPTTokenizerFast
 
 class OpenAIGPTModel(BaseLanguageModel):
     """An implementation of BaseLanguageModel for the openai-gpt1 model."""
@@ -36,7 +34,9 @@ class OpenAIGPTModel(BaseLanguageModel):
         return 37
 
     def get_tokenizer(self):
-        return OpenAIGPTTokenizer.from_pretrained("openai-gpt")
+        tokenizer = OpenAIGPTTokenizerFast.from_pretrained("openai-gpt")
+        tokenizer.pad_token = " "
+        return tokenizer
 
     def get_model(self):
         return TFOpenAIGPTModel.from_pretrained("openai-gpt")

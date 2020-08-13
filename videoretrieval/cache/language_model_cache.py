@@ -34,8 +34,8 @@ encodings_schema = {
     "serialized_attention_masks": tf.io.FixedLenFeature([], tf.string)
 }
 
-base_path = Path(f"/mnt/disks/fast_ssd/cached_data/")
-
+#base_path = Path(f"/mnt/disks/fast_ssd/cached_data/")
+base_path = Path("./cached_data/")
 def get_bytes_feature(value):
     """Gets a tf.train.Feature from the parameter value."""
     bytes_list = tf.train.BytesList(value=[value.numpy()])
@@ -66,18 +66,25 @@ def serialize_to_protobuf(video_id, contextual_embeddings, attention_mask):
 
     Parameters:
         video_id: the id of the video corresponding to the caption.
-        contextual_embeddings: a 1 x padded size x embedding dimension tensor.
+        contextual_embeddings: a padded size x embedding dimension tensor.
         attention_mask: the attention mask for the encodings for the original
             caption.
 
     Returns:
         A protobuf serialized as a string.
     """
-    assert contextual_embeddings.shape[0] == 1
-    # Accessing contextual_embeddings[0] to get rid of the extra dimension.
-    tokens = attention_mask.index(0)
+    tokens = tf.concat(
+        [
+            tf.where(attention_mask == 0),
+            tf.constant(
+                [[attention_mask.shape[0]]],
+                dtype=tf.int64)
+        ],
+        axis=0)[0][0]
+
+    # Don't store the zero-ed out parts of the embeddings
     serialized_embedding = tf.io.serialize_tensor(
-        contextual_embeddings[0, :tokens])
+        contextual_embeddings[:tokens])
 
     video_id_feature = get_bytes_feature(video_id)
     embeddings_feature = get_bytes_feature(serialized_embedding)
@@ -181,8 +188,8 @@ def cache_language_model_embeddings(
         split: the name of the split (as a string).
     """
     dataset = dataset.map(
-        serialize_to_protobuf_wrapper,
-        num_parallel_calls=tf.data.experimental.AUTOTUNE)
+        serialize_to_protobuf_wrapper)
+        #num_parallel_calls=tf.data.experimental.AUTOTUNE)
     records_directory = get_records_directory(
         source_dataset, language_model, split)
     write_dataset(dataset, records_directory)
