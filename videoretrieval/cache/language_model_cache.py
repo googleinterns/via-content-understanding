@@ -191,9 +191,11 @@ def cache_language_model_embeddings(
             used to generate the contextual embeddings.
         split: the name of the split (as a string).
     """
-    dataset = dataset.map(
-        serialize_to_protobuf_wrapper,
-        num_parallel_calls=tf.data.experimental.AUTOTUNE)
+    dataset = (dataset
+        .map(
+            serialize_to_protobuf_wrapper,
+            num_parallel_calls=tf.data.experimental.AUTOTUNE)
+        .unbatch())
     records_directory = get_records_directory(
         source_dataset, language_model, split)
     write_dataset(dataset, records_directory)
