@@ -24,8 +24,8 @@ from metrics.loss import build_similarity_matrix
 class EncoderBaseModel(tf.keras.Model, abstract_class):
     """An abstract class for training encoders.
 
-    This is an abstract class for that implements test_step and train_step, and
-    handles the details of training except making a forward pass.
+    This is an abstract class that implements test_step and train_step, and
+    handles all the details of training except making a forward pass.
 
     Attrs:
         video_encoder: the video encoder model.
