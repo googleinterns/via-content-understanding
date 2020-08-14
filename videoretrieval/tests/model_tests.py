@@ -86,12 +86,12 @@ def get_mock_video_data():
 class TestCollaborativeExpertsModels(CollaborativeExpertsTestCase):
     """Tests inferencing and training with a video and text encoder."""
 
-    @property
-    def text_encoder(self):
+    def get_text_encoder(self, residual_cls_token):
         return TextEncoder(
             NUM_EXPERTS,
             num_netvlad_clusters=5,
             ghost_clusters=1,
+            residual_cls_token=residual_cls_token,
             language_model_dimensionality=MOCK_TEXT_EMBEDDING_SHAPE[-1],
             encoded_expert_dimensionality=EXPERT_AGGREGATED_SIZE)
 
@@ -127,8 +127,9 @@ class TestCollaborativeExpertsModels(CollaborativeExpertsTestCase):
 
     def test_text_encoder(self):
         """Tests making a forward pass with a text encoder."""
+        text_encoder = self.get_text_encoder(residual_cls_token=False)
         mock_text_embeddings = tf.random.normal(MOCK_TEXT_EMBEDDING_SHAPE)
-        embeddings, mixture_weights = self.text_encoder(mock_text_embeddings)
+        embeddings, mixture_weights = text_encoder(mock_text_embeddings)
 
         for embedding in embeddings:
             self.assert_vector_has_shape(
@@ -139,13 +140,14 @@ class TestCollaborativeExpertsModels(CollaborativeExpertsTestCase):
 
         self.assertAlmostEqual(
             0.0, tf.reduce_max(tf.abs(
-                mixture_weight_sums - tf.ones_like(mixture_weight_sums))))
+                mixture_weight_sums - tf.ones_like(
+                    mixture_weight_sums))).numpy())
 
     def test_encoder_training(self):
         """Tests making one train step and one test step on an encoder model."""
         encoder = EncoderForFrozenLanguageModel(
-            self.video_encoder, self.text_encoder, MOCK_MARGIN_PARAMETER,
-            [1, 5, 10], CAPTIONS_PER_VIDEO)
+            self.video_encoder, self.get_text_encoder(residual_cls_token=False),
+            MOCK_MARGIN_PARAMETER, [1, 5, 10], CAPTIONS_PER_VIDEO)
         encoder.compile(
             tf.keras.optimizers.Adam(),
             bidirectional_max_margin_ranking_loss)
@@ -178,8 +180,9 @@ class TestCollaborativeExpertsModels(CollaborativeExpertsTestCase):
         """Tests train/test steps for fine tuning a language model."""
         language_model = languagemodels.bert.BERTModel()
         encoder = EncoderForLanguageModelTuning(
-            self.video_encoder, self.text_encoder, MOCK_MARGIN_PARAMETER,
-            [1, 5, 10], CAPTIONS_PER_VIDEO, language_model.model, 16)
+            self.video_encoder, self.get_text_encoder(residual_cls_token=True),
+            MOCK_MARGIN_PARAMETER, [1, 5, 10], CAPTIONS_PER_VIDEO,
+            language_model.model, 16)
         encoder.compile(
             tf.keras.optimizers.Adam(),
             bidirectional_max_margin_ranking_loss)
