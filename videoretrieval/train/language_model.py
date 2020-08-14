@@ -88,6 +88,7 @@ def generate_contextual_embeddings(language_model, dataset, captions_per_video):
             First, a video id in the form of a string tensor, and second, 
             a caption corresponding to that video in the form of a string
             tensor.
+        captions_per_video: the number of captions per video.
 
     Returns: a tf.data Dataset that has three elements: a video id in the form
         of a string tensor, the contextual embeddings as a float32 tensor, and
