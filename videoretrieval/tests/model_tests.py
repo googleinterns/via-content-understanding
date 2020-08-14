@@ -50,6 +50,7 @@ MLP_LAYERS = 2
 
 CAPTIONS_PER_VIDEO = 20
 
+
 class CollaborativeExpertsTestCase(unittest.TestCase, AbstractClass):
     """An class with helper methods for test of collaborative experts."""
     error_margin = 1e-6
@@ -179,6 +180,10 @@ class TestCollaborativeExpertsModels(CollaborativeExpertsTestCase):
     def test_encoder_training_with_language_model_tuning(self):
         """Tests train/test steps for fine tuning a language model."""
         language_model = languagemodels.bert.BERTModel()
+        tokens = language_model.tokenizer.get_vocab().values()
+        tokens_min = min(tokens)
+        tokens_max = max(tokens) + 1
+
         encoder = EncoderForLanguageModelTuning(
             self.video_encoder, self.get_text_encoder(residual_cls_token=True),
             MOCK_MARGIN_PARAMETER, [1, 5, 10], CAPTIONS_PER_VIDEO,
@@ -190,8 +195,8 @@ class TestCollaborativeExpertsModels(CollaborativeExpertsTestCase):
         num_text_embeddings = CAPTIONS_PER_VIDEO * MOCK_TEXT_EMBEDDING_SHAPE[0]
         mock_text_data = tf.random.uniform(
             (num_text_embeddings, language_model.max_input_length),
-            minval=0,
-            maxval=30522,
+            minval=tokens_min,
+            maxval=tokens_max,
             dtype=tf.int64)
         mock_attention_masks = tf.random.uniform(
             (num_text_embeddings, language_model.max_input_length),
