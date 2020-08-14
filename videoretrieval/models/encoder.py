@@ -31,9 +31,10 @@ class EncoderBaseModel(tf.keras.Model, abstract_class):
         video_encoder: the video encoder model.
         text_encoder: the text encoder model.
         margin_hyperparameter: the margin hyper-parameter for the loss function.
-        recall_at_k_bounds: a list of integers that are the k's recall at k will
-            be computed for.
-        recall_at_k_labels: a list of labels for each recall at k bound.
+        recall_at_k_bounds: a list of integers that  will be used in the as
+            bounds in the recall @ k metric computation.
+        recall_at_k_labels: a list of strings that label each k for the recall
+            at k computations.
         captions_per_video: the number of captions per video.
     """
     def __init__(
