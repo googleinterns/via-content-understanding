@@ -200,8 +200,9 @@ class EncoderBaseModel(tf.keras.Model, abstract_class):
         """Executes a forward pass with the given data."""
 
 class EncoderForFrozenLanguageModel(EncoderBaseModel):
-    """An implementation of a keras model that trains an arbitrary Text Encoder
-    in concert with an arbitrary Video Encoder with a frozen language.
+    """An implementation of an Encoder model that trains an arbitrary Text
+    Encoder in concert with an arbitrary Video Encoder with a frozen language
+    model.
     """
 
     def forward_pass(self, input_data, training=False):
@@ -220,6 +221,22 @@ class EncoderForLanguageModelTuning(EncoderBaseModel):
         self, video_encoder, text_encoder, margin_hyperparameter,
         recall_at_k_bounds, captions_per_video, language_model,
         language_model_batch_size):
+        """Initializes the encoder.
+
+        Args:
+            video_encoder: a model that maps video features and missing experts
+                to output embeddings.
+            text_encoder a model that maps text features to output embeddings
+                and mixture weights.
+            margin_hyperparameter: a margin hyper-parameter for the loss
+                function.
+            recall_at_k_bounds: a list of integers that will be used in the as
+                bounds in the recall @ k metric computation.
+            captions_per_video: the number of captions per video.
+            language_model: the language model to be fine tuned.
+            language_model_batch_size: the batch size to be used with the
+                language model.
+        """ 
         super(EncoderForLanguageModelTuning, self).__init__(
             video_encoder, text_encoder, margin_hyperparameter,
             recall_at_k_bounds, captions_per_video)
