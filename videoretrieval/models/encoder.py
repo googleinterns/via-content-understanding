@@ -46,11 +46,11 @@ class EncoderBaseModel(tf.keras.Model, abstract_class):
             video_encoder: a model that maps video features and missing experts
                 to output embeddings.
             text_encoder a model that maps text features to output embeddings
-                and mixture weights:
+                and mixture weights.
             margin_hyperparameter: a margin hyper-parameter for the loss
                 function.
-            recall_at_k_bounds: a list of integers that are the k's recall at k
-                will be computed for.
+            recall_at_k_bounds: a list of integers that will be used in the as
+                bounds in the recall @ k metric computation.
             captions_per_video: the number of captions per video.
         """ 
         super(EncoderBaseModel, self).__init__()
