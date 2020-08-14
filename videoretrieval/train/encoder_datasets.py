@@ -4,7 +4,7 @@ encoders.
 Currently, two types of datasets can be generated: datasets that contains the
 text data represented as outputs from a language model (called an embedding
 dataset), and datasets that contain text data represented as input to an encoder
-(cal an encodings dataset).
+(called an encodings dataset).
 
 Copyright 2020 Google LLC
 
