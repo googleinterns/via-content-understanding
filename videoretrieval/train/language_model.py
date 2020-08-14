@@ -26,11 +26,12 @@ def get_encode_function(language_model, captions_per_video):
     Args:
         language_model: an instance of BaseLanguageModel that is used to encode
             the text.
+        captions_per_video: the number of captions associated with each video.
 
     Returns: a function that has two parameters: the video id and the caption
         text. This function then returns a tuple of 3 values. The first value is
         the video id, the second value is the encoded ids, and the third is the
-        number of tokens in the encoding.
+        attention mask for the encoding.
     """
 
     def encode_text(text):
@@ -47,7 +48,6 @@ def get_encode_function(language_model, captions_per_video):
             (captions_per_video, language_model.encoded_shape[0]))
 
         return video_id, result, attention_mask
-
     return wrapper
 
 def get_language_model_inference_function(language_model):
@@ -59,8 +59,9 @@ def get_language_model_inference_function(language_model):
 
     Returns: a function that has three parameters: the video id, the encoded
         ids, and the number of tokens in the tokenized caption. The function
-        returns three values, the video id, the contextual embeddings, and the
-        number of tokens in the tokenized caption.
+        returns three values: the video id, the contextual embeddings with the
+        embeddings for the padding tokens zeroed out, and the
+        attention mask for the embedding.
     """
 
     def inference(ids, attention_mask):
@@ -78,7 +79,7 @@ def get_language_model_inference_function(language_model):
     return wrapper
 
 def generate_contextual_embeddings(language_model, dataset, captions_per_video):
-    """Generate the contextual embeddings for a given dataset.
+    """Generates the contextual embeddings for a given dataset.
 
     Args:
         language_model: an instance of BaseLanguageModel that is used to
@@ -90,9 +91,8 @@ def generate_contextual_embeddings(language_model, dataset, captions_per_video):
 
     Returns: a tf.data Dataset that has three elements: a video id in the form
         of a string tensor, the contextual embeddings as a float32 tensor, and
-        the number of tokens in the embedding.
+        the attention mask for the embedding.
     """
-
     encode = get_encode_function(language_model, captions_per_video)
 
     return (dataset
@@ -102,7 +102,7 @@ def generate_contextual_embeddings(language_model, dataset, captions_per_video):
 
 
 def generate_and_cache_contextual_embeddings(language_model, source_dataset):
-    """Generate and cache contextual embeddings for a given dataset/model.
+    """Generates and caches contextual embeddings for a given dataset/model.
 
     For each split in the source dataset, given by 
     source_dataset.id_caption_pair_dataset, generate contextual embeddings using
@@ -111,7 +111,7 @@ def generate_and_cache_contextual_embeddings(language_model, source_dataset):
     Args:
         language_model: an instance of BaseLanguageModel used for generating
             contextual embeddings.
-        source_dataset: the source dataset as an an instance of BaseDataset.
+        source_dataset: the source dataset as an instance of BaseDataset.
     """
 
     for ds_split, split_name in source_dataset.id_caption_pair_datasets:
@@ -131,7 +131,7 @@ def generate_and_cache_encodings(language_model, source_dataset):
     Args:
         language_model: an instance of BaseLanguageModel used for generating
             encodings.
-        source_dataset: the source dataset as an an instance of BaseDataset.
+        source_dataset: the source dataset as an instance of BaseDataset.
     """
     for ds_split, split_name in source_dataset.id_caption_pair_datasets:
         generate_encodings = get_encode_function(

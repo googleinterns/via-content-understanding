@@ -1,4 +1,12 @@
-"""Copyright 2020 Google LLC
+"""This module contains functions to generate datasets for training retrieval
+encoders.
+
+Currently, two types of datasets can be generated: datasets that contains the
+text data represented as outputs from a language model (called an embedding
+dataset), and datasets that contain text data represented as input to an encoder
+(cal an encodings dataset).
+
+Copyright 2020 Google LLC
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -11,9 +19,6 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-
-Wrappers for datasets for encoders.
-
 """
 
 import cache
@@ -27,7 +32,15 @@ class TrainingDatasetType(enum.Enum):
     EncodingsDataset = 1
 
 class MapFunctionWrapper:
-    """A wrapper for functions that operate on different types of datasets.""" 
+    """A wrapper for functions that operate on different types of datasets.
+
+    Often, there will be a map function that should be applied in the dataset
+    creation pipeline. However, the map function is different for the
+    encodings datasets and the embeddings datasets. This class wraps the
+    function that operates on the embeddings dataset and the function that
+    operates on the encodings dataset to enable a higher level of code reuse.
+    """
+
     def __init__(self, embeddings_function, encodings_function):
         """Initializes the wrapper.
 
@@ -52,7 +65,7 @@ def get_map_function(map_function_wrapper, training_dataset_type):
 
     Raises:
         Value Error: a `ValueError` is raised if the training_dataset_type is
-            invalid. 
+            invalid.
     """  
     if training_dataset_type == TrainingDatasetType.EmbeddingsDataset:
         return map_function_wrapper.embeddings_function
@@ -66,8 +79,8 @@ def replace_video_id_with_expert_features_wrapper(precomputed_features):
     """Returns a function that adds precomputed features to an example.
 
     Arguments:
-        precomputed_features: an array of dicts, where each dict maps from a
-            video id to a tuple. The tuple has two elements, the first being the
+        precomputed_features: a list of dicts, where each dict maps from a video
+            id to a tuple. The tuple has two elements, the first being the
             data of the precomputed feature, the second being a boolean that
             indicates if the feature is missing.
 
@@ -177,7 +190,7 @@ def update_dataset_shape_wrapper(experts, language_model):
 def match_cached_embeddings_with_experts(
     language_model, experts, precomputed_features, datasets,
     training_dataset_type):
-    """Matches items in a dataset with the precomputed features
+    """Matches items in a dataset with the precomputed features.
 
     Parameters:
         language_model: the language model the contextual embeddings are from.
@@ -185,12 +198,14 @@ def match_cached_embeddings_with_experts(
         precomputed_features: a list of dicts, one per expert, that map from
           video id to precomputed feature.
         datasets: the datasets to transform.
+        training_dataset_type: the type of dataset, as an option from the
+            TrainingDatasetType enum.
 
     Returns: A list of tf.data Datasets, where each example in the dataset
         consists of: a video id, precomputed features,
-        contextual embeddings or encodings, potentially an attention mask
-        (depending on the dataset type), and a boolean
-        vector that indicates which expert modalities are missing.  
+        contextual embeddings or encodings, an attention mask (depending on the
+        dataset type), and a boolean vector that indicates which expert
+        modalities are missing.
     """
     match_features_fn = get_map_function(
         replace_video_id_with_expert_features_wrapper(precomputed_features),
@@ -207,7 +222,7 @@ def match_cached_embeddings_with_experts(
         ) for dataset in datasets]
 
 def is_expert_value_missing(expert_value):
-    """Returns if a given expert_value is missing or not."""
+    """Returns a boolean that indicates if an expert_value is missing."""
     return type(expert_value) == float and np.isnan(expert_value)
 
 def zero_pad_expert_features(expert, expert_value):
@@ -279,7 +294,8 @@ def sample_captions(ds, captions_per_video, dataset_type):
     def random_index(sample):
         return np.random.randint(0, sample.shape[0]) 
 
-    def sample_captions_embeddings(video_ids_batch, contextual_embeddings_batch):
+    def sample_captions_embeddings(
+        video_ids_batch, contextual_embeddings_batch):
         index = tf.numpy_function(
             random_index,
             [contextual_embeddings_batch],
@@ -300,7 +316,7 @@ def sample_captions(ds, captions_per_video, dataset_type):
         num_parallel_calls=tf.data.experimental.AUTOTUNE)
 
 def generate_encoder_datasets(language_model, source_dataset, experts):
-    """Generates datasets necessary to train encoders.
+    """Generates datasets to train encoders with a frozen language model.
 
     Args:
         language_model: an instance of BaseLanguageModel who's embeddings should
@@ -334,12 +350,12 @@ def generate_encoder_datasets(language_model, source_dataset, experts):
 
 def generate_language_model_fine_tuning_datasets(
     language_model, source_dataset, experts):
-    """Generates datasets for training while fine-tuning a language model.
+    """Generates datasets to train and fine-tuning a language model.
 
     Args:
-        language_model: an instance of BaseLanguageModel who's embeddings should
-            be use.
-        source_dataset: The dataset to generate the embeddings from. 
+        language_model: an instance of BaseLanguageModel that will be fine
+            tuned.
+        source_dataset: The dataset to generate the encodings from.
         experts: The experts to be used.
 
     Returns: A tuple of three tf.data datasets: the train dataset, the
@@ -379,7 +395,9 @@ def generate_dataset(
         dataset_type: the dataset type (an option from TrainingDatasetType).
         dataset_splits: the cached text data for each split in the dataset.
         splits_to_sample: indexes of items in dataset_splits that captions will
-            be sampled from. 
+            be sampled from.
+
+    Returns: the tf.data.Dataset for the correct dataset type.
     """
     for split_index in splits_to_sample:
         dataset_splits[split_index] = sample_captions(
