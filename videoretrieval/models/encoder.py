@@ -14,42 +14,55 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+from abc import ABC as abstract_class
+from abc import abstractmethod
+import math
 import tensorflow as tf
 import metrics.rankings
 from metrics.loss import build_similarity_matrix
 
-class EncoderModel(tf.keras.Model):
-    """An implementation of a keras model that trains an arbitrary Text Encoder
-    in concert with an arbitrary Video Encoder.
+class EncoderBaseModel(tf.keras.Model, abstract_class):
+    """An abstract class for training encoders.
 
-    Attributes:
-        video_encoder: The encoder used to encode features from videos.
-        text_encoder: The encoder used to encode features from text.
-        loss_hyperparameter_m: The margin parameter for the loss function.
-        optimizer: the optimizer used to train the two encoders.
-        loss_fn: the loss function used to train the two encoders.
-        recall_at_k_bounds: the thresholds for k to use in recall at k metric
-            computation.
-        captions_per_video: the number of captions that describe each video.
+    This is an abstract class that implements test_step and train_step, and
+    handles all the details of training except making a forward pass.
+
+    Attrs:
+        video_encoder: the video encoder model.
+        text_encoder: the text encoder model.
+        margin_hyperparameter: the margin hyper-parameter for the loss function.
+        recall_at_k_bounds: a list of integers that will be used in the as
+            bounds in the recall @ k metric computation.
+        recall_at_k_labels: a list of strings that label each k for the recall
+            at k computations.
+        captions_per_video: the number of captions per video.
     """
+    def __init__(
+        self, video_encoder, text_encoder, margin_hyperparameter,
+        recall_at_k_bounds, captions_per_video):
+        """Initializes the encoder.
 
-    def __init__(self, video_encoder, text_encoder, loss_hyperparameter_m):
-        """Initialize an encoder with a video encoder and a text encoder.
-
-        Parameters:
-            video_encoder: the Video Encoder to be used.
-            text_encoder: the Text Encoder to be used.
-            loss_hyperparameter_m: the margin hyper parameter used when
-                computing loss.
-        """
-        super(EncoderModel, self).__init__()
-
+        Args:
+            video_encoder: a model that maps video features and missing experts
+                to output embeddings.
+            text_encoder a model that maps text features to output embeddings
+                and mixture weights.
+            margin_hyperparameter: a margin hyper-parameter for the loss
+                function.
+            recall_at_k_bounds: a list of integers that will be used in the as
+                bounds in the recall @ k metric computation.
+            captions_per_video: the number of captions per video.
+        """ 
+        super(EncoderBaseModel, self).__init__()
         self.video_encoder = video_encoder
         self.text_encoder = text_encoder
-        self.loss_hyperparameter_m = loss_hyperparameter_m
+        self.margin_hyperparameter = margin_hyperparameter
 
-    def compile(
-            self, optimizer, loss_fn, recall_at_k_bounds, captions_per_video):
+        self.recall_at_k_bounds = recall_at_k_bounds
+        self.recall_at_k_labels = [f"R_{k}" for k in recall_at_k_bounds]
+        self.captions_per_video = captions_per_video
+
+    def compile(self, optimizer, loss_function):
         """Complies this model.
 
         Arguments:
@@ -60,52 +73,42 @@ class EncoderModel(tf.keras.Model):
             captions_per_video: the number of captions associated with each
                 video.
         """
-        super(EncoderModel, self).compile()
+        super(EncoderBaseModel, self).compile()
 
         self.optimizer = optimizer
-        self.loss_fn = loss_fn
-        self.recall_at_k_bounds = recall_at_k_bounds
-
-        self.recall_at_k_labels = [f"R_{k}" for k in recall_at_k_bounds]
-        self.captions_per_video = captions_per_video
+        self.loss_function = loss_function
 
     def train_step(self, video_text_pair_batch):
         """Executes one step of training.
 
         Args:
-            video_text_pair_batch: a tuple of four elements. First, the video
-                ids. Then, the video features for a given batch, followed by the
-                text features for a given batch, followed by a boolean tensor
-                indicating missing video modalities."""
-        video_ids, video_features, text_features, missing_experts = \
-            video_text_pair_batch
+            video_text_pair_batch: the data to be inputted to the forward_pass
+                function.
+        """
+        missing_experts = video_text_pair_batch[-1]
 
         with tf.GradientTape() as gradient_tape:
-            video_results = self.video_encoder(
-                [video_features, missing_experts])
-            text_results, mixture_weights = self.text_encoder(text_features)
-
+            encoder_output = self.forward_pass(
+                video_text_pair_batch, training=True)
             similarity_matrix = build_similarity_matrix(
-                video_results, text_results, mixture_weights, missing_experts)
-            loss = self.loss_fn(similarity_matrix, self.loss_hyperparameter_m)
+                *(*encoder_output, missing_experts))
+            loss = self.loss_function(
+                similarity_matrix, self.margin_hyperparameter)
 
         gradients = gradient_tape.gradient(loss, self.trainable_variables)
-
         self.optimizer.apply_gradients(zip(gradients, self.trainable_variables))
 
         # It's wasteful to calculate ranking metrics for the entire train
         # dataset, so we just mark the values as NaN for keras.
         batch_metrics = {
             label: float("nan") for label in self.recall_at_k_labels}
-
         batch_metrics["median_rank"] = float("nan")
         batch_metrics["mean_rank"] = float("nan")
-
         batch_metrics["loss"] = loss        
 
         return batch_metrics
 
-    def remove_repeated_video_data(self, tensor):
+    def remove_repeated_data(self, tensor):
         """Removes repeated video data from a tensor.
 
         Because the dataset is constructed on a pairwise basis, if there are
@@ -121,29 +124,40 @@ class EncoderModel(tf.keras.Model):
         """
         return tensor[::self.captions_per_video]
 
+    def remove_repeated_video_data(self, video_text_pair_batch):
+        """Removes repeated video data from a batch."""
+        video_text_pair_batch = list(video_text_pair_batch)
+        video_ids = video_text_pair_batch[0]
+        video_features = video_text_pair_batch[1]
+        missing_experts = video_text_pair_batch[-1]
+
+        video_ids = self.remove_repeated_data(video_ids)
+        video_features = list(map(
+            self.remove_repeated_data, video_features))
+        missing_experts = self.remove_repeated_data(missing_experts)
+
+        video_text_pair_batch[0] = video_ids
+        video_text_pair_batch[1] = video_features
+        video_text_pair_batch[-1] = missing_experts
+
+        return tuple(video_text_pair_batch)
+
     def test_step(self, video_text_pair_batch):
         """Executes one test step.
 
         Args:
-            video_text_pair_batch: a tuple of four elements. First, the video
-                ids. Then, the video features for a given batch, followed by the
-                text features for a given batch, followed by a boolean tensor
-                indicating missing video modalities. Additionally, for each
-                video caption pair inputted to this function, must have 
-                self.num_captions_per_video associated with it. Each video
-                caption pair also must be adjacent to all other video caption
-                pairs for the same video. 
+            video_text_pair_batch: input to the forward_pass function.
+                Additionally, for each video caption pair in this tuple, each
+                video must have self.num_captions_per_video associated with it.
+                Each video caption pair also must be adjacent to all other video
+                caption pairs for the same video. 
         """
-        video_ids, video_features, text_features, missing_experts = \
-            video_text_pair_batch
+        video_text_pair_batch = self.remove_repeated_video_data(
+            video_text_pair_batch)
+        missing_experts = video_text_pair_batch[-1]
 
-        video_ids = self.remove_repeated_video_data(video_ids)
-        video_features = list(map(
-            self.remove_repeated_video_data, video_features))
-        missing_experts = self.remove_repeated_video_data(missing_experts)
-
-        video_results = self.video_encoder([video_features, missing_experts])
-        text_results, mixture_weights = self.text_encoder(text_features)
+        video_results, text_results, mixture_weights = self.forward_pass(
+            video_text_pair_batch, training=False)
 
         valid_metrics = {}
         loss = []
@@ -154,25 +168,25 @@ class EncoderModel(tf.keras.Model):
         # repeated multiple times in a given batch, splitting the data and
         # computing retrieval methods on shards instead of computing metrics on 
         # the entire validation set at once is the cleaner option.
-
         for caption_index in range(self.captions_per_video):
-
             shard_text_results = [embed[caption_index::self.captions_per_video]
                 for embed in text_results]
             shard_mixture_weights = mixture_weights[
                 caption_index::self.captions_per_video]
 
             similarity_matrix = build_similarity_matrix(
-                video_results, shard_text_results, shard_mixture_weights,
+                video_results,
+                shard_text_results,
+                shard_mixture_weights,
                 missing_experts)
 
-            loss.append(self.loss_fn(
-                similarity_matrix, self.loss_hyperparameter_m))
+            loss.append(self.loss_function(
+                similarity_matrix, self.margin_hyperparameter))
             ranks.append(metrics.rankings.compute_ranks(similarity_matrix))
-
-        valid_metrics["loss"] = tf.reduce_mean(tf.stack(loss))
+        
         ranks = tf.concat(ranks, axis=0)
 
+        valid_metrics["loss"] = tf.reduce_mean(tf.stack(loss))
         valid_metrics["mean_rank"] = metrics.rankings.get_mean_rank(ranks)
         valid_metrics["median_rank"] = metrics.rankings.get_median_rank(ranks)
 
@@ -180,3 +194,92 @@ class EncoderModel(tf.keras.Model):
             valid_metrics[label] = metrics.rankings.get_recall_at_k(ranks, k)
 
         return valid_metrics
+
+    @abstractmethod
+    def forward_pass(self, data, training=False):
+        """Executes a forward pass with the given data."""
+
+class EncoderForFrozenLanguageModel(EncoderBaseModel):
+    """An implementation of an Encoder model that trains an arbitrary Text
+    Encoder in concert with an arbitrary Video Encoder with a frozen language
+    model.
+    """
+
+    def forward_pass(self, input_data, training=False):
+        _, video_data, text_data, missing_experts = input_data
+
+        video_embeddings = self.video_encoder([video_data, missing_experts])
+        text_embeddings, mixture_weights = self.text_encoder(text_data)
+
+        return video_embeddings, text_embeddings, mixture_weights
+
+class EncoderForLanguageModelTuning(EncoderBaseModel):
+    """An implementation of an Encoder model for training a text encoder, video
+    encoder, and fine tuning a language model.
+    """
+    def __init__(
+        self, video_encoder, text_encoder, margin_hyperparameter,
+        recall_at_k_bounds, captions_per_video, language_model,
+        language_model_batch_size):
+        """Initializes the encoder.
+
+        Args:
+            video_encoder: a model that maps video features and missing experts
+                to output embeddings.
+            text_encoder a model that maps text features to output embeddings
+                and mixture weights.
+            margin_hyperparameter: a margin hyper-parameter for the loss
+                function.
+            recall_at_k_bounds: a list of integers that will be used in the as
+                bounds in the recall @ k metric computation.
+            captions_per_video: the number of captions per video.
+            language_model: the language model to be fine tuned.
+            language_model_batch_size: the batch size to be used with the
+                language model.
+        """ 
+        super(EncoderForLanguageModelTuning, self).__init__(
+            video_encoder, text_encoder, margin_hyperparameter,
+            recall_at_k_bounds, captions_per_video)
+
+        self.language_model = language_model
+        self.language_model_batch_size = language_model_batch_size
+
+    def language_model_forward_pass(
+        self, text_tokens, attention_mask, training=False):
+        """Executes a forward pass on the language model."""
+        embeddings = []
+        num_tokens = text_tokens.shape[0]
+
+        batches = math.ceil(num_tokens / self.language_model_batch_size)
+
+        for index in range(batches):
+            start_index = self.language_model_batch_size * index
+            end_index = start_index + self.language_model_batch_size
+            text_tokens_shard = text_tokens[start_index:end_index]
+            attention_mask_shard = attention_mask[start_index:end_index]
+            
+            language_model_output = self.language_model(
+                text_tokens_shard,
+                attention_mask=attention_mask_shard,
+                training=training)[0]
+
+            # Zero out missing embeddings
+            zero_masked_output = language_model_output * tf.cast(
+                attention_mask_shard[:, :, None], tf.float32)
+            embeddings.append(zero_masked_output)
+
+        return tf.concat(embeddings, axis=0)
+
+    def forward_pass(self, input_data, training=False):
+        video_features = input_data[1]
+        text_tokens = input_data[2]
+        attention_masks = input_data[3]
+        missing_experts = input_data[4]
+
+        video_embeddings = self.video_encoder([video_features, missing_experts])
+        contextual_embeddings = self.language_model_forward_pass(
+            text_tokens, attention_masks, training)
+        text_embeddings, mixture_weights = self.text_encoder(
+            contextual_embeddings)
+
+        return video_embeddings, text_embeddings, mixture_weights

@@ -15,8 +15,10 @@ limitations under the License.
 __init__.py for the cache package.
 """
 
-from .features_cache import cache_features_by_expert_and_dataset, \
-	get_cached_features_by_expert_and_dataset 
+from .features_cache import cache_features_by_expert_and_dataset
+from .features_cache import get_cached_features_by_expert_and_dataset 
 
-from .language_model_cache import cache_language_model_embeddings, \
-	get_cached_language_model_embeddings
+from .language_model_cache import cache_language_model_embeddings
+from .language_model_cache import get_cached_language_model_embeddings
+from .language_model_cache import cache_language_model_encodings
+from .language_model_cache import get_cached_language_model_encodings

@@ -20,7 +20,6 @@ from models.layers import TemporalAggregationLayer
 from models.layers import ExpertProjectionModulationLayer
 from models.layers import GatedEmbeddingUnitReasoning
 
-
 class VideoEncoder(tf.keras.Model):
     """Implementation of the video encoder.
 

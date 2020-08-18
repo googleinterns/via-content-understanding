@@ -21,7 +21,8 @@ import tensorflow as tf
 import numpy as np
 from base import BaseExpert
 
-MOCK_TENSOR_SHAPE = (2, 2) 
+MOCK_TENSOR_SHAPE = (2, 2)
+MOCK_ENCODINGS_SHAPE = (10,)
 MOCK_TENSOR_DATA = tf.zeros(MOCK_TENSOR_SHAPE)
 NUM_MOCK_VIDEOS = 5
 MOCK_CAPTIONS_PER_VIDEO = 20
@@ -52,8 +53,9 @@ class MockExpert(BaseExpert):
 
 class MockLanguageModel:
     """An implementation of BaseLanguageModel for unit tests."""
-    def __init__(self, contextual_embeddings_shape):
-        self.contextual_embeddings_shape = contextual_embeddings_shape
+    def __init__(self, output_shape):
+        self.contextual_embeddings_shape = output_shape
+        self.encoded_shape = output_shape
 
 def make_mock_video_ids(num_videos):
     """Makes a list of video ids used for unit tests.
@@ -76,13 +78,32 @@ def mock_id_embeddings_pair_dataset_generator(
             yield (video_id, tf.zeros(mock_tensor_shape))
 
 def make_mock_id_embeddings_pair_dataset(
-    video_ids, mock_tensor_shape, mock_embeddings_per_video=1):
+    video_ids, mock_tensor_shape, mock_embeddings_per_video):
     
     dataset_generator = lambda: mock_id_embeddings_pair_dataset_generator(
         video_ids, mock_tensor_shape, mock_embeddings_per_video)
 
     return tf.data.Dataset.from_generator(dataset_generator, 
         (tf.string, tf.float32))
+
+def mock_id_encodings_pair_dataset_generator(
+    video_ids, mock_tensor_shape, mock_encodings_per_video):
+    for video_id in video_ids:
+        for _ in range(mock_encodings_per_video):
+            yield (
+                video_id,
+                tf.zeros(mock_tensor_shape, dtype=tf.int64),
+                tf.zeros(mock_tensor_shape, dtype=tf.int64))
+
+def make_mock_id_encodings_pair_dataset(
+    video_ids, mock_tensor_shape, mock_encodings_per_video):
+    
+    dataset_generator = lambda: mock_id_encodings_pair_dataset_generator(
+        video_ids, mock_tensor_shape, mock_encodings_per_video)
+
+    return tf.data.Dataset.from_generator(dataset_generator, 
+        (tf.string, tf.int64, tf.int64))
+
 
 def make_mock_precomputed_features(video_ids):
     mock_precomputed_features_available = {}
@@ -102,30 +123,45 @@ class TestEncoderDatasetsFunctions(unittest.TestCase):
     """"Tests for functions in the encoder datasets module."""
     mock_video_ids = make_mock_video_ids(NUM_MOCK_VIDEOS)
     mock_dataset = make_mock_id_embeddings_pair_dataset(
-        mock_video_ids, MOCK_TENSOR_SHAPE)
+        mock_video_ids, MOCK_TENSOR_SHAPE, MOCK_CAPTIONS_PER_VIDEO)
+    mock_encodings_dataset = make_mock_id_encodings_pair_dataset(
+        mock_video_ids, MOCK_ENCODINGS_SHAPE, MOCK_CAPTIONS_PER_VIDEO)
     mock_precomputed_features = make_mock_precomputed_features(
         mock_video_ids)
+
+    def assert_video_data_is_correct(
+        self, video_id, expert_features, missing_modalities):
+        video_id = video_id.numpy().decode("utf-8")
+
+        for feature_index, (feature, missing) in enumerate(zip(
+            expert_features, missing_modalities)):
+
+            expected_feature, expected_missing = \
+                self.mock_precomputed_features[feature_index][video_id]
+            
+            self.assertTrue(np.array_equal(
+                feature.numpy(), expected_feature.numpy()))
+            self.assertEqual(missing, expected_missing)
 
     def test_replacing_video_id_with_expert_features(self):
         """Tests the replace_video_id_with_expert_features_wrapper function."""
         map_fn = encoder_datasets.replace_video_id_with_expert_features_wrapper(
             self.mock_precomputed_features)
 
-        output = list(iter(mock_dataset.map(map_fn)))
+        ouput_embeddings_dataset = list(iter(
+            self.mock_dataset.map(map_fn.embeddings_function)))
+        output_encodings_dataset = list(iter(
+            self.mock_encodings_dataset.map(map_fn.encodings_function)))
 
-        for video_id, expert_features, _, missing_modalities in output:
-            video_id = video_id.numpy().decode("utf-8")
+        for data in ouput_embeddings_dataset:
+            video_id, expert_features, _, missing_modalities = data
+            self.assert_video_data_is_correct(
+                video_id, expert_features, missing_modalities)
 
-            for feature_index, (feature, missing) in enumerate(zip(
-                expert_features, missing_modalities)):
-
-                expected_feature, expected_missing = \
-                    self.mock_precomputed_features[feature_index][video_id]
-                
-                self.assertTrue(np.array_equal(
-                    feature.numpy(), expected_feature.numpy()))
-                self.assertEqual(missing, expected_missing)
-
+        for data in output_encodings_dataset:
+            video_id, expert_features, _, _, missing_modalities = data
+            self.assert_video_data_is_correct(
+                video_id, expert_features, missing_modalities)
 
     def test_update_dataset_shape_wrapper(self):
         """Tests updating dataset shape."""
@@ -133,19 +169,32 @@ class TestEncoderDatasetsFunctions(unittest.TestCase):
         mock_expert_constant_length = MockExpert(True, 10, (10,))
         mock_language_model = MockLanguageModel((10, 10))
 
-        mock_dataset = tf.data.Dataset.from_generator(
+        mock_embeddings_dataset = tf.data.Dataset.from_generator(
             lambda: None,
             (tf.string, (tf.float32, tf.float32), tf.float32, tf.bool))
+        mock_encodings_dataset = tf.data.Dataset.from_generator(
+            lambda: None,
+            (tf.string, (tf.float32, tf.float32), tf.int64, tf.int64, tf.bool))
 
-        map_fn = encoder_datasets.update_dataset_shape_wrapper(
+        wrapper = encoder_datasets.update_dataset_shape_wrapper(
             [mock_expert_variable_length, mock_expert_constant_length],
             mock_language_model)
 
-        mock_dataset = mock_dataset.map(map_fn)
+        mock_embeddings_dataset = mock_embeddings_dataset.map(
+            wrapper.embeddings_function)
+        mock_encodings_dataset = mock_encodings_dataset.map(
+            wrapper.encodings_function)
 
-        self.assertTrue(mock_dataset.element_spec[1][0].shape == (10, 5))
-        self.assertTrue(mock_dataset.element_spec[1][1].shape == (10,))
-        self.assertTrue(mock_dataset.element_spec[2].shape == (10, 10))
+        for mock_dataset in [mock_embeddings_dataset, mock_encodings_dataset]:
+            self.assertTrue(mock_dataset.element_spec[1][0].shape == (10, 5))
+            self.assertTrue(mock_dataset.element_spec[1][1].shape == (10,))
+
+        self.assertTrue(
+            mock_embeddings_dataset.element_spec[2].shape == (10, 10))
+        self.assertTrue(
+            mock_encodings_dataset.element_spec[2].shape == (10,))
+        self.assertTrue(
+            mock_encodings_dataset.element_spec[3].shape == (10,))
 
     def test_zero_pad_expert_features(self):
         """Tests zero padding expert features."""
@@ -167,16 +216,23 @@ class TestEncoderDatasetsFunctions(unittest.TestCase):
         error = tf.abs(tf.reduce_sum(output) - tf.reduce_sum(mock_value_small))
         self.assertTrue(error < 1e-6)
 
+    def assert_captions_sampled_correctly(self, mock_video_ids, mock_dataset):
+        for expected_value, dataset_value in zip(mock_video_ids, mock_dataset):
+            video_id = dataset_value[0]
+            self.assertEqual(expected_value, video_id)
 
     def test_sample_captions(self):
         """Tests the sample captions method of encoder datasets."""
-        mock_dataset = list(iter(encoder_datasets.sample_captions(
-            self.mock_dataset, MOCK_CAPTIONS_PER_VIDEO)))
+        mock_embeddings_dataset = list(iter(encoder_datasets.sample_captions(
+            self.mock_dataset,
+            MOCK_CAPTIONS_PER_VIDEO,
+            encoder_datasets.TrainingDatasetType.EmbeddingsDataset)))
+        mock_encodings_dataset = list(iter(encoder_datasets.sample_captions(
+            self.mock_encodings_dataset,
+            MOCK_CAPTIONS_PER_VIDEO,
+            encoder_datasets.TrainingDatasetType.EncodingsDataset)))
 
-        for expected_value, dataset_value in zip(
-            self.mock_video_ids, mock_dataset):
-            video_id, _ = dataset_value
-
-            self.assertEqual(expected_value, video_id)
-
-
+        self.assert_captions_sampled_correctly(
+            self.mock_video_ids, mock_embeddings_dataset)
+        self.assert_captions_sampled_correctly(
+            self.mock_video_ids, mock_encodings_dataset)

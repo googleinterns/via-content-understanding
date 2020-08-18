@@ -1,5 +1,5 @@
 pytube3==9.6.4
 tensorflow>=2.0.0
-tensorflow_addons>=0.10.0
+tensorflow_addons
 requests==2.22.0
-transformers==2.9.1
+transformers==3.0.2

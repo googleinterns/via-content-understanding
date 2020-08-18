@@ -21,10 +21,14 @@ from tensorflow.python.framework import random_seed
 import numpy as np
 from abc import ABC as AbstractClass
 
-from models.encoder import EncoderModel
+import languagemodels.bert
+
+from models.encoder import EncoderForFrozenLanguageModel
+from models.encoder import EncoderForLanguageModelTuning
+
 from models.components import VideoEncoder, TextEncoder
-from models.layers import GatedEmbeddingUnitReasoning, GatedEmbeddingModule,\
-    TemporalAggregationLayer, NetVLAD
+from models.layers import GatedEmbeddingUnitReasoning, GatedEmbeddingModule
+from models.layers import TemporalAggregationLayer, NetVLAD
 
 from metrics.loss import bidirectional_max_margin_ranking_loss
 
@@ -46,6 +50,7 @@ MLP_LAYERS = 2
 
 CAPTIONS_PER_VIDEO = 20
 
+
 class CollaborativeExpertsTestCase(unittest.TestCase, AbstractClass):
     """An class with helper methods for test of collaborative experts."""
     error_margin = 1e-6
@@ -62,24 +67,44 @@ class CollaborativeExpertsTestCase(unittest.TestCase, AbstractClass):
     def assert_vector_has_shape(self, vector, shape):
         self.assertTrue(tuple(vector.shape) == tuple(shape))
 
+def get_mock_video_data():
+    expert_data = []
+    expert_shapes = [EXPERT_ONE_SHAPE, EXPERT_TWO_SHAPE, EXPERT_THREE_SHAPE]
+
+    missing_experts = tf.constant(
+        [[False, False, False],
+        [False, True, False]])
+
+    for shape in expert_shapes:
+        expert_data.append(tf.repeat(tf.random.normal(shape),
+            [CAPTIONS_PER_VIDEO] * shape[0], axis=0))
+
+    missing_experts = tf.repeat(missing_experts,
+        [CAPTIONS_PER_VIDEO] * missing_experts.shape[0], axis=0)
+
+    return expert_data, expert_shapes, missing_experts
+
 class TestCollaborativeExpertsModels(CollaborativeExpertsTestCase):
     """Tests inferencing and training with a video and text encoder."""
-    text_encoder = TextEncoder(
-        NUM_EXPERTS,
-        num_netvlad_clusters=5,
-        ghost_clusters=1,
-        language_model_dimensionality=MOCK_TEXT_EMBEDDING_SHAPE[-1],
-        encoded_expert_dimensionality=EXPERT_AGGREGATED_SIZE)
 
-    video_encoder = VideoEncoder(
-        NUM_EXPERTS,
-        experts_use_netvlad=[False, False, True],
-        experts_netvlad_shape=[None, None, EXPERT_NETVLAD_CLUSTERS],
-        expert_aggregated_size=EXPERT_AGGREGATED_SIZE,
-        encoded_expert_dimensionality=EXPERT_AGGREGATED_SIZE,
-        g_mlp_layers=2)
+    def get_text_encoder(self, residual_cls_token):
+        return TextEncoder(
+            NUM_EXPERTS,
+            num_netvlad_clusters=5,
+            ghost_clusters=1,
+            residual_cls_token=residual_cls_token,
+            language_model_dimensionality=MOCK_TEXT_EMBEDDING_SHAPE[-1],
+            encoded_expert_dimensionality=EXPERT_AGGREGATED_SIZE)
 
-    encoder = EncoderModel(video_encoder, text_encoder, MOCK_MARGIN_PARAMETER)
+    @property
+    def video_encoder(self):
+        return VideoEncoder(
+            NUM_EXPERTS,
+            experts_use_netvlad=[False, False, True],
+            experts_netvlad_shape=[None, None, EXPERT_NETVLAD_CLUSTERS],
+            expert_aggregated_size=EXPERT_AGGREGATED_SIZE,
+            encoded_expert_dimensionality=EXPERT_AGGREGATED_SIZE,
+            g_mlp_layers=2)
 
     def test_video_encoder(self):
         """Tests making a forward pass with a video encoder."""
@@ -103,28 +128,30 @@ class TestCollaborativeExpertsModels(CollaborativeExpertsTestCase):
 
     def test_text_encoder(self):
         """Tests making a forward pass with a text encoder."""
+        text_encoder = self.get_text_encoder(residual_cls_token=False)
         mock_text_embeddings = tf.random.normal(MOCK_TEXT_EMBEDDING_SHAPE)
-        embeddings, mixture_weights = self.text_encoder(mock_text_embeddings)
+        embeddings, mixture_weights = text_encoder(mock_text_embeddings)
 
         for embedding in embeddings:
             self.assert_vector_has_shape(
                 embedding, (BATCH_SIZE, EXPERT_AGGREGATED_SIZE))
             self.assert_last_axis_has_norm(
                 embedding, norm=1)
-        
         mixture_weight_sums = tf.reduce_sum(mixture_weights, axis=-1)
 
-        self.assertTrue(
-            tf.reduce_all(
-                mixture_weight_sums == tf.ones_like(mixture_weight_sums)))
+        self.assertAlmostEqual(
+            0.0, tf.reduce_max(tf.abs(
+                mixture_weight_sums - tf.ones_like(
+                    mixture_weight_sums))).numpy())
 
     def test_encoder_training(self):
         """Tests making one train step and one test step on an encoder model."""
-        self.encoder.compile(
+        encoder = EncoderForFrozenLanguageModel(
+            self.video_encoder, self.get_text_encoder(residual_cls_token=False),
+            MOCK_MARGIN_PARAMETER, [1, 5, 10], CAPTIONS_PER_VIDEO)
+        encoder.compile(
             tf.keras.optimizers.Adam(),
-            bidirectional_max_margin_ranking_loss, 
-            [1, 5, 10],
-            CAPTIONS_PER_VIDEO)
+            bidirectional_max_margin_ranking_loss)
 
         num_text_embeddings = CAPTIONS_PER_VIDEO * MOCK_TEXT_EMBEDDING_SHAPE[0]
         mock_text_embeddings_shape_multiple_captions = (
@@ -133,19 +160,7 @@ class TestCollaborativeExpertsModels(CollaborativeExpertsTestCase):
         mock_text_data = tf.random.normal(
             mock_text_embeddings_shape_multiple_captions)
 
-        expert_data = []
-        expert_shapes = [EXPERT_ONE_SHAPE, EXPERT_TWO_SHAPE, EXPERT_THREE_SHAPE]
-
-        missing_experts = tf.constant(
-            [[False, False, False],
-            [False, True, False]])
-
-        for shape in expert_shapes:
-            expert_data.append(tf.repeat(tf.random.normal(shape),
-                [CAPTIONS_PER_VIDEO] * shape[0], axis=0))
-
-        missing_experts = tf.repeat(missing_experts,
-            [CAPTIONS_PER_VIDEO] * missing_experts.shape[0], axis=0)
+        expert_data, expert_shapes, missing_experts = get_mock_video_data()
 
         train_data = (
             tf.constant([f"video{i}" for i in range(BATCH_SIZE)]),
@@ -159,9 +174,52 @@ class TestCollaborativeExpertsModels(CollaborativeExpertsTestCase):
             mock_text_data,
             missing_experts)
 
-        self.encoder.train_step(train_data)
-        self.encoder.test_step(test_data)
+        encoder.train_step(train_data)
+        encoder.test_step(test_data)
 
+    def test_encoder_training_with_language_model_tuning(self):
+        """Tests train/test steps for fine tuning a language model."""
+        language_model = languagemodels.bert.BERTModel()
+        tokens = language_model.tokenizer.get_vocab().values()
+        tokens_min = min(tokens)
+        tokens_max = max(tokens) + 1
+
+        encoder = EncoderForLanguageModelTuning(
+            self.video_encoder, self.get_text_encoder(residual_cls_token=True),
+            MOCK_MARGIN_PARAMETER, [1, 5, 10], CAPTIONS_PER_VIDEO,
+            language_model.model, 16)
+        encoder.compile(
+            tf.keras.optimizers.Adam(),
+            bidirectional_max_margin_ranking_loss)
+
+        num_text_embeddings = CAPTIONS_PER_VIDEO * MOCK_TEXT_EMBEDDING_SHAPE[0]
+        mock_text_data = tf.random.uniform(
+            (num_text_embeddings, language_model.max_input_length),
+            minval=tokens_min,
+            maxval=tokens_max,
+            dtype=tf.int64)
+        mock_attention_masks = tf.random.uniform(
+            (num_text_embeddings, language_model.max_input_length),
+            minval=0,
+            maxval=2,
+            dtype=tf.int64)
+        expert_data, expert_shapes, missing_experts = get_mock_video_data()
+
+        train_data = (
+            tf.constant([f"video{i}" for i in range(BATCH_SIZE)]),
+            [data[::CAPTIONS_PER_VIDEO] for data in expert_data],
+            mock_text_data[::CAPTIONS_PER_VIDEO],
+            mock_attention_masks[::CAPTIONS_PER_VIDEO],
+            missing_experts[::CAPTIONS_PER_VIDEO])
+        test_data = (
+            tf.constant([f"video{i}" for i in range(BATCH_SIZE)]),
+            expert_data,
+            mock_text_data,
+            mock_attention_masks,
+            missing_experts)
+
+        encoder.train_step(train_data)
+        encoder.test_step(test_data)
 
 class TestCollaborativeExpertsLayers(CollaborativeExpertsTestCase):
     """Tests the layers used in the Collaborative Experts models."""
@@ -185,7 +243,7 @@ class TestCollaborativeExpertsLayers(CollaborativeExpertsTestCase):
 
     def test_gated_embedding_module(self):
         """Tests a gated embedding module layer."""
-        gated_embedding_unit_reasoning = GatedEmbeddingUnitReasoning(
+        gated_embedding_unit_reasoning = GatedEmbeddingModule(
             FEATURE_SIZE,
             kernel_initializer="glorot_uniform",
             bias_initializer="zeros")

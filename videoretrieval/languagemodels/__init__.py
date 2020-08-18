@@ -16,5 +16,4 @@ limitations under the License.
 """
 
 from .gpt import OpenAIGPTModel
-
-openai_gpt = OpenAIGPTModel()
+from .bert import BERTModel

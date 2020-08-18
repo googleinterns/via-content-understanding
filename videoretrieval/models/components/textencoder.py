@@ -52,6 +52,7 @@ class TextEncoder(tf.keras.Model):
             ghost_clusters,
             language_model_dimensionality,
             encoded_expert_dimensionality,
+            residual_cls_token=True,
             kernel_initializer="glorot_uniform",
             bias_initializer="zeros"):
         """Initialize this model.
@@ -64,6 +65,11 @@ class TextEncoder(tf.keras.Model):
                 model.
             encoded_expert_dimensionality: the dimensionality video experts
                 embeddings are computed down to.
+            residual_cls_token: a boolean indicating if the CLS output from the
+                language model should be seperated from the other embeddings. If
+                this is True, the first token output from the language model is
+                not inputted to NetVLAD. Instead, it's appended to the
+                aggregated outputs from NetVLAD.
             kernel_initializer: the strategy used to initialize the weights in
                 dense layers' kernel. The default is glorot uniform, the default
                 strategy for keras.
@@ -78,6 +84,7 @@ class TextEncoder(tf.keras.Model):
         self.language_model_dimensionality = language_model_dimensionality
         self.netvlad = NetVLAD(num_netvlad_clusters, ghost_clusters)
         self.encoded_expert_dimensionality = encoded_expert_dimensionality
+        self.residual_cls_token = residual_cls_token
 
         self.make_gems(
             kernel_initializer=kernel_initializer,
@@ -126,7 +133,15 @@ class TextEncoder(tf.keras.Model):
         for the embeddings of shape batch size x number of experts.
         """
 
-        aggregated_embeddings = self.netvlad(contextual_embeddings)
+        if self.residual_cls_token:
+            cls_token = contextual_embeddings[:, 0, :]
+            aggregated_embeddings = self.netvlad(
+                contextual_embeddings[:, 1:, :])
+
+            aggregated_embeddings = tf.concat([
+                cls_token, aggregated_embeddings], axis=1)
+        else:
+            aggregated_embeddings = self.netvlad(contextual_embeddings)
 
         expert_embeddings = []
 
