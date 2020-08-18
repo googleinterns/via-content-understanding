@@ -34,8 +34,8 @@ encodings_schema = {
     "serialized_attention_masks": tf.io.FixedLenFeature([], tf.string)
 }
 
-#base_path = Path(f"/mnt/disks/fast_ssd/cached_data/")
 base_path = Path("./cached_data/")
+
 def get_bytes_feature(value):
     """Gets a tf.train.Feature from the parameter value."""
     bytes_list = tf.train.BytesList(value=[value.numpy()])

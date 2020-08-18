@@ -43,4 +43,6 @@ class OpenAIGPTModel(BaseLanguageModel):
 
     @property
     def contextual_embeddings_shape(self):
-        return (37, 768)
+        """The shape of the output from a forward pass."""
+        embedding_last_dimension_shape = 768
+        return (self.max_input_length, embedding_last_dimension_shape)
