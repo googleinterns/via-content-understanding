@@ -40,7 +40,7 @@ class BERTLargeModel(BaseLanguageModel):
 
     @property
     def contextual_embeddings_shape(self):
-         """The shape of the output from a forward pass."""
+        """The shape of the output from a forward pass."""
         embedding_last_dimension_shape = 1024
         return (self.max_input_length, embedding_last_dimension_shape)
 
@@ -69,7 +69,7 @@ class BERTModel(BaseLanguageModel):
 
     @property
     def contextual_embeddings_shape(self):
-         """The shape of the output from a forward pass."""
+        """The shape of the output from a forward pass."""
         embedding_last_dimension_shape = 768
         return (self.max_input_length, embedding_last_dimension_shape)
 
@@ -98,7 +98,7 @@ class RobertaModel(BaseLanguageModel):
 
     @property
     def contextual_embeddings_shape(self):
-         """The shape of the output from a forward pass."""
+        """The shape of the output from a forward pass."""
         embedding_last_dimension_shape = 768
         return (self.max_input_length, embedding_last_dimension_shape)
 
